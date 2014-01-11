@@ -8,7 +8,8 @@ lay_random_tiles = (tiles, board) ->
 
   fisherYates(tile_stack)
 
-  for t in tile_stack
+  #for t in tile_stack
+  insert_tile = (t) ->
     slots = board.find_valid_openings()
     # Need to rework this whole thing
     # Right now it's finding all edges that have an opening
@@ -16,7 +17,7 @@ lay_random_tiles = (tiles, board) ->
     # see if we can fit the tile next to it in every combo
     selected_slot = slots[Math.floor(Math.random()*slots.length)]
     x = selected_slot[0]
-    y= selected_slot[1]
+    y = selected_slot[1]
     switch t
       when 'blue2-straight.png'
         east = true
@@ -39,8 +40,39 @@ lay_random_tiles = (tiles, board) ->
         north = true
         south = true
 
-    tile = new Tile t, x, y, north, east, south, west
-    board.add_tile(tile)
+    north_tile = board.tile_at(x, y+1)
+    console.log north_tile
+    east_tile = board.tile_at(x+1, y)
+    console.log east_tile
+    south_tile = board.tile_at(x, y-1)
+    console.log south_tile
+    west_tile = board.tile_at(x-1, y-1)
+    console.log west_tile
+    console.log '--------'
+    fits = true
+    if north_tile && (north_tile.south != north)
+      fits = false
+    if east_tile && (east_tile.west != east)
+      fits = false
+    if south_tile && (south_tile.north != south)
+      fits = false
+    if west_tile && (west_tile.east != west)
+      fits = false
+
+    if fits
+      tile = new Tile t, x, y, north, east, south, west
+      board.add_tile(tile)
+    else
+      console.log "did not fit at x: #{x} y: #{y}"
+      console.log t
+      console.log '--------'
+      insert_tile(t)
+  timer = setInterval (->
+    if tile_stack.length == 1
+      console.log 'Placed the last tile'
+      clearInterval(timer)
+    insert_tile(tile_stack.pop())
+  ), 1000
 
 fisherYates = (arr) ->
   i = arr.length
@@ -67,42 +99,55 @@ class Tile
 
 class Board
   constructor: (@context)->
-    @tiles = []
+    @tiles = {}
+    @count = 0
 
   add_start_tile: ->
     start_tile = new Tile 'start.png', 0, 0, true, true, true, true
-    start_tile.draw(@context)
-    @tiles.push start_tile
+    @add_tile(start_tile)
 
   add_tile: (tile)->
-    if tile.draw(@context)
-      @tiles.push tile
+    console.log 'tile_at'
+    return false if @tile_at tile.x, tile.y
+
+    if @tiles[tile.x]
+      obj = @tiles[tile.x]
+      obj[tile.y] = tile
+      
+    else
+      obj = {}
+      obj[tile.y] = tile
+      @tiles[tile.x] = obj
+    @count += 1
+
+    tile.draw(@context)
 
   tile_at: (x,y)->
     exists = false
-    tile = @tiles[0]
-    for tile in @tiles
-      exists = true if tile.x == x and tile.y == y
+    ys = @tiles[x]
+    if ys
+      exists = ys[y]
     return exists
 
   tile_count: ->
-    @tiles.length
+    @count
 
   find_valid_openings: ->
     openings = []
-    for tile in @tiles
-      if tile.north
-        coords = [tile.x,tile.y+1]
-        openings.push coords unless @tile_at.apply @, coords
-      if tile.east
-        coords = [tile.x+1,tile.y]
-        openings.push coords unless @tile_at.apply @, coords
-      if tile.south
-        coords = [tile.x,tile.y-1]
-        openings.push coords unless @tile_at.apply @, coords
-      if tile.west
-        coords = [tile.x-1,tile.y]
-        openings.push coords unless @tile_at.apply @, coords
+    for x, tiles of @tiles
+      for y, tile of tiles
+        if tile.north
+          coords = [tile.x,tile.y+1]
+          openings.push coords unless @tile_at.apply @, coords
+        if tile.east
+          coords = [tile.x+1,tile.y]
+          openings.push coords unless @tile_at.apply @, coords
+        if tile.south
+          coords = [tile.x,tile.y-1]
+          openings.push coords unless @tile_at.apply @, coords
+        if tile.west
+          coords = [tile.x-1,tile.y]
+          openings.push coords unless @tile_at.apply @, coords
     return openings
 
 
@@ -112,14 +157,12 @@ $(document).ready ->
   tiles = {
     blue: {
       #'3': 4
-      '4': 7,
-      '3': 13,
-      '2-straight': 20,
-      '2-turn': 14
+      '4': 0,
+      '3': 0,
+      '2-straight': 0,
+      '2-turn': 2
     }
   }
   board = new Board context
   board.add_start_tile()
   lay_random_tiles(tiles, board)
-  console.log board
-  console.log board.tile_count()

@@ -5,7 +5,7 @@
   $ = jQuery;
 
   lay_random_tiles = function(tiles, board) {
-    var color, east, i, north, num, selected_slot, slots, south, t, tile, tile_stack, type, types, west, x, y, _i, _j, _len, _results;
+    var color, i, insert_tile, num, tile_stack, timer, type, types, _i;
     tile_stack = [];
     for (color in tiles) {
       types = tiles[color];
@@ -17,9 +17,8 @@
       }
     }
     fisherYates(tile_stack);
-    _results = [];
-    for (_j = 0, _len = tile_stack.length; _j < _len; _j++) {
-      t = tile_stack[_j];
+    insert_tile = function(t) {
+      var east, east_tile, fits, north, north_tile, selected_slot, slots, south, south_tile, tile, west, west_tile, x, y;
       slots = board.find_valid_openings();
       selected_slot = slots[Math.floor(Math.random() * slots.length)];
       x = selected_slot[0];
@@ -49,10 +48,45 @@
           north = true;
           south = true;
       }
-      tile = new Tile(t, x, y, north, east, south, west);
-      _results.push(board.add_tile(tile));
-    }
-    return _results;
+      north_tile = board.tile_at(x, y + 1);
+      console.log(north_tile);
+      east_tile = board.tile_at(x + 1, y);
+      console.log(east_tile);
+      south_tile = board.tile_at(x, y - 1);
+      console.log(south_tile);
+      west_tile = board.tile_at(x - 1, y - 1);
+      console.log(west_tile);
+      console.log('--------');
+      fits = true;
+      if (north_tile && (north_tile.south !== north)) {
+        fits = false;
+      }
+      if (east_tile && (east_tile.west !== east)) {
+        fits = false;
+      }
+      if (south_tile && (south_tile.north !== south)) {
+        fits = false;
+      }
+      if (west_tile && (west_tile.east !== west)) {
+        fits = false;
+      }
+      if (fits) {
+        tile = new Tile(t, x, y, north, east, south, west);
+        return board.add_tile(tile);
+      } else {
+        console.log("did not fit at x: " + x + " y: " + y);
+        console.log(t);
+        console.log('--------');
+        return insert_tile(t);
+      }
+    };
+    return timer = setInterval((function() {
+      if (tile_stack.length === 1) {
+        console.log('Placed the last tile');
+        clearInterval(timer);
+      }
+      return insert_tile(tile_stack.pop());
+    }), 1000);
   };
 
   fisherYates = function(arr) {
@@ -100,68 +134,79 @@
   Board = (function() {
     function Board(context) {
       this.context = context;
-      this.tiles = [];
+      this.tiles = {};
+      this.count = 0;
     }
 
     Board.prototype.add_start_tile = function() {
       var start_tile;
       start_tile = new Tile('start.png', 0, 0, true, true, true, true);
-      start_tile.draw(this.context);
-      return this.tiles.push(start_tile);
+      return this.add_tile(start_tile);
     };
 
     Board.prototype.add_tile = function(tile) {
-      if (tile.draw(this.context)) {
-        return this.tiles.push(tile);
+      var obj;
+      console.log('tile_at');
+      if (this.tile_at(tile.x, tile.y)) {
+        return false;
       }
+      if (this.tiles[tile.x]) {
+        obj = this.tiles[tile.x];
+        obj[tile.y] = tile;
+      } else {
+        obj = {};
+        obj[tile.y] = tile;
+        this.tiles[tile.x] = obj;
+      }
+      this.count += 1;
+      return tile.draw(this.context);
     };
 
     Board.prototype.tile_at = function(x, y) {
-      var exists, tile, _i, _len, _ref;
+      var exists, ys;
       exists = false;
-      tile = this.tiles[0];
-      _ref = this.tiles;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tile = _ref[_i];
-        if (tile.x === x && tile.y === y) {
-          exists = true;
-        }
+      ys = this.tiles[x];
+      if (ys) {
+        exists = ys[y];
       }
       return exists;
     };
 
     Board.prototype.tile_count = function() {
-      return this.tiles.length;
+      return this.count;
     };
 
     Board.prototype.find_valid_openings = function() {
-      var coords, openings, tile, _i, _len, _ref;
+      var coords, openings, tile, tiles, x, y, _ref;
       openings = [];
       _ref = this.tiles;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tile = _ref[_i];
-        if (tile.north) {
-          coords = [tile.x, tile.y + 1];
-          if (!this.tile_at.apply(this, coords)) {
-            openings.push(coords);
+      for (x in _ref) {
+        tiles = _ref[x];
+        for (y in tiles) {
+          tile = tiles[y];
+          if (tile.north) {
+            coords = [tile.x, tile.y + 1];
+            if (!this.tile_at.apply(this, coords)) {
+              openings.push(coords);
+            }
           }
-        }
-        if (tile.east) {
-          coords = [tile.x + 1, tile.y];
-          if (!this.tile_at.apply(this, coords)) {
-            openings.push(coords);
+          if (tile.east) {
+            coords = [tile.x + 1, tile.y];
+            if (!this.tile_at.apply(this, coords)) {
+              openings.push(coords);
+            }
           }
-        }
-        if (tile.south) {
-          coords = [tile.x, tile.y - 1];
-          if (!this.tile_at.apply(this, coords)) {
-            openings.push(coords);
+          if (tile.south) {
+            coords = [tile.x, tile.y - 1];
+            if (!this.tile_at.apply(this, coords)) {
+              openings.push(coords);
+            }
           }
-        }
-        if (tile.west) {
-          coords = [tile.x - 1, tile.y];
-          if (!this.tile_at.apply(this, coords)) {
-            openings.push(coords);
+          if (tile.west) {
+            coords = [tile.x - 1, tile.y];
+            if (!this.tile_at.apply(this, coords)) {
+              openings.push(coords);
+            }
           }
         }
       }
@@ -178,17 +223,15 @@
     context = canvas.getContext('2d');
     tiles = {
       blue: {
-        '4': 7,
-        '3': 13,
-        '2-straight': 20,
-        '2-turn': 14
+        '4': 0,
+        '3': 0,
+        '2-straight': 0,
+        '2-turn': 2
       }
     };
     board = new Board(context);
     board.add_start_tile();
-    lay_random_tiles(tiles, board);
-    console.log(board);
-    return console.log(board.tile_count());
+    return lay_random_tiles(tiles, board);
   });
 
 }).call(this);
