@@ -60,7 +60,7 @@ lay_random_tiles = (colors, tiles, board) ->
     fisherYates(slots)
     i = 0
     for slot in slots
-      max = rotations_for_tile(t)+1
+      max = rotations_for_tile(t)
       orientations = [1..max]
       fisherYates(orientations)
       for orientation in orientations
