@@ -9,6 +9,7 @@ lay_random_tiles = (colors, tiles, board) ->
         stack.push [color, type]
     fisherYates(stack)
     tile_stack = tile_stack.concat stack
+  console.log tile_stack
 
   rotate_tile = (t, color)->
     switch t
@@ -74,7 +75,7 @@ lay_random_tiles = (colors, tiles, board) ->
         console.log 'ran out of tries'
 
   timer = setInterval (->
-    if tile_stack.length == 1
+    if tile_stack.length <= 1
       console.log 'Placing the last tile'
       clearInterval(timer)
     insert_tile.apply(@,tile_stack.pop())
@@ -161,15 +162,21 @@ class Board
 
 
 $(document).ready ->
+  $('.submit').click ->
+    tiles = {
+      '4': parseInt($('.4').val()) || 0
+      '3': parseInt($('.3').val()) || 0
+      '2-straight': parseInt($('.2-straight').val()) || 0
+      '2-turn': parseInt($('.2-turn').val()) || 0
+    }
+    console.log tiles
+    build_map(tiles)
+
+build_map = (tiles)->
   canvas = document.getElementById('my_canvas')
   context = canvas.getContext('2d')
+  context.clearRect( 0, 0, 2057, 2057)
   colors = ['green', 'yellow', 'red']
-  tiles = {
-    '4': 10,
-    '3': 12,
-    '2-straight': 15,
-    '2-turn': 20
-  }
   board = new Board context
   board.add_start_tile()
   lay_random_tiles(colors, tiles, board)

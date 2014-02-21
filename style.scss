@@ -1,3 +1,17 @@
 #my_canvas {
   border: 1px solid black;
+  margin-top: 60px;
+}
+
+.config {
+  position: fixed;
+  border: 1px solid black;
+  padding: 5px;
+  background: white;
+
+  li{
+    display: inline;
+    list-style-type: none;
+    padding: 5px;
+  }
 }
