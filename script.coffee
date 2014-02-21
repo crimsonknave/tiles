@@ -1,7 +1,10 @@
 $ = jQuery
+interval = 100
 lay_random_tiles = (colors, tiles, board) ->
+  @stop = false
   tile_stack = []
   unplaceable = []
+  last_was_placeable = true
   for color in colors.reverse()
     stack = []
     for type, num of tiles
@@ -9,77 +12,101 @@ lay_random_tiles = (colors, tiles, board) ->
         stack.push [color, type]
     fisherYates(stack)
     tile_stack = tile_stack.concat stack
-  console.log tile_stack
 
-  rotate_tile = (t, color)->
+  rotations_for_tile = (t)->
+    rotations = {
+      '2-straight': 2,
+      '2-turn': 4,
+      '3': 4,
+      '4': 1
+    }
+    return rotations[t]
+
+  rotate_tile = (t, color, orientation)->
     switch t
       when '2-straight'
-        rand = Math.floor(Math.random()*2)+1
-        east = rand == 1
-        west = rand == 1
-        north = rand == 2
-        south = rand == 2
+        east = orientation == 1
+        west = orientation == 1
+        north = orientation == 2
+        south = orientation == 2
       when '2-turn'
-        rand = Math.floor(Math.random()*4)+1
-        east = rand == 1 || rand == 4
-        west = rand == 2 || rand == 3
-        north = rand == 3 || rand == 4
-        south = rand == 1 || rand == 2
+        east = orientation == 1 || orientation == 4
+        west = orientation == 2 || orientation == 3
+        north = orientation == 3 || orientation == 4
+        south = orientation == 1 || orientation == 2
       when '3'
-        rand = Math.floor(Math.random()*4)+1
-        east = rand == 1 || rand == 2 || rand == 3
-        west = rand == 1 || rand == 3 || rand == 4
-        north = rand == 1 || rand == 2 || rand == 4
-        south = rand == 2 || rand == 3 || rand == 4
+        east = orientation == 1 || orientation == 2 || orientation == 3
+        west = orientation == 1 || orientation == 3 || orientation == 4
+        north = orientation == 1 || orientation == 2 || orientation == 4
+        south = orientation == 2 || orientation == 3 || orientation == 4
       when '4'
-        rand = 1
         east = true
         west = true
         north = true
         south = true
-    name = "#{color}#{t}-#{rand}.png"
+    name = "#{color}#{t}-#{orientation}.png"
     return [north, east, south, west, name]
 
-  insert_tile = (color, t, count=0) ->
+  # We iterate over all the slots
+  # For each slot we try a random rotation and see if the tile fits
+  # If not we try all the other orientations in order
+  # If none of those fit we move on to the next random slot
+  # If none of the slots fit we place the tile in unplaceable and 
+  # note that we could not place a tile
+  # We will try and place the tiles in unplaceable once we've places a new
+  # tile
+  insert_tile = (color, t) ->
     slots = board.find_valid_openings()
-    # Need to rework this whole thing
-    # Right now it's finding all edges that have an opening
-    # But we want to find every tile that is on the edge and then 
-    # see if we can fit the tile next to it in every combo
-    selected_slot = slots[Math.floor(Math.random()*slots.length)]
-    x = selected_slot[0]
-    y = selected_slot[1]
-    [north, east, south, west, name] = rotate_tile(t, color)
+    fisherYates(slots)
+    i = 0
+    for slot in slots
+      max = rotations_for_tile(t)+1
+      orientations = [1..max]
+      fisherYates(orientations)
+      for orientation in orientations
+        i++
+        x = slot[0]
+        y = slot[1]
+        [north, east, south, west, name] = rotate_tile(t, color, orientation)
 
-    north_tile = board.tile_at(x, y+1)
-    east_tile = board.tile_at(x+1, y)
-    south_tile = board.tile_at(x, y-1)
-    west_tile = board.tile_at(x-1, y)
-    fits = true
-    if north_tile && (north_tile.south != north)
-      fits = false
-    if east_tile && (east_tile.west != east)
-      fits = false
-    if south_tile && (south_tile.north != south)
-      fits = false
-    if west_tile && (west_tile.east != west)
-      fits = false
+        north_tile = board.tile_at(x, y+1)
+        east_tile = board.tile_at(x+1, y)
+        south_tile = board.tile_at(x, y-1)
+        west_tile = board.tile_at(x-1, y)
+        fits = true
+        if north_tile && (north_tile.south != north)
+          fits = false
+        if east_tile && (east_tile.west != east)
+          fits = false
+        if south_tile && (south_tile.north != south)
+          fits = false
+        if west_tile && (west_tile.east != west)
+          fits = false
 
-    if fits
-      tile = new Tile "images/#{name}", x, y, north, east, south, west
-      board.add_tile(tile)
-    else
-      if count < 10
-        insert_tile(color, t, count+1)
-      else
-        console.log 'ran out of tries'
+        if fits
+          tile = new Tile "images/#{name}", x, y, north, east, south, west
+          board.add_tile(tile)
+          last_was_placeable = true
+          return true
+    unplaceable.push [color, t]
+    last_was_placeable = false
+    return false
 
   timer = setInterval (->
-    if tile_stack.length <= 1
-      console.log 'Placing the last tile'
+    if @stop
+      console.log 'Stopping as requested'
       clearInterval(timer)
-    insert_tile.apply(@,tile_stack.pop())
-  ), 100
+    if tile_stack.length == 0 && (!last_was_placeable || unplaceable.length == 0 )
+      console.log 'Placed the last tile'
+      console.log tile_stack
+      console.log unplaceable
+      clearInterval(timer)
+    if unplaceable.length > 0 && last_was_placeable
+      next_tile = unplaceable.pop()
+    else
+      next_tile = tile_stack.pop()
+    insert_tile.apply(@,next_tile)
+  ), interval
 
 fisherYates = (arr) ->
   i = arr.length
@@ -169,14 +196,17 @@ $(document).ready ->
       '2-straight': parseInt($('.2-straight').val()) || 0
       '2-turn': parseInt($('.2-turn').val()) || 0
     }
-    console.log tiles
     build_map(tiles)
 
 build_map = (tiles)->
   canvas = document.getElementById('my_canvas')
   context = canvas.getContext('2d')
-  context.clearRect( 0, 0, 2057, 2057)
-  colors = ['green', 'yellow', 'red']
-  board = new Board context
-  board.add_start_tile()
-  lay_random_tiles(colors, tiles, board)
+
+  @stop = true
+  setTimeout (->
+    context.clearRect( 0, 0, 2057, 2057)
+    colors = ['green', 'yellow', 'red']
+    board = new Board context
+    board.add_start_tile()
+    lay_random_tiles(colors, tiles, board)
+  ), interval + 10
