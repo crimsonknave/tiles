@@ -72,7 +72,7 @@
       i = 0;
       for (_k = 0, _len1 = slots.length; _k < _len1; _k++) {
         slot = slots[_k];
-        max = rotations_for_tile(t) + 1;
+        max = rotations_for_tile(t);
         orientations = (function() {
           _results = [];
           for (var _l = 1; 1 <= max ? _l <= max : _l >= max; 1 <= max ? _l++ : _l--){ _results.push(_l); }
