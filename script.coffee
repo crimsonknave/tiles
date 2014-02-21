@@ -15,6 +15,7 @@ lay_random_tiles = (colors, tiles, board) ->
 
   rotations_for_tile = (t)->
     rotations = {
+      '1': 4,
       '2-straight': 2,
       '2-turn': 4,
       '3': 4,
@@ -24,6 +25,11 @@ lay_random_tiles = (colors, tiles, board) ->
 
   rotate_tile = (t, color, orientation)->
     switch t
+      when '1'
+        east = orientation == 3
+        west = orientation == 1
+        north = orientation == 2
+        south = orientation == 4
       when '2-straight'
         east = orientation == 1
         west = orientation == 1
@@ -191,10 +197,11 @@ class Board
 $(document).ready ->
   $('.submit').click ->
     tiles = {
-      '4': parseInt($('.4').val()) || 0
-      '3': parseInt($('.3').val()) || 0
-      '2-straight': parseInt($('.2-straight').val()) || 0
-      '2-turn': parseInt($('.2-turn').val()) || 0
+      '4': parseInt($('.4').val()) || 0,
+      '3': parseInt($('.3').val()) || 0,
+      '2-straight': parseInt($('.2-straight').val()) || 0,
+      '2-turn': parseInt($('.2-turn').val()) || 0,
+      '1': parseInt($('.1').val()) || 0
     }
     build_map(tiles)
 
