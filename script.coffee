@@ -9,7 +9,7 @@ lay_random_tiles = (tiles, board) ->
   fisherYates(tile_stack)
 
   #for t in tile_stack
-  insert_tile = (t) ->
+  insert_tile = (t, count=0) ->
     slots = board.find_valid_openings()
     # Need to rework this whole thing
     # Right now it's finding all edges that have an opening
@@ -41,13 +41,13 @@ lay_random_tiles = (tiles, board) ->
         south = true
 
     north_tile = board.tile_at(x, y+1)
-    console.log north_tile
+    console.log "north: #{north_tile}"
     east_tile = board.tile_at(x+1, y)
-    console.log east_tile
+    console.log "east: #{east_tile}"
     south_tile = board.tile_at(x, y-1)
-    console.log south_tile
-    west_tile = board.tile_at(x-1, y-1)
-    console.log west_tile
+    console.log "south: #{south_tile}"
+    west_tile = board.tile_at(x-1, y)
+    console.log "west: #{west_tile}"
     console.log '--------'
     fits = true
     if north_tile && (north_tile.south != north)
@@ -66,13 +66,16 @@ lay_random_tiles = (tiles, board) ->
       console.log "did not fit at x: #{x} y: #{y}"
       console.log t
       console.log '--------'
-      insert_tile(t)
+      if count < 10
+        insert_tile(t, count+1)
+      else
+        console.log 'ran out of tries'
   timer = setInterval (->
     if tile_stack.length == 1
       console.log 'Placed the last tile'
       clearInterval(timer)
     insert_tile(tile_stack.pop())
-  ), 1000
+  ), 100
 
 fisherYates = (arr) ->
   i = arr.length
@@ -101,6 +104,8 @@ class Board
   constructor: (@context)->
     @tiles = {}
     @count = 0
+    @x = 5
+    @y = 5
 
   add_start_tile: ->
     start_tile = new Tile 'start.png', 0, 0, true, true, true, true
@@ -122,6 +127,9 @@ class Board
 
     tile.draw(@context)
 
+  wall_at: (x,y)->
+    Math.abs(x) > @x || Math.abs(y) > @y
+
   tile_at: (x,y)->
     exists = false
     ys = @tiles[x]
@@ -138,16 +146,16 @@ class Board
       for y, tile of tiles
         if tile.north
           coords = [tile.x,tile.y+1]
-          openings.push coords unless @tile_at.apply @, coords
+          openings.push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.east
           coords = [tile.x+1,tile.y]
-          openings.push coords unless @tile_at.apply @, coords
+          openings.push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.south
           coords = [tile.x,tile.y-1]
-          openings.push coords unless @tile_at.apply @, coords
+          openings.push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.west
           coords = [tile.x-1,tile.y]
-          openings.push coords unless @tile_at.apply @, coords
+          openings.push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
     return openings
 
 
@@ -156,11 +164,10 @@ $(document).ready ->
   context = canvas.getContext('2d')
   tiles = {
     blue: {
-      #'3': 4
-      '4': 0,
-      '3': 0,
-      '2-straight': 0,
-      '2-turn': 2
+      '4': 10,
+      '3': 12,
+      '2-straight': 15,
+      '2-turn': 20
     }
   }
   board = new Board context

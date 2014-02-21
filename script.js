@@ -17,8 +17,11 @@
       }
     }
     fisherYates(tile_stack);
-    insert_tile = function(t) {
+    insert_tile = function(t, count) {
       var east, east_tile, fits, north, north_tile, selected_slot, slots, south, south_tile, tile, west, west_tile, x, y;
+      if (count == null) {
+        count = 0;
+      }
       slots = board.find_valid_openings();
       selected_slot = slots[Math.floor(Math.random() * slots.length)];
       x = selected_slot[0];
@@ -49,13 +52,13 @@
           south = true;
       }
       north_tile = board.tile_at(x, y + 1);
-      console.log(north_tile);
+      console.log("north: " + north_tile);
       east_tile = board.tile_at(x + 1, y);
-      console.log(east_tile);
+      console.log("east: " + east_tile);
       south_tile = board.tile_at(x, y - 1);
-      console.log(south_tile);
-      west_tile = board.tile_at(x - 1, y - 1);
-      console.log(west_tile);
+      console.log("south: " + south_tile);
+      west_tile = board.tile_at(x - 1, y);
+      console.log("west: " + west_tile);
       console.log('--------');
       fits = true;
       if (north_tile && (north_tile.south !== north)) {
@@ -77,7 +80,11 @@
         console.log("did not fit at x: " + x + " y: " + y);
         console.log(t);
         console.log('--------');
-        return insert_tile(t);
+        if (count < 10) {
+          return insert_tile(t, count + 1);
+        } else {
+          return console.log('ran out of tries');
+        }
       }
     };
     return timer = setInterval((function() {
@@ -86,7 +93,7 @@
         clearInterval(timer);
       }
       return insert_tile(tile_stack.pop());
-    }), 1000);
+    }), 100);
   };
 
   fisherYates = function(arr) {
@@ -136,6 +143,8 @@
       this.context = context;
       this.tiles = {};
       this.count = 0;
+      this.x = 5;
+      this.y = 5;
     }
 
     Board.prototype.add_start_tile = function() {
@@ -162,6 +171,10 @@
       return tile.draw(this.context);
     };
 
+    Board.prototype.wall_at = function(x, y) {
+      return Math.abs(x) > this.x || Math.abs(y) > this.y;
+    };
+
     Board.prototype.tile_at = function(x, y) {
       var exists, ys;
       exists = false;
@@ -186,25 +199,25 @@
           tile = tiles[y];
           if (tile.north) {
             coords = [tile.x, tile.y + 1];
-            if (!this.tile_at.apply(this, coords)) {
+            if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
               openings.push(coords);
             }
           }
           if (tile.east) {
             coords = [tile.x + 1, tile.y];
-            if (!this.tile_at.apply(this, coords)) {
+            if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
               openings.push(coords);
             }
           }
           if (tile.south) {
             coords = [tile.x, tile.y - 1];
-            if (!this.tile_at.apply(this, coords)) {
+            if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
               openings.push(coords);
             }
           }
           if (tile.west) {
             coords = [tile.x - 1, tile.y];
-            if (!this.tile_at.apply(this, coords)) {
+            if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
               openings.push(coords);
             }
           }
@@ -223,10 +236,10 @@
     context = canvas.getContext('2d');
     tiles = {
       blue: {
-        '4': 0,
-        '3': 0,
-        '2-straight': 0,
-        '2-turn': 2
+        '4': 10,
+        '3': 12,
+        '2-straight': 15,
+        '2-turn': 20
       }
     };
     board = new Board(context);
