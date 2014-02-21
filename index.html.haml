@@ -4,4 +4,21 @@
     %script{src: 'jquery-1.10.2.js', type: 'text/javascript'}
     %script{src: 'script.js', type: 'text/javascript'}
   %body
-    %canvas{id: 'my_canvas', width: 2000, height: 2000}
+    .options
+      %ul.config
+        %li
+          2 Straight: 
+          %input.2-straight{type: :text}
+        %li
+          2 Turn:
+          %input.2-turn{type: :text}
+        %li
+          3:
+          %input.3{type: :text}
+        %li
+          4:
+          %input.4{type: :text}
+        %li
+          %input.submit{type: :submit, value: 'Generate'}
+
+    %canvas{id: 'my_canvas', width: 2057, height: 2057}

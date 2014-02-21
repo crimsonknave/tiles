@@ -1,15 +1,46 @@
 $ = jQuery
-lay_random_tiles = (tiles, board) ->
+lay_random_tiles = (colors, tiles, board) ->
   tile_stack = []
-  for color, types of tiles
-    for type, num of types
+  unplaceable = []
+  for color in colors.reverse()
+    stack = []
+    for type, num of tiles
       for i in [1..num] by 1
-        tile_stack.push "#{color}#{type}.png"
+        stack.push [color, type]
+    fisherYates(stack)
+    tile_stack = tile_stack.concat stack
+  console.log tile_stack
 
-  fisherYates(tile_stack)
+  rotate_tile = (t, color)->
+    switch t
+      when '2-straight'
+        rand = Math.floor(Math.random()*2)+1
+        east = rand == 1
+        west = rand == 1
+        north = rand == 2
+        south = rand == 2
+      when '2-turn'
+        rand = Math.floor(Math.random()*4)+1
+        east = rand == 1 || rand == 4
+        west = rand == 2 || rand == 3
+        north = rand == 3 || rand == 4
+        south = rand == 1 || rand == 2
+      when '3'
+        rand = Math.floor(Math.random()*4)+1
+        east = rand == 1 || rand == 2 || rand == 3
+        west = rand == 1 || rand == 3 || rand == 4
+        north = rand == 1 || rand == 2 || rand == 4
+        south = rand == 2 || rand == 3 || rand == 4
+      when '4'
+        rand = 1
+        east = true
+        west = true
+        north = true
+        south = true
+    name = "#{color}#{t}-#{rand}.png"
+    return [north, east, south, west, name]
 
-  #for t in tile_stack
-  insert_tile = (t, count=0) ->
+  insert_tile = (color, t, count=0) ->
     slots = board.find_valid_openings()
     # Need to rework this whole thing
     # Right now it's finding all edges that have an opening
@@ -18,37 +49,12 @@ lay_random_tiles = (tiles, board) ->
     selected_slot = slots[Math.floor(Math.random()*slots.length)]
     x = selected_slot[0]
     y = selected_slot[1]
-    switch t
-      when 'blue2-straight.png'
-        east = true
-        west = true
-        north = false
-        south = false
-      when 'blue2-turn.png'
-        east = true
-        west = false
-        north = true
-        south = false
-      when 'blue3.png'
-        east = true
-        west = true
-        north = true
-        south = false
-      when 'blue4.png'
-        east = true
-        west = true
-        north = true
-        south = true
+    [north, east, south, west, name] = rotate_tile(t, color)
 
     north_tile = board.tile_at(x, y+1)
-    console.log "north: #{north_tile}"
     east_tile = board.tile_at(x+1, y)
-    console.log "east: #{east_tile}"
     south_tile = board.tile_at(x, y-1)
-    console.log "south: #{south_tile}"
     west_tile = board.tile_at(x-1, y)
-    console.log "west: #{west_tile}"
-    console.log '--------'
     fits = true
     if north_tile && (north_tile.south != north)
       fits = false
@@ -60,21 +66,19 @@ lay_random_tiles = (tiles, board) ->
       fits = false
 
     if fits
-      tile = new Tile t, x, y, north, east, south, west
+      tile = new Tile "images/#{name}", x, y, north, east, south, west
       board.add_tile(tile)
     else
-      console.log "did not fit at x: #{x} y: #{y}"
-      console.log t
-      console.log '--------'
       if count < 10
-        insert_tile(t, count+1)
+        insert_tile(color, t, count+1)
       else
         console.log 'ran out of tries'
+
   timer = setInterval (->
-    if tile_stack.length == 1
-      console.log 'Placed the last tile'
+    if tile_stack.length <= 1
+      console.log 'Placing the last tile'
       clearInterval(timer)
-    insert_tile(tile_stack.pop())
+    insert_tile.apply(@,tile_stack.pop())
   ), 100
 
 fisherYates = (arr) ->
@@ -87,15 +91,14 @@ fisherYates = (arr) ->
 
 class Tile
   constructor: (@image, @x, @y, @north, @east, @south, @west) ->
-    @offset = 7
+    @offset = 8
 
   draw: (context) ->
-    console.log "drawing #{@image}, at #{@x}x#{@y}"
     @img = new Image
     @img.setAtX=@x+@offset
     @img.setAtY=-1*@y+@offset
     @img.onload = ->
-      context.drawImage(this,this.setAtX*100,this.setAtY*100, 100,100)
+      context.drawImage(this,this.setAtX*121,this.setAtY*121, 121,121)
     @img.src = @image
     return this
 
@@ -104,15 +107,14 @@ class Board
   constructor: (@context)->
     @tiles = {}
     @count = 0
-    @x = 5
-    @y = 5
+    @x = 8
+    @y = 8
 
   add_start_tile: ->
-    start_tile = new Tile 'start.png', 0, 0, true, true, true, true
+    start_tile = new Tile 'images/start.png', 0, 0, true, true, true, true
     @add_tile(start_tile)
 
   add_tile: (tile)->
-    console.log 'tile_at'
     return false if @tile_at tile.x, tile.y
 
     if @tiles[tile.x]
@@ -160,16 +162,21 @@ class Board
 
 
 $(document).ready ->
+  $('.submit').click ->
+    tiles = {
+      '4': parseInt($('.4').val()) || 0
+      '3': parseInt($('.3').val()) || 0
+      '2-straight': parseInt($('.2-straight').val()) || 0
+      '2-turn': parseInt($('.2-turn').val()) || 0
+    }
+    console.log tiles
+    build_map(tiles)
+
+build_map = (tiles)->
   canvas = document.getElementById('my_canvas')
   context = canvas.getContext('2d')
-  tiles = {
-    blue: {
-      '4': 10,
-      '3': 12,
-      '2-straight': 15,
-      '2-turn': 20
-    }
-  }
+  context.clearRect( 0, 0, 2057, 2057)
+  colors = ['green', 'yellow', 'red']
   board = new Board context
   board.add_start_tile()
-  lay_random_tiles(tiles, board)
+  lay_random_tiles(colors, tiles, board)
