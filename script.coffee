@@ -4,9 +4,38 @@ lay_random_tiles = (tiles, board) ->
   for color, types of tiles
     for type, num of types
       for i in [1..num] by 1
-        tile_stack.push "#{color}#{type}.png"
+        tile_stack.push "#{color}#{type}"
 
   fisherYates(tile_stack)
+
+  rotate_tile = (t)->
+    switch t
+      when 'blue2-straight'
+        rand = Math.floor(Math.random()*2)+1
+        east = rand == 1
+        west = rand == 1
+        north = rand == 2
+        south = rand == 2
+      when 'blue2-turn'
+        rand = Math.floor(Math.random()*4)+1
+        east = rand == 1 || rand == 4
+        west = rand == 2 || rand == 3
+        north = rand == 3 || rand == 4
+        south = rand == 1 || rand == 2
+      when 'blue3'
+        rand = Math.floor(Math.random()*4)+1
+        east = rand == 1 || rand == 2 || rand == 3
+        west = rand == 1 || rand == 3 || rand == 4
+        north = rand == 1 || rand == 2 || rand == 4
+        south = rand == 2 || rand == 3 || rand == 4
+      when 'blue4'
+        rand = 1
+        east = true
+        west = true
+        north = true
+        south = true
+    name = "#{t}-#{rand}.png"
+    return [north, east, south, west, name]
 
   #for t in tile_stack
   insert_tile = (t, count=0) ->
@@ -18,37 +47,12 @@ lay_random_tiles = (tiles, board) ->
     selected_slot = slots[Math.floor(Math.random()*slots.length)]
     x = selected_slot[0]
     y = selected_slot[1]
-    switch t
-      when 'blue2-straight.png'
-        east = true
-        west = true
-        north = false
-        south = false
-      when 'blue2-turn.png'
-        east = true
-        west = false
-        north = true
-        south = false
-      when 'blue3.png'
-        east = true
-        west = true
-        north = true
-        south = false
-      when 'blue4.png'
-        east = true
-        west = true
-        north = true
-        south = true
+    [north, east, south, west, name] = rotate_tile(t)
 
     north_tile = board.tile_at(x, y+1)
-    console.log "north: #{north_tile}"
     east_tile = board.tile_at(x+1, y)
-    console.log "east: #{east_tile}"
     south_tile = board.tile_at(x, y-1)
-    console.log "south: #{south_tile}"
     west_tile = board.tile_at(x-1, y)
-    console.log "west: #{west_tile}"
-    console.log '--------'
     fits = true
     if north_tile && (north_tile.south != north)
       fits = false
@@ -60,19 +64,17 @@ lay_random_tiles = (tiles, board) ->
       fits = false
 
     if fits
-      tile = new Tile t, x, y, north, east, south, west
+      tile = new Tile name, x, y, north, east, south, west
       board.add_tile(tile)
     else
-      console.log "did not fit at x: #{x} y: #{y}"
-      console.log t
-      console.log '--------'
       if count < 10
         insert_tile(t, count+1)
       else
         console.log 'ran out of tries'
+
   timer = setInterval (->
     if tile_stack.length == 1
-      console.log 'Placed the last tile'
+      console.log 'Placing the last tile'
       clearInterval(timer)
     insert_tile(tile_stack.pop())
   ), 100
@@ -90,12 +92,11 @@ class Tile
     @offset = 7
 
   draw: (context) ->
-    console.log "drawing #{@image}, at #{@x}x#{@y}"
     @img = new Image
     @img.setAtX=@x+@offset
     @img.setAtY=-1*@y+@offset
     @img.onload = ->
-      context.drawImage(this,this.setAtX*100,this.setAtY*100, 100,100)
+      context.drawImage(this,this.setAtX*121,this.setAtY*121, 121,121)
     @img.src = @image
     return this
 
@@ -112,7 +113,6 @@ class Board
     @add_tile(start_tile)
 
   add_tile: (tile)->
-    console.log 'tile_at'
     return false if @tile_at tile.x, tile.y
 
     if @tiles[tile.x]
