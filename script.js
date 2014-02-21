@@ -4,55 +4,59 @@
 
   $ = jQuery;
 
-  lay_random_tiles = function(tiles, board) {
-    var color, i, insert_tile, num, rotate_tile, tile_stack, timer, type, types, _i;
+  lay_random_tiles = function(colors, tiles, board) {
+    var color, i, insert_tile, num, rotate_tile, stack, tile_stack, timer, type, unplaceable, _i, _j, _len, _ref;
     tile_stack = [];
-    for (color in tiles) {
-      types = tiles[color];
-      for (type in types) {
-        num = types[type];
-        for (i = _i = 1; _i <= num; i = _i += 1) {
-          tile_stack.push("" + color + type);
+    unplaceable = [];
+    _ref = colors.reverse();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      color = _ref[_i];
+      stack = [];
+      for (type in tiles) {
+        num = tiles[type];
+        for (i = _j = 1; _j <= num; i = _j += 1) {
+          stack.push([color, type]);
         }
       }
+      fisherYates(stack);
+      tile_stack = tile_stack.concat(stack);
     }
-    fisherYates(tile_stack);
-    rotate_tile = function(t) {
+    rotate_tile = function(t, color) {
       var east, name, north, rand, south, west;
       switch (t) {
-        case 'blue2-straight':
+        case '2-straight':
           rand = Math.floor(Math.random() * 2) + 1;
           east = rand === 1;
           west = rand === 1;
           north = rand === 2;
           south = rand === 2;
           break;
-        case 'blue2-turn':
+        case '2-turn':
           rand = Math.floor(Math.random() * 4) + 1;
           east = rand === 1 || rand === 4;
           west = rand === 2 || rand === 3;
           north = rand === 3 || rand === 4;
           south = rand === 1 || rand === 2;
           break;
-        case 'blue3':
+        case '3':
           rand = Math.floor(Math.random() * 4) + 1;
           east = rand === 1 || rand === 2 || rand === 3;
           west = rand === 1 || rand === 3 || rand === 4;
           north = rand === 1 || rand === 2 || rand === 4;
           south = rand === 2 || rand === 3 || rand === 4;
           break;
-        case 'blue4':
+        case '4':
           rand = 1;
           east = true;
           west = true;
           north = true;
           south = true;
       }
-      name = "" + t + "-" + rand + ".png";
+      name = "" + color + t + "-" + rand + ".png";
       return [north, east, south, west, name];
     };
-    insert_tile = function(t, count) {
-      var east, east_tile, fits, name, north, north_tile, selected_slot, slots, south, south_tile, tile, west, west_tile, x, y, _ref;
+    insert_tile = function(color, t, count) {
+      var east, east_tile, fits, name, north, north_tile, selected_slot, slots, south, south_tile, tile, west, west_tile, x, y, _ref1;
       if (count == null) {
         count = 0;
       }
@@ -60,7 +64,7 @@
       selected_slot = slots[Math.floor(Math.random() * slots.length)];
       x = selected_slot[0];
       y = selected_slot[1];
-      _ref = rotate_tile(t), north = _ref[0], east = _ref[1], south = _ref[2], west = _ref[3], name = _ref[4];
+      _ref1 = rotate_tile(t, color), north = _ref1[0], east = _ref1[1], south = _ref1[2], west = _ref1[3], name = _ref1[4];
       north_tile = board.tile_at(x, y + 1);
       east_tile = board.tile_at(x + 1, y);
       south_tile = board.tile_at(x, y - 1);
@@ -79,11 +83,11 @@
         fits = false;
       }
       if (fits) {
-        tile = new Tile(name, x, y, north, east, south, west);
+        tile = new Tile("images/" + name, x, y, north, east, south, west);
         return board.add_tile(tile);
       } else {
         if (count < 10) {
-          return insert_tile(t, count + 1);
+          return insert_tile(color, t, count + 1);
         } else {
           return console.log('ran out of tries');
         }
@@ -94,7 +98,7 @@
         console.log('Placing the last tile');
         clearInterval(timer);
       }
-      return insert_tile(tile_stack.pop());
+      return insert_tile.apply(this, tile_stack.pop());
     }), 100);
   };
 
@@ -121,7 +125,7 @@
       this.east = east;
       this.south = south;
       this.west = west;
-      this.offset = 7;
+      this.offset = 8;
     }
 
     Tile.prototype.draw = function(context) {
@@ -144,13 +148,13 @@
       this.context = context;
       this.tiles = {};
       this.count = 0;
-      this.x = 5;
-      this.y = 5;
+      this.x = 8;
+      this.y = 8;
     }
 
     Board.prototype.add_start_tile = function() {
       var start_tile;
-      start_tile = new Tile('start.png', 0, 0, true, true, true, true);
+      start_tile = new Tile('images/start.png', 0, 0, true, true, true, true);
       return this.add_tile(start_tile);
     };
 
@@ -231,20 +235,19 @@
   })();
 
   $(document).ready(function() {
-    var board, canvas, context, tiles;
+    var board, canvas, colors, context, tiles;
     canvas = document.getElementById('my_canvas');
     context = canvas.getContext('2d');
+    colors = ['green', 'yellow', 'red'];
     tiles = {
-      blue: {
-        '4': 10,
-        '3': 12,
-        '2-straight': 15,
-        '2-turn': 20
-      }
+      '4': 10,
+      '3': 12,
+      '2-straight': 15,
+      '2-turn': 20
     };
     board = new Board(context);
     board.add_start_tile();
-    return lay_random_tiles(tiles, board);
+    return lay_random_tiles(colors, tiles, board);
   });
 
 }).call(this);

@@ -1,44 +1,45 @@
 $ = jQuery
-lay_random_tiles = (tiles, board) ->
+lay_random_tiles = (colors, tiles, board) ->
   tile_stack = []
-  for color, types of tiles
-    for type, num of types
+  unplaceable = []
+  for color in colors.reverse()
+    stack = []
+    for type, num of tiles
       for i in [1..num] by 1
-        tile_stack.push "#{color}#{type}"
+        stack.push [color, type]
+    fisherYates(stack)
+    tile_stack = tile_stack.concat stack
 
-  fisherYates(tile_stack)
-
-  rotate_tile = (t)->
+  rotate_tile = (t, color)->
     switch t
-      when 'blue2-straight'
+      when '2-straight'
         rand = Math.floor(Math.random()*2)+1
         east = rand == 1
         west = rand == 1
         north = rand == 2
         south = rand == 2
-      when 'blue2-turn'
+      when '2-turn'
         rand = Math.floor(Math.random()*4)+1
         east = rand == 1 || rand == 4
         west = rand == 2 || rand == 3
         north = rand == 3 || rand == 4
         south = rand == 1 || rand == 2
-      when 'blue3'
+      when '3'
         rand = Math.floor(Math.random()*4)+1
         east = rand == 1 || rand == 2 || rand == 3
         west = rand == 1 || rand == 3 || rand == 4
         north = rand == 1 || rand == 2 || rand == 4
         south = rand == 2 || rand == 3 || rand == 4
-      when 'blue4'
+      when '4'
         rand = 1
         east = true
         west = true
         north = true
         south = true
-    name = "#{t}-#{rand}.png"
+    name = "#{color}#{t}-#{rand}.png"
     return [north, east, south, west, name]
 
-  #for t in tile_stack
-  insert_tile = (t, count=0) ->
+  insert_tile = (color, t, count=0) ->
     slots = board.find_valid_openings()
     # Need to rework this whole thing
     # Right now it's finding all edges that have an opening
@@ -47,7 +48,7 @@ lay_random_tiles = (tiles, board) ->
     selected_slot = slots[Math.floor(Math.random()*slots.length)]
     x = selected_slot[0]
     y = selected_slot[1]
-    [north, east, south, west, name] = rotate_tile(t)
+    [north, east, south, west, name] = rotate_tile(t, color)
 
     north_tile = board.tile_at(x, y+1)
     east_tile = board.tile_at(x+1, y)
@@ -64,11 +65,11 @@ lay_random_tiles = (tiles, board) ->
       fits = false
 
     if fits
-      tile = new Tile name, x, y, north, east, south, west
+      tile = new Tile "images/#{name}", x, y, north, east, south, west
       board.add_tile(tile)
     else
       if count < 10
-        insert_tile(t, count+1)
+        insert_tile(color, t, count+1)
       else
         console.log 'ran out of tries'
 
@@ -76,7 +77,7 @@ lay_random_tiles = (tiles, board) ->
     if tile_stack.length == 1
       console.log 'Placing the last tile'
       clearInterval(timer)
-    insert_tile(tile_stack.pop())
+    insert_tile.apply(@,tile_stack.pop())
   ), 100
 
 fisherYates = (arr) ->
@@ -89,7 +90,7 @@ fisherYates = (arr) ->
 
 class Tile
   constructor: (@image, @x, @y, @north, @east, @south, @west) ->
-    @offset = 7
+    @offset = 8
 
   draw: (context) ->
     @img = new Image
@@ -105,11 +106,11 @@ class Board
   constructor: (@context)->
     @tiles = {}
     @count = 0
-    @x = 5
-    @y = 5
+    @x = 8
+    @y = 8
 
   add_start_tile: ->
-    start_tile = new Tile 'start.png', 0, 0, true, true, true, true
+    start_tile = new Tile 'images/start.png', 0, 0, true, true, true, true
     @add_tile(start_tile)
 
   add_tile: (tile)->
@@ -162,14 +163,13 @@ class Board
 $(document).ready ->
   canvas = document.getElementById('my_canvas')
   context = canvas.getContext('2d')
+  colors = ['green', 'yellow', 'red']
   tiles = {
-    blue: {
-      '4': 10,
-      '3': 12,
-      '2-straight': 15,
-      '2-turn': 20
-    }
+    '4': 10,
+    '3': 12,
+    '2-straight': 15,
+    '2-turn': 20
   }
   board = new Board context
   board.add_start_tile()
-  lay_random_tiles(tiles, board)
+  lay_random_tiles(colors, tiles, board)
