@@ -28,6 +28,7 @@
     rotations_for_tile = function(t) {
       var rotations;
       rotations = {
+        '1': 4,
         '2-straight': 2,
         '2-turn': 4,
         '3': 4,
@@ -38,6 +39,12 @@
     rotate_tile = function(t, color, orientation) {
       var east, name, north, south, west;
       switch (t) {
+        case '1':
+          east = orientation === 3;
+          west = orientation === 1;
+          north = orientation === 2;
+          south = orientation === 4;
+          break;
         case '2-straight':
           east = orientation === 1;
           west = orientation === 1;
@@ -274,7 +281,8 @@
         '4': parseInt($('.4').val()) || 0,
         '3': parseInt($('.3').val()) || 0,
         '2-straight': parseInt($('.2-straight').val()) || 0,
-        '2-turn': parseInt($('.2-turn').val()) || 0
+        '2-turn': parseInt($('.2-turn').val()) || 0,
+        '1': parseInt($('.1').val()) || 0
       };
       return build_map(tiles);
     });
