@@ -214,7 +214,7 @@ $(document).ready ->
     @lnk = document.createElement('a') unless @lnk
     @lnk.download = 'map.png'
     @lnk.href = image
-    @lnk.click
+    @lnk.click()
 
 
   $('.submit').click ->
