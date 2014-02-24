@@ -10,4 +10,12 @@
   .config li {
     display: inline;
     list-style-type: none;
-    padding: 5px; }
+    padding: 5px;
+    border-right: 1px dotted grey; }
+    .config li input {
+      width: 40px;
+      padding-left: 2px; }
+    .config li input.submit {
+      width: 70px; }
+  .config li:last-child {
+    border: none; }

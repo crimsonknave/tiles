@@ -1,7 +1,8 @@
 $ = jQuery
-interval = 100
-lay_random_tiles = (colors, tiles, board) ->
+lay_random_tiles = (colors, tiles, board, interval) ->
+  console.log 'laying tiles'
   @stop = false
+  @running = true
   tile_stack = []
   unplaceable = []
   last_was_placeable = true
@@ -90,7 +91,7 @@ lay_random_tiles = (colors, tiles, board) ->
           fits = false
 
         if fits
-          tile = new Tile "images/#{name}", x, y, north, east, south, west
+          tile = new Tile "images/#{name}", x, y, north, east, south, west, board.size
           board.add_tile(tile)
           last_was_placeable = true
           return true
@@ -102,11 +103,16 @@ lay_random_tiles = (colors, tiles, board) ->
     if @stop
       console.log 'Stopping as requested'
       clearInterval(timer)
+      @running = false
+      return false
     if tile_stack.length == 0 && (!last_was_placeable || unplaceable.length == 0 )
       console.log 'Placed the last tile'
       console.log tile_stack
       console.log unplaceable
+      console.log "Placed #{board.count} tiles"
       clearInterval(timer)
+      @running = false
+      console.log 'after'
     if unplaceable.length > 0 && last_was_placeable
       next_tile = unplaceable.pop()
     else
@@ -123,28 +129,35 @@ fisherYates = (arr) ->
     [arr[i], arr[j]] = [arr[j], arr[i]] # use pattern matching to swap
 
 class Tile
-  constructor: (@image, @x, @y, @north, @east, @south, @west) ->
-    @offset = 8
+  constructor: (@image, @x, @y, @north, @east, @south, @west, @size) ->
+    if @size == 121
+      @offset = 8
+    else
+      @offset = 16
 
   draw: (context) ->
     @img = new Image
     @img.setAtX=@x+@offset
     @img.setAtY=-1*@y+@offset
-    @img.onload = ->
-      context.drawImage(this,this.setAtX*121,this.setAtY*121, 121,121)
+    @img.onload = =>
+      context.drawImage(@img,@img.setAtX*@size,@img.setAtY*@size, @size,@size)
     @img.src = @image
     return this
 
 
 class Board
-  constructor: (@context)->
+  constructor: (@context, @size)->
     @tiles = {}
     @count = 0
-    @x = 8
-    @y = 8
+    if @size == 60
+      @x = 16
+      @y = 16
+    else
+      @x = 8
+      @y = 8
 
   add_start_tile: ->
-    start_tile = new Tile 'images/start.png', 0, 0, true, true, true, true
+    start_tile = new Tile 'images/start.png', 0, 0, true, true, true, true, @size
     @add_tile(start_tile)
 
   add_tile: (tile)->
@@ -195,7 +208,13 @@ class Board
 
 
 $(document).ready ->
+  $('.save').click ->
+    canvas = document.getElementById('my_canvas')
+    image = canvas.toDataURL('map.png').replace('image/png', 'image/octet-stream')
+    window.location.href = image
   $('.submit').click ->
+    size = parseInt($('.size').val())
+    interval = parseInt($('.interval').val())
     tiles = {
       '4': parseInt($('.4').val()) || 0,
       '3': parseInt($('.3').val()) || 0,
@@ -203,17 +222,22 @@ $(document).ready ->
       '2-turn': parseInt($('.2-turn').val()) || 0,
       '1': parseInt($('.1').val()) || 0
     }
-    build_map(tiles)
+    build_map(tiles, size, interval)
 
-build_map = (tiles)->
+build_map = (tiles, size, interval)->
   canvas = document.getElementById('my_canvas')
   context = canvas.getContext('2d')
 
   @stop = true
-  setTimeout (->
-    context.clearRect( 0, 0, 2057, 2057)
-    colors = ['green', 'yellow', 'red']
-    board = new Board context
-    board.add_start_tile()
-    lay_random_tiles(colors, tiles, board)
-  ), interval + 10
+  stopping = setInterval (->
+    if @running
+      console.log 'waiting for the previous draw to stop'
+    else
+      console.log 'starting to draw'
+      context.clearRect( 0, 0, 2057, 2057)
+      colors = ['green', 'yellow', 'red']
+      board = new Board context, size
+      board.add_start_tile()
+      lay_random_tiles(colors, tiles, board, interval)
+      clearInterval(stopping)
+  ), 10

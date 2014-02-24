@@ -13,5 +13,17 @@
     display: inline;
     list-style-type: none;
     padding: 5px;
+    border-right: 1px dotted grey;
+
+    input {
+      width: 40px;
+      padding-left: 2px;
+    }
+    input.submit {
+      width: 70px;
+    }
+  }
+  li:last-child {
+    border: none;
   }
 }

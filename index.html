@@ -9,26 +9,50 @@
       <ul class='config'>
         <li>
           1
-          <input class='1' type='text'>
+          <input class='1' type='text' value='4'>
         </li>
         <li>
           2 Straight:
-          <input class='2-straight' type='text'>
+          <input class='2-straight' type='text' value='5'>
         </li>
         <li>
           2 Turn:
-          <input class='2-turn' type='text'>
+          <input class='2-turn' type='text' value='5'>
         </li>
         <li>
           3:
-          <input class='3' type='text'>
+          <input class='3' type='text' value='1'>
         </li>
         <li>
           4:
-          <input class='4' type='text'>
+          <input class='4' type='text' value='3'>
+        </li>
+        <li>
+          Tile Size:
+          <select class='size'>
+            <option value='121'>Big</option>
+            <option selected value='60'>Small</option>
+          </select>
+        </li>
+        <li>
+          Speed:
+          <select class='interval'>
+            <option value='10'>10ms</option>
+            <option value='20'>20ms</option>
+            <option selected value='50'>50ms</option>
+            <option value='100'>100ms</option>
+            <option value='200'>200ms</option>
+            <option value='500'>500ms</option>
+            <option value='1000'>1s</option>
+            <option value='2000'>2s</option>
+            <option value='5000'>5s</option>
+          </select>
         </li>
         <li>
           <input class='submit' type='submit' value='Generate'>
+        </li>
+        <li>
+          <button class='save'>Save</button>
         </li>
       </ul>
     </div>
