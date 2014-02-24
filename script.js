@@ -296,7 +296,12 @@
       var canvas, image;
       canvas = document.getElementById('my_canvas');
       image = canvas.toDataURL('map.png').replace('image/png', 'image/octet-stream');
-      return window.location.href = image;
+      if (!this.lnk) {
+        this.lnk = document.createElement('a');
+      }
+      this.lnk.download = 'map.png';
+      this.lnk.href = image;
+      return this.lnk.click;
     });
     return $('.submit').click(function() {
       var interval, size, tiles;
