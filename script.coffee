@@ -211,7 +211,12 @@ $(document).ready ->
   $('.save').click ->
     canvas = document.getElementById('my_canvas')
     image = canvas.toDataURL('map.png').replace('image/png', 'image/octet-stream')
-    window.location.href = image
+    @lnk = document.createElement('a') unless @lnk
+    @lnk.download = 'map.png'
+    @lnk.href = image
+    @lnk.click
+
+
   $('.submit').click ->
     size = parseInt($('.size').val())
     interval = parseInt($('.interval').val())
