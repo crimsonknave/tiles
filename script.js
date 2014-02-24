@@ -301,7 +301,7 @@
       }
       this.lnk.download = 'map.png';
       this.lnk.href = image;
-      return this.lnk.click;
+      return this.lnk.click();
     });
     return $('.submit').click(function() {
       var interval, size, tiles;
