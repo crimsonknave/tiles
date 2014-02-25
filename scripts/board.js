@@ -130,6 +130,8 @@
         tile_stack = tile_stack.concat(stack);
       }
       $('span.max').text(tile_stack.length);
+      $('span.min').removeClass('green');
+      $('span.min').removeClass('red');
       return timer = setInterval((function() {
         var next_tile;
         if (_this.stop_placing) {
@@ -145,7 +147,7 @@
           if (_this.unplaceable.length > 0) {
             $('span.min').addClass('red');
           } else {
-            $('span.min').removeClass('red');
+            $('span.min').addClass('green');
           }
           console.log("Placed " + _this.count + " tiles");
           clearInterval(timer);
