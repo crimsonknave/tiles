@@ -1,9 +1,16 @@
-class Tile
-  constructor: (@color, @type, @x, @y, @size, @board) ->
-    # Get a list of random orientations and pop the first
-    @orientations = @rotations
-    fisherYates(@orientations)
-    @rotate @orientations.pop()
+fisherYates = require('./fisher')
+module.exports = class Tile
+  constructor: (@color, @type, @size, @board) ->
+    if @color == 'start'
+      @name = 'images/start.png'
+      @x = 0
+      @y = 0
+      @set_exits()
+    else
+      # Get a list of random orientations and pop the first
+      @orientations = @rotations()
+      fisherYates(@orientations)
+      @rotate @orientations.pop()
 
     if @size == 121
       @offset = 8
@@ -97,9 +104,12 @@ class Tile
           fits = false
 
         if fits
+          @x = x
+          @y = y
           @board.add_tile(this)
           @board.last_was_placeable = true
           return true
+        break if @orientations.length == 0
         @rotate @orientations.pop()
     @board.unplaceable.push this
     @board.last_was_placeable = false
