@@ -90,6 +90,8 @@ module.exports = class Board
         console.log 'Placed the last tile'
         console.log tile_stack
         console.log @unplaceable
+        if @unplaceable.length > 0
+          $('span.min').addClass('red')
         console.log "Placed #{@count} tiles"
         clearInterval(timer)
         @running = false
