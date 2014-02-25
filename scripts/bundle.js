@@ -145,6 +145,8 @@
           console.log(_this.unplaceable);
           if (_this.unplaceable.length > 0) {
             $('span.min').addClass('red');
+          } else {
+            $('span.min').removeClass('red');
           }
           console.log("Placed " + _this.count + " tiles");
           clearInterval(timer);

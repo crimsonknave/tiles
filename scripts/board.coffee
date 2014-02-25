@@ -92,6 +92,9 @@ module.exports = class Board
         console.log @unplaceable
         if @unplaceable.length > 0
           $('span.min').addClass('red')
+        else
+          $('span.min').removeClass('red')
+
         console.log "Placed #{@count} tiles"
         clearInterval(timer)
         @running = false
