@@ -20,5 +20,8 @@
   .config li:last-child {
     border: none; }
 
+span.green {
+  color: green; }
+
 span.red {
   color: red; }

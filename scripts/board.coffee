@@ -80,6 +80,8 @@ module.exports = class Board
       tile_stack = tile_stack.concat stack
 
     $('span.max').text tile_stack.length
+    $('span.min').removeClass('green')
+    $('span.min').removeClass('red')
     timer = setInterval (=>
       if @stop_placing
         console.log 'Stopping as requested'
@@ -92,6 +94,9 @@ module.exports = class Board
         console.log @unplaceable
         if @unplaceable.length > 0
           $('span.min').addClass('red')
+        else
+          $('span.min').addClass('green')
+
         console.log "Placed #{@count} tiles"
         clearInterval(timer)
         @running = false
