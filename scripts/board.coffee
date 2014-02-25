@@ -1,4 +1,5 @@
 Tile = require './tile'
+$ = require './jquery-1.10.2'
 fisherYates = require './fisher'
 module.exports = class Board
   constructor: (@context, @size, @tile_list, @colors, @interval)->
@@ -78,6 +79,7 @@ module.exports = class Board
       fisherYates(stack)
       tile_stack = tile_stack.concat stack
 
+    $('span.max').text tile_stack.length
     timer = setInterval (=>
       if @stop_placing
         console.log 'Stopping as requested'
@@ -95,5 +97,7 @@ module.exports = class Board
         next_tile = @unplaceable.pop()
       else
         next_tile = tile_stack.pop()
-      next_tile.place() if next_tile
+      if next_tile
+        next_tile.place() 
+        $('span.min').text @count - 1
     ), @interval
