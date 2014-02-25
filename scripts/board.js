@@ -142,6 +142,9 @@
           console.log('Placed the last tile');
           console.log(tile_stack);
           console.log(_this.unplaceable);
+          if (_this.unplaceable.length > 0) {
+            $('span.min').addClass('red');
+          }
           console.log("Placed " + _this.count + " tiles");
           clearInterval(timer);
           _this.running = false;

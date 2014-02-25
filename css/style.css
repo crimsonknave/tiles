@@ -19,3 +19,6 @@
       width: 70px; }
   .config li:last-child {
     border: none; }
+
+span.red {
+  color: red; }
