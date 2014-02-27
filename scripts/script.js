@@ -43,13 +43,15 @@
       this.board.stop_placing = true;
     }
     return stopping = setInterval((function() {
-      var colors;
+      var colors, number_of_colors, selected_colors;
       if (this.board && this.board.running) {
 
       } else {
         context.clearRect(0, 0, 2057, 2057);
+        number_of_colors = $('select.colors').val();
         colors = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
-        this.board = new Board(context, size, tiles, colors, interval);
+        selected_colors = colors.slice(0, number_of_colors);
+        this.board = new Board(context, size, tiles, selected_colors, interval);
         this.board.add_start_tile();
         this.board.lay_tiles();
         return clearInterval(stopping);

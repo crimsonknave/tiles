@@ -35,8 +35,10 @@ build_map = (tiles, size, interval)->
     if @board && @board.running
     else
       context.clearRect( 0, 0, 2057, 2057)
+      number_of_colors = $('select.colors').val()
       colors = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']
-      @board = new Board context, size, tiles, colors, interval
+      selected_colors = colors.slice(0,number_of_colors)
+      @board = new Board context, size, tiles, selected_colors, interval
       @board.add_start_tile()
       @board.lay_tiles()
       clearInterval(stopping)
