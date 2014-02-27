@@ -48,7 +48,7 @@
 
       } else {
         context.clearRect(0, 0, 2057, 2057);
-        colors = ['green', 'yellow', 'red'];
+        colors = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
         this.board = new Board(context, size, tiles, colors, interval);
         this.board.add_start_tile();
         this.board.lay_tiles();
