@@ -21,7 +21,9 @@
     border: none; }
 
 span.green {
-  color: green; }
+  color: green;
+  font-weight: bold; }
 
 span.red {
-  color: red; }
+  color: red;
+  font-weight: bold; }
