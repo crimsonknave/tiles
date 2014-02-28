@@ -1,29 +1,44 @@
 #my_canvas {
   border: 1px solid black;
-  margin-top: 60px; }
+  margin: 0px; }
 
-.config {
+.options {
   position: fixed;
-  border: 1px solid black;
-  padding: 5px;
-  background: white; }
-  .config li {
-    display: inline;
-    list-style-type: none;
+  top: -8px;
+  left: 8px; }
+  .options .config {
+    border: 1px solid black;
     padding: 5px;
-    border-right: 1px dotted grey; }
-    .config li input {
-      width: 40px;
-      padding-left: 2px; }
-    .config li input.submit {
-      width: 70px; }
-  .config li:last-child {
-    border: none; }
+    background: white;
+    margin-bottom: 5px;
+    width: 140px; }
+    .options .config li {
+      display: block;
+      list-style-type: none;
+      padding: 5px;
+      border-bottom: 1px dotted grey; }
+      .options .config li input {
+        width: 40px;
+        padding-left: 2px; }
+      .options .config li input.submit {
+        width: 70px; }
+    .options .config li:last-child {
+      border: none; }
+  .options span.green {
+    color: green;
+    font-weight: bold; }
+  .options span.red {
+    color: red;
+    font-weight: bold; }
+  .options .hidden {
+    /*display: none;*/ }
+  .options .info {
+    border: 1px solid green;
+    position: fixed;
+    padding: 5px;
+    height: 140px;
+    width: 140px; }
 
-span.green {
-  color: green;
-  font-weight: bold; }
-
-span.red {
-  color: red;
-  font-weight: bold; }
+body {
+  width: 4000px;
+  height: 4000px; }

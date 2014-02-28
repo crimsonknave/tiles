@@ -1,37 +1,59 @@
 #my_canvas {
   border: 1px solid black;
-  margin-top: 60px;
+  margin: 0px;
 }
 
-.config {
+.options {
   position: fixed;
-  border: 1px solid black;
-  padding: 5px;
-  background: white;
-
-  li{
-    display: inline;
-    list-style-type: none;
+  top: -8px;
+  left: 8px;
+  .config {
+    border: 1px solid black;
     padding: 5px;
-    border-right: 1px dotted grey;
+    background: white;
+    margin-bottom: 5px;
+    width: 140px;
 
-    input {
-      width: 40px;
-      padding-left: 2px;
+    li{
+      display: block;
+      list-style-type: none;
+      padding: 5px;
+      border-bottom: 1px dotted grey;
+
+      input {
+        width: 40px;
+        padding-left: 2px;
+      }
+      input.submit {
+        width: 70px;
+      }
     }
-    input.submit {
-      width: 70px;
+    li:last-child {
+      border: none;
     }
   }
-  li:last-child {
-    border: none;
+  span.green{
+    color: green;
+    font-weight: bold;
+  }
+  span.red{
+    color: red;
+    font-weight: bold;
+  }
+
+  .hidden {
+    /*display: none;*/
+  }
+  .info {
+    border: 1px solid green;
+    position: fixed;
+    padding: 5px;
+    height: 140px;
+    width: 140px;
   }
 }
-span.green{
-  color: green;
-  font-weight: bold;
-}
-span.red{
-  color: red;
-  font-weight: bold;
+
+body {
+  width: 4000px;
+  height: 4000px;
 }
