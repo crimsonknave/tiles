@@ -1,7 +1,7 @@
 fisherYates = require('./fisher')
 module.exports = class Tile
-  constructor: (@color, @type, @size, @board) ->
-    if @color == 'start'
+  constructor: (@zone, @type, @size, @board) ->
+    if @zone == 'start'
       @name = 'images/start.png'
       @x = 0
       @y = 0
@@ -90,7 +90,7 @@ module.exports = class Tile
 
   rotate: (orientation) ->
     @orientation = orientation
-    @name = "images/#{@color}#{@type}-#{@orientation}.png"
+    @name = "images/#{@zone}#{@type}-#{@orientation}.png"
     @set_exits()
 
   # We iterate over all the slots
@@ -105,7 +105,7 @@ module.exports = class Tile
     slots = @board.find_valid_openings()
     other_slots = []
     for key, value of slots
-      if key == @color
+      if key == @zone
         if value.length > 0
           matching_slots = value
         else

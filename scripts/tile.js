@@ -6,13 +6,13 @@
   fisherYates = require('./fisher');
 
   module.exports = Tile = (function() {
-    function Tile(color, type, size, board) {
-      this.color = color;
+    function Tile(zone, type, size, board) {
+      this.zone = zone;
       this.type = type;
       this.size = size;
       this.board = board;
       this.toggle = __bind(this.toggle, this);
-      if (this.color === 'start') {
+      if (this.zone === 'start') {
         this.name = 'images/start.png';
         this.x = 0;
         this.y = 0;
@@ -115,7 +115,7 @@
 
     Tile.prototype.rotate = function(orientation) {
       this.orientation = orientation;
-      this.name = "images/" + this.color + this.type + "-" + this.orientation + ".png";
+      this.name = "images/" + this.zone + this.type + "-" + this.orientation + ".png";
       return this.set_exits();
     };
 
@@ -125,7 +125,7 @@
       other_slots = [];
       for (key in slots) {
         value = slots[key];
-        if (key === this.color) {
+        if (key === this.zone) {
           if (value.length > 0) {
             matching_slots = value;
           } else {

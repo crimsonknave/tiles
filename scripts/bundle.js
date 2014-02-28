@@ -10,11 +10,11 @@
   fisherYates = require('./fisher');
 
   module.exports = Board = (function() {
-    function Board(context, size, tile_list, colors, interval) {
+    function Board(context, size, tile_list, zones, interval) {
       this.context = context;
       this.size = size;
       this.tile_list = tile_list;
-      this.colors = colors;
+      this.zones = zones;
       this.interval = interval;
       this.tiles = {};
       this.count = 0;
@@ -99,25 +99,25 @@
           if (tile.north) {
             coords = [tile.x, tile.y + 1];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings[tile.color].push(coords);
+              openings[tile.zone].push(coords);
             }
           }
           if (tile.east) {
             coords = [tile.x + 1, tile.y];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings[tile.color].push(coords);
+              openings[tile.zone].push(coords);
             }
           }
           if (tile.south) {
             coords = [tile.x, tile.y - 1];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings[tile.color].push(coords);
+              openings[tile.zone].push(coords);
             }
           }
           if (tile.west) {
             coords = [tile.x - 1, tile.y];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings[tile.color].push(coords);
+              openings[tile.zone].push(coords);
             }
           }
         }
@@ -126,22 +126,22 @@
     };
 
     Board.prototype.lay_tiles = function() {
-      var color, i, num, stack, tile, tile_stack, timer, type, _i, _j, _len, _ref, _ref1,
+      var i, num, stack, tile, tile_stack, timer, type, zone, _i, _j, _len, _ref, _ref1,
         _this = this;
       this.stop_placing = false;
       this.running = true;
       tile_stack = [];
       this.unplaceable = [];
       this.last_was_placeable = true;
-      _ref = this.colors.reverse();
+      _ref = this.zones.reverse();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        color = _ref[_i];
+        zone = _ref[_i];
         stack = [];
         _ref1 = this.tile_list;
         for (type in _ref1) {
           num = _ref1[type];
           for (i = _j = 1; _j <= num; i = _j += 1) {
-            tile = new Tile(color, type, this.size, this);
+            tile = new Tile(zone, type, this.size, this);
             stack.push(tile);
           }
         }
@@ -10062,15 +10062,15 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
       board.stop_placing = true;
     }
     return stopping = setInterval((function() {
-      var colors, number_of_colors, selected_colors;
+      var number_of_zones, selected_zones, zones;
       if (board && board.running) {
 
       } else {
         context.clearRect(0, 0, 2057, 2057);
-        number_of_colors = $('select.colors').val();
-        colors = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
-        selected_colors = colors.slice(0, number_of_colors);
-        board = new Board(context, size, tiles, selected_colors, interval);
+        number_of_zones = $('select.zones').val();
+        zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
+        selected_zones = zones.slice(0, number_of_zones);
+        board = new Board(context, size, tiles, selected_zones, interval);
         board.add_start_tile();
         board.lay_tiles();
         return clearInterval(stopping);
@@ -10089,13 +10089,13 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
   fisherYates = require('./fisher');
 
   module.exports = Tile = (function() {
-    function Tile(color, type, size, board) {
-      this.color = color;
+    function Tile(zone, type, size, board) {
+      this.zone = zone;
       this.type = type;
       this.size = size;
       this.board = board;
       this.toggle = __bind(this.toggle, this);
-      if (this.color === 'start') {
+      if (this.zone === 'start') {
         this.name = 'images/start.png';
         this.x = 0;
         this.y = 0;
@@ -10198,7 +10198,7 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
 
     Tile.prototype.rotate = function(orientation) {
       this.orientation = orientation;
-      this.name = "images/" + this.color + this.type + "-" + this.orientation + ".png";
+      this.name = "images/" + this.zone + this.type + "-" + this.orientation + ".png";
       return this.set_exits();
     };
 
@@ -10208,7 +10208,7 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
       other_slots = [];
       for (key in slots) {
         value = slots[key];
-        if (key === this.color) {
+        if (key === this.zone) {
           if (value.length > 0) {
             matching_slots = value;
           } else {

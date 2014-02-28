@@ -56,15 +56,15 @@
       board.stop_placing = true;
     }
     return stopping = setInterval((function() {
-      var colors, number_of_colors, selected_colors;
+      var number_of_zones, selected_zones, zones;
       if (board && board.running) {
 
       } else {
         context.clearRect(0, 0, 2057, 2057);
-        number_of_colors = $('select.colors').val();
-        colors = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
-        selected_colors = colors.slice(0, number_of_colors);
-        board = new Board(context, size, tiles, selected_colors, interval);
+        number_of_zones = $('select.zones').val();
+        zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
+        selected_zones = zones.slice(0, number_of_zones);
+        board = new Board(context, size, tiles, selected_zones, interval);
         board.add_start_tile();
         board.lay_tiles();
         return clearInterval(stopping);
