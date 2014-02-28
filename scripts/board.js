@@ -9,11 +9,11 @@
   fisherYates = require('./fisher');
 
   module.exports = Board = (function() {
-    function Board(context, size, tile_list, colors, interval) {
+    function Board(context, size, tile_list, zones, interval) {
       this.context = context;
       this.size = size;
       this.tile_list = tile_list;
-      this.colors = colors;
+      this.zones = zones;
       this.interval = interval;
       this.tiles = {};
       this.count = 0;
@@ -48,7 +48,8 @@
         this.tiles[tile.x] = obj;
       }
       this.count += 1;
-      return tile.draw();
+      tile.draw();
+      return tile.placement_id = this.count;
     };
 
     Board.prototype.wall_at = function(x, y) {
@@ -98,25 +99,25 @@
           if (tile.north) {
             coords = [tile.x, tile.y + 1];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings[tile.color].push(coords);
+              openings[tile.zone].push(coords);
             }
           }
           if (tile.east) {
             coords = [tile.x + 1, tile.y];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings[tile.color].push(coords);
+              openings[tile.zone].push(coords);
             }
           }
           if (tile.south) {
             coords = [tile.x, tile.y - 1];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings[tile.color].push(coords);
+              openings[tile.zone].push(coords);
             }
           }
           if (tile.west) {
             coords = [tile.x - 1, tile.y];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings[tile.color].push(coords);
+              openings[tile.zone].push(coords);
             }
           }
         }
@@ -125,22 +126,22 @@
     };
 
     Board.prototype.lay_tiles = function() {
-      var color, i, num, stack, tile, tile_stack, timer, type, _i, _j, _len, _ref, _ref1,
+      var i, num, stack, tile, tile_stack, timer, type, zone, _i, _j, _len, _ref, _ref1,
         _this = this;
       this.stop_placing = false;
       this.running = true;
       tile_stack = [];
       this.unplaceable = [];
       this.last_was_placeable = true;
-      _ref = this.colors.reverse();
+      _ref = this.zones.reverse();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        color = _ref[_i];
+        zone = _ref[_i];
         stack = [];
         _ref1 = this.tile_list;
         for (type in _ref1) {
           num = _ref1[type];
           for (i = _j = 1; _j <= num; i = _j += 1) {
-            tile = new Tile(color, type, this.size, this);
+            tile = new Tile(zone, type, this.size, this);
             stack.push(tile);
           }
         }

@@ -1,8 +1,10 @@
-fisherYates = require('./fisher')
+fisherYates = require './fisher'
+$ = require './jquery-1.10.2'
+_ = require './underscore-min.js'
 module.exports = class Tile
-  constructor: (@color, @type, @size, @board) ->
-    if @color == 'start'
-      @name = 'images/start.png'
+  constructor: (@zone, @type, @size, @board, @id = false) ->
+    if @zone == 'start'
+      @file = 'images/start.png'
       @x = 0
       @y = 0
       @set_exits()
@@ -16,6 +18,38 @@ module.exports = class Tile
       @offset = 8
     else
       @offset = 16
+
+  neighbor_to_the: (dir)->
+    switch dir
+      when 'north'
+        x = @x
+        y = @y + 1
+      when 'east'
+        x = @x + 1
+        y = @y
+      when 'south'
+        x = @x
+        y = @y - 1
+      when 'west'
+        x = @x - 1
+        y = @y
+    return @board.tile_at(x,y)
+    
+  empty_exits: ->
+    exits = []
+    exits.push ['N'] if @north && !@neighbor_to_the('north')
+    exits.push ['E'] if @east && !@neighbor_to_the('east')
+    exits.push ['W'] if @west && !@neighbor_to_the('west')
+    exits.push ['S'] if @south && !@neighbor_to_the('south')
+    return exits.join ', '
+
+  exit_list: ->
+    exits = []
+    exits.push ['N'] if @north
+    exits.push ['E'] if @east
+    exits.push ['W'] if @west
+    exits.push ['S'] if @south
+    return exits.join ', '
 
   canvas_rect: ->
     rect = []
@@ -37,6 +71,12 @@ module.exports = class Tile
     @board.context.clearRect(rect[0], rect[1], rect[2], rect[3])
     @board.context.drawImage(@img,@img.setAtX*@size,@img.setAtY*@size, @size,@size)
     @board.context.restore()
+    $.get('templates/info.html', (data)=>
+      html = _.template(data, this)
+      info = $('.info')
+      info.html(html)
+      info.removeClass('hidden')
+    , 'html')
 
   draw: ->
     @img = new Image
@@ -44,7 +84,7 @@ module.exports = class Tile
     @img.setAtY=-1*@y+@offset
     @img.onload = =>
       @board.context.drawImage(@img,@img.setAtX*@size,@img.setAtY*@size, @size,@size)
-    @img.src = @name
+    @img.src = @file
     return this
 
   rotations: ->
@@ -90,7 +130,7 @@ module.exports = class Tile
 
   rotate: (orientation) ->
     @orientation = orientation
-    @name = "images/#{@color}#{@type}-#{@orientation}.png"
+    @file = "images/#{@zone}#{@type}-#{@orientation}.png"
     @set_exits()
 
   # We iterate over all the slots
@@ -105,7 +145,7 @@ module.exports = class Tile
     slots = @board.find_valid_openings()
     other_slots = []
     for key, value of slots
-      if key == @color
+      if key == @zone
         if value.length > 0
           matching_slots = value
         else

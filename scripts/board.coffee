@@ -2,7 +2,7 @@ Tile = require './tile'
 $ = require './jquery-1.10.2'
 fisherYates = require './fisher'
 module.exports = class Board
-  constructor: (@context, @size, @tile_list, @colors, @interval)->
+  constructor: (@context, @size, @tile_list, @zones, @interval)->
     @tiles = {}
     @count = 0
     @last_was_placeable = true
@@ -32,6 +32,7 @@ module.exports = class Board
     @count += 1
 
     tile.draw()
+    tile.placement_id = @count
 
   wall_at: (x,y)->
     Math.abs(x) > @x || Math.abs(y) > @y
@@ -68,16 +69,16 @@ module.exports = class Board
       for y, tile of tiles
         if tile.north
           coords = [tile.x,tile.y+1]
-          openings[tile.color].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.east
           coords = [tile.x+1,tile.y]
-          openings[tile.color].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.south
           coords = [tile.x,tile.y-1]
-          openings[tile.color].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.west
           coords = [tile.x-1,tile.y]
-          openings[tile.color].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
     return openings
 
   lay_tiles: ->
@@ -86,11 +87,11 @@ module.exports = class Board
     tile_stack = []
     @unplaceable = []
     @last_was_placeable = true
-    for color in @colors.reverse()
+    for zone in @zones.reverse()
       stack = []
       for type, num of @tile_list
         for i in [1..num] by 1
-          tile = new Tile color, type, @size, this
+          tile = new Tile zone, type, @size, this
           stack.push tile
       fisherYates(stack)
       tile_stack = tile_stack.concat stack
