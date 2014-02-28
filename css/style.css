@@ -31,13 +31,19 @@
     color: red;
     font-weight: bold; }
   .options .hidden {
-    /*display: none;*/ }
+    display: none; }
   .options .info {
     border: 1px solid green;
     position: fixed;
     padding: 5px;
     height: 140px;
     width: 140px; }
+    .options .info ul {
+      margin: 0px;
+      padding: 0px; }
+      .options .info ul li {
+        display: block;
+        padding-left: 2px; }
 
 body {
   width: 4000px;

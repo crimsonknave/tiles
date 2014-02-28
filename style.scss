@@ -42,7 +42,7 @@
   }
 
   .hidden {
-    /*display: none;*/
+    display: none;
   }
   .info {
     border: 1px solid green;
@@ -50,6 +50,14 @@
     padding: 5px;
     height: 140px;
     width: 140px;
+    ul {
+      margin: 0px;
+      padding: 0px;
+      li {
+        display: block;
+        padding-left: 2px;
+      }
+    }
   }
 }
 

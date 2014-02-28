@@ -48,7 +48,8 @@
         this.tiles[tile.x] = obj;
       }
       this.count += 1;
-      return tile.draw();
+      tile.draw();
+      return tile.placement_id = this.count;
     };
 
     Board.prototype.wall_at = function(x, y) {

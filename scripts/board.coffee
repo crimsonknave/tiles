@@ -32,6 +32,7 @@ module.exports = class Board
     @count += 1
 
     tile.draw()
+    tile.placement_id = @count
 
   wall_at: (x,y)->
     Math.abs(x) > @x || Math.abs(y) > @y
