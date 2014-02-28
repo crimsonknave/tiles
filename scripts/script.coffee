@@ -1,16 +1,25 @@
 $ = require('./jquery-1.10.2')
 fisherYates = require('./fisher')
 Board = require('./board')
+board = false
 
 
 $(document).ready ->
+  $('#my_canvas').mousedown (e)->
+    return unless board
+    canvas_x = e.pageX - $(this).offset().left
+    canvas_y = e.pageY - $(this).offset().top
+    tile = board.tile_at_canvas_coords(canvas_x, canvas_y)
+    if tile
+      tile.toggle()
+
   $('.save').click ->
-    canvas = document.getElementById('my_canvas')
+    #canvas = document.getElementById('my_canvas')
     image = canvas.toDataURL('map.png').replace('image/png', 'image/octet-stream')
-    @lnk = document.createElement('a') unless @lnk
-    @lnk.download = 'map.png'
-    @lnk.href = image
-    @lnk.click()
+    lnk = document.createElement('a') unless @lnk
+    lnk.download = 'map.png'
+    lnk.href = image
+    lnk.click()
 
 
   $('.submit').click ->
@@ -29,17 +38,17 @@ build_map = (tiles, size, interval)->
   canvas = document.getElementById('my_canvas')
   context = canvas.getContext('2d')
 
-  if @board
-    @board.stop_placing = true
+  if board
+    board.stop_placing = true
   stopping = setInterval (->
-    if @board && @board.running
+    if board && board.running
     else
       context.clearRect( 0, 0, 2057, 2057)
       number_of_colors = $('select.colors').val()
       colors = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']
       selected_colors = colors.slice(0,number_of_colors)
-      @board = new Board context, size, tiles, selected_colors, interval
-      @board.add_start_tile()
-      @board.lay_tiles()
+      board = new Board context, size, tiles, selected_colors, interval
+      board.add_start_tile()
+      board.lay_tiles()
       clearInterval(stopping)
   ), 10

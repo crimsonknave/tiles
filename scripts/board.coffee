@@ -31,10 +31,15 @@ module.exports = class Board
       @tiles[tile.x] = obj
     @count += 1
 
-    tile.draw(@context)
+    tile.draw()
 
   wall_at: (x,y)->
     Math.abs(x) > @x || Math.abs(y) > @y
+
+  tile_at_canvas_coords: (x,y)->
+    board_x = Math.floor(x/@size) - @x
+    board_y = -1 * (Math.floor(y/@size) - @y)
+    @tile_at(board_x, board_y)
 
   tile_at: (x,y)->
     exists = false

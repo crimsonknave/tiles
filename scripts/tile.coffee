@@ -17,12 +17,33 @@ module.exports = class Tile
     else
       @offset = 16
 
-  draw: (context) ->
+  canvas_rect: ->
+    rect = []
+    x = @x* @board.size
+    x_shift = @board.x*@board.size
+    y = @y* @board.size
+    y_shift = @board.y*@board.size
+    rect.push(x + x_shift)
+    rect.push((-1*y) + y_shift)
+    rect.push @board.size
+    rect.push @board.size
+    return rect
+
+  toggle: =>
+    @toggled = !@toggled
+    @board.context.save()
+    @board.context.globalAlpha = 0.5 if @toggled
+    rect = @canvas_rect()
+    @board.context.clearRect(rect[0], rect[1], rect[2], rect[3])
+    @board.context.drawImage(@img,@img.setAtX*@size,@img.setAtY*@size, @size,@size)
+    @board.context.restore()
+
+  draw: ->
     @img = new Image
     @img.setAtX=@x+@offset
     @img.setAtY=-1*@y+@offset
     @img.onload = =>
-      context.drawImage(@img,@img.setAtX*@size,@img.setAtY*@size, @size,@size)
+      @board.context.drawImage(@img,@img.setAtX*@size,@img.setAtY*@size, @size,@size)
     @img.src = @name
     return this
 

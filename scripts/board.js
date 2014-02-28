@@ -48,11 +48,18 @@
         this.tiles[tile.x] = obj;
       }
       this.count += 1;
-      return tile.draw(this.context);
+      return tile.draw();
     };
 
     Board.prototype.wall_at = function(x, y) {
       return Math.abs(x) > this.x || Math.abs(y) > this.y;
+    };
+
+    Board.prototype.tile_at_canvas_coords = function(x, y) {
+      var board_x, board_y;
+      board_x = Math.floor(x / this.size) - this.x;
+      board_y = -1 * (Math.floor(y / this.size) - this.y);
+      return this.tile_at(board_x, board_y);
     };
 
     Board.prototype.tile_at = function(x, y) {
