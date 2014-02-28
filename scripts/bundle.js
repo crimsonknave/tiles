@@ -50,7 +50,7 @@
       }
       this.count += 1;
       tile.draw();
-      return tile.placement_id = this.count;
+      return tile.placement_id = this.count - 1;
     };
 
     Board.prototype.wall_at = function(x, y) {
@@ -72,10 +72,6 @@
         exists = ys[y];
       }
       return exists;
-    };
-
-    Board.prototype.tile_count = function() {
-      return this.count;
     };
 
     Board.prototype.find_valid_openings = function() {

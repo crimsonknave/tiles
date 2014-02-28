@@ -32,7 +32,7 @@ module.exports = class Board
     @count += 1
 
     tile.draw()
-    tile.placement_id = @count
+    tile.placement_id = @count - 1
 
   wall_at: (x,y)->
     Math.abs(x) > @x || Math.abs(y) > @y
@@ -48,9 +48,6 @@ module.exports = class Board
     if ys
       exists = ys[y]
     return exists
-
-  tile_count: ->
-    @count
 
   find_valid_openings: ->
     openings = {
