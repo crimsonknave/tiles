@@ -2,6 +2,9 @@
 (function() {
   module.exports = function(arr) {
     var i, j, _ref, _results;
+    if (!arr) {
+      return false;
+    }
     i = arr.length;
     if (i === 0) {
       return false;

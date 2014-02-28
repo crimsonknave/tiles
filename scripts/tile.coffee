@@ -103,9 +103,22 @@ module.exports = class Tile
   # tile
   place: ->
     slots = @board.find_valid_openings()
-    fisherYates(slots)
+    other_slots = []
+    for key, value of slots
+      if key == @color
+        if value.length > 0
+          matching_slots = value
+        else
+          matching_slots = []
+      else
+        if value.length > 0
+          other_slots = other_slots.concat value
+
+    fisherYates(matching_slots)
+    fisherYates(other_slots)
+    all_slots = matching_slots.concat other_slots
     i = 0
-    for slot in slots
+    for slot in all_slots
       loop
         x = slot[0]
         y = slot[1]
