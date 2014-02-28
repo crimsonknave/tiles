@@ -52,21 +52,32 @@ module.exports = class Board
     @count
 
   find_valid_openings: ->
-    openings = []
+    openings = {
+    'start': [],
+    'first': [],
+    'second': [],
+    'third': [],
+    'fourth': [],
+    'fifth': [],
+    'sixth': [],
+    'seventh': [],
+    'eighth': [],
+    'ninth': []
+    }
     for x, tiles of @tiles
       for y, tile of tiles
         if tile.north
           coords = [tile.x,tile.y+1]
-          openings.push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.color].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.east
           coords = [tile.x+1,tile.y]
-          openings.push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.color].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.south
           coords = [tile.x,tile.y-1]
-          openings.push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.color].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
         if tile.west
           coords = [tile.x-1,tile.y]
-          openings.push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.color].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
     return openings
 
   lay_tiles: ->

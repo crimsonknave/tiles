@@ -79,7 +79,18 @@
 
     Board.prototype.find_valid_openings = function() {
       var coords, openings, tile, tiles, x, y, _ref;
-      openings = [];
+      openings = {
+        'start': [],
+        'first': [],
+        'second': [],
+        'third': [],
+        'fourth': [],
+        'fifth': [],
+        'sixth': [],
+        'seventh': [],
+        'eighth': [],
+        'ninth': []
+      };
       _ref = this.tiles;
       for (x in _ref) {
         tiles = _ref[x];
@@ -88,25 +99,25 @@
           if (tile.north) {
             coords = [tile.x, tile.y + 1];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings.push(coords);
+              openings[tile.color].push(coords);
             }
           }
           if (tile.east) {
             coords = [tile.x + 1, tile.y];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings.push(coords);
+              openings[tile.color].push(coords);
             }
           }
           if (tile.south) {
             coords = [tile.x, tile.y - 1];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings.push(coords);
+              openings[tile.color].push(coords);
             }
           }
           if (tile.west) {
             coords = [tile.x - 1, tile.y];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings.push(coords);
+              openings[tile.color].push(coords);
             }
           }
         }
@@ -184,6 +195,9 @@
 (function() {
   module.exports = function(arr) {
     var i, j, _ref, _results;
+    if (!arr) {
+      return false;
+    }
     i = arr.length;
     if (i === 0) {
       return false;
@@ -10189,12 +10203,29 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
     };
 
     Tile.prototype.place = function() {
-      var east_tile, fits, i, north_tile, slot, slots, south_tile, west_tile, x, y, _i, _len;
+      var all_slots, east_tile, fits, i, key, matching_slots, north_tile, other_slots, slot, slots, south_tile, value, west_tile, x, y, _i, _len;
       slots = this.board.find_valid_openings();
-      fisherYates(slots);
+      other_slots = [];
+      for (key in slots) {
+        value = slots[key];
+        if (key === this.color) {
+          if (value.length > 0) {
+            matching_slots = value;
+          } else {
+            matching_slots = [];
+          }
+        } else {
+          if (value.length > 0) {
+            other_slots = other_slots.concat(value);
+          }
+        }
+      }
+      fisherYates(matching_slots);
+      fisherYates(other_slots);
+      all_slots = matching_slots.concat(other_slots);
       i = 0;
-      for (_i = 0, _len = slots.length; _i < _len; _i++) {
-        slot = slots[_i];
+      for (_i = 0, _len = all_slots.length; _i < _len; _i++) {
+        slot = all_slots[_i];
         while (true) {
           x = slot[0];
           y = slot[1];

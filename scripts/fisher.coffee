@@ -1,4 +1,5 @@
 module.exports = (arr) ->
+  return false if !arr
   i = arr.length
   if i is 0 then return false
 

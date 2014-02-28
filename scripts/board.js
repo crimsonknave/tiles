@@ -78,7 +78,18 @@
 
     Board.prototype.find_valid_openings = function() {
       var coords, openings, tile, tiles, x, y, _ref;
-      openings = [];
+      openings = {
+        'start': [],
+        'first': [],
+        'second': [],
+        'third': [],
+        'fourth': [],
+        'fifth': [],
+        'sixth': [],
+        'seventh': [],
+        'eighth': [],
+        'ninth': []
+      };
       _ref = this.tiles;
       for (x in _ref) {
         tiles = _ref[x];
@@ -87,25 +98,25 @@
           if (tile.north) {
             coords = [tile.x, tile.y + 1];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings.push(coords);
+              openings[tile.color].push(coords);
             }
           }
           if (tile.east) {
             coords = [tile.x + 1, tile.y];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings.push(coords);
+              openings[tile.color].push(coords);
             }
           }
           if (tile.south) {
             coords = [tile.x, tile.y - 1];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings.push(coords);
+              openings[tile.color].push(coords);
             }
           }
           if (tile.west) {
             coords = [tile.x - 1, tile.y];
             if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
-              openings.push(coords);
+              openings[tile.color].push(coords);
             }
           }
         }
