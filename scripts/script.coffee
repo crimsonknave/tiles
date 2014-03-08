@@ -5,6 +5,10 @@ board = false
 
 
 $(document).ready ->
+  $('.toggle').click ->
+    $('.toggle').toggleClass('hidden')
+    $('.config').toggleClass('collapsed')
+
   $('#my_canvas').mousedown (e)->
     return unless board
     canvas_x = e.pageX - $(this).offset().left

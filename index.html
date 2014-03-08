@@ -5,7 +5,7 @@
   </head>
   <body>
     <div class='options'>
-      <ul class='config'>
+      <ul class='config collapsed'>
         <li>
           1
           <input class='1' type='text' value='1'>
@@ -69,13 +69,19 @@
           <span class='max'>0</span>
         </li>
         <li>
-          <input class='submit' type='submit' value='Generate'>
-        </li>
-        <li>
           <button class='save'>Save</button>
         </li>
+        <li>
+          <input class='submit' type='submit' value='Generate'>
+          <div class='toggle show'>
+            options
+          </div>
+          <div class='toggle hide hidden'>
+            collapse
+          </div>
+          <div class='info hidden'></div>
+        </li>
       </ul>
-      <div class='info hidden'></div>
     </div>
     <div class='main'>
       <canvas height='2057' id='my_canvas' width='2057'></canvas>

@@ -6,6 +6,17 @@
   position: fixed;
   top: -8px;
   left: 8px; }
+  .options .toggle {
+    text-decoration: underline;
+    color: steelblue;
+    cursor: pointer;
+    position: relative;
+    top: 4px;
+    float: right; }
+  .options .config.collapsed li {
+    display: none; }
+  .options .config.collapsed li:last-child {
+    display: block; }
   .options .config {
     border: 1px solid black;
     padding: 5px;
