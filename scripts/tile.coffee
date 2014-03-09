@@ -1,6 +1,6 @@
-fisherYates = require './fisher'
-$ = require './jquery-1.10.2'
-_ = require './underscore-min.js'
+fisherYates = require 'fisher'
+$ = require 'jquery-1.10.2'
+_ = require 'underscore-min'
 module.exports = class Tile
   constructor: (@zone, @type, @size, @board, @id = false) ->
     if @zone == 'start'

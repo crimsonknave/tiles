@@ -1,6 +1,6 @@
-$ = require('./jquery-1.10.2')
-fisherYates = require('./fisher')
-Board = require('./board')
+$ = require('jquery-1.10.2')
+fisherYates = require('fisher')
+Board = require('board')
 board = false
 
 
