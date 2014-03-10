@@ -6,6 +6,15 @@
   position: fixed;
   top: -8px;
   left: 8px; }
+  .options .toggle {
+    text-decoration: underline;
+    color: steelblue;
+    cursor: pointer;
+    padding: 5px; }
+  .options .config.collapsed li {
+    display: none; }
+  .options .config.collapsed li:last-child {
+    display: inline-flex; }
   .options .config {
     border: 1px solid black;
     padding: 5px;
@@ -23,7 +32,8 @@
       .options .config li input.submit {
         width: 70px; }
     .options .config li:last-child {
-      border: none; }
+      border: none;
+      display: inline-flex; }
   .options span.green {
     color: green;
     font-weight: bold; }

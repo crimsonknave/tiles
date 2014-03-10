@@ -1,6 +1,6 @@
-fisherYates = require './fisher'
-$ = require './jquery-1.10.2'
-_ = require './underscore-min.js'
+fisherYates = require 'fisher'
+$ = require 'jquery-1.10.2'
+_ = require 'underscore-min'
 module.exports = class Tile
   constructor: (@zone, @type, @size, @board, @id = false) ->
     if @zone == 'start'
@@ -39,16 +39,16 @@ module.exports = class Tile
     exits = []
     exits.push ['N'] if @north && !@neighbor_to_the('north')
     exits.push ['E'] if @east && !@neighbor_to_the('east')
-    exits.push ['W'] if @west && !@neighbor_to_the('west')
     exits.push ['S'] if @south && !@neighbor_to_the('south')
+    exits.push ['W'] if @west && !@neighbor_to_the('west')
     return exits.join ', '
 
   exit_list: ->
     exits = []
     exits.push ['N'] if @north
     exits.push ['E'] if @east
-    exits.push ['W'] if @west
     exits.push ['S'] if @south
+    exits.push ['W'] if @west
     return exits.join ', '
 
   canvas_rect: ->

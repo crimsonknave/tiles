@@ -7,6 +7,20 @@
   position: fixed;
   top: -8px;
   left: 8px;
+  .toggle {
+    text-decoration: underline;
+    color: steelblue;
+    cursor: pointer;
+    padding: 5px
+  }
+  .config.collapsed {
+    li {
+      display:none;
+    }
+    li:last-child {
+      display:inline-flex;
+    }
+  }
   .config {
     border: 1px solid black;
     padding: 5px;
@@ -30,6 +44,7 @@
     }
     li:last-child {
       border: none;
+      display:inline-flex;
     }
   }
   span.green{
