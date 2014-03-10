@@ -4,7 +4,7 @@
     %script{src: 'scripts/bundle.js'}
   %body
     .options
-      %ul.config
+      %ul.config.collapsed
         %li
           1
           %input.1{type: :text, value: 1}
@@ -56,10 +56,14 @@
           \/
           %span.max 0
         %li
-          %input.submit{type: :submit, value: 'Generate'}
-        %li
           %button.save Save
-      .info.hidden
+        %li
+          %input.submit{type: :submit, value: 'Generate'}
+          .toggle.show
+            options
+          .toggle.hide.hidden
+            collapse
+          .info.hidden
 
     .main
       %canvas{id: 'my_canvas', width: 2057, height: 2057}

@@ -7,6 +7,22 @@
   position: fixed;
   top: -8px;
   left: 8px;
+  .toggle {
+    text-decoration: underline;
+    color: steelblue;
+    cursor: pointer;
+    position: relative;
+    top: 4px;
+    float: right;
+  }
+  .config.collapsed {
+    li {
+      display:none;
+    }
+    li:last-child {
+      display:block
+    }
+  }
   .config {
     border: 1px solid black;
     padding: 5px;

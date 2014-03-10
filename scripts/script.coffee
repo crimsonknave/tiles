@@ -1,10 +1,14 @@
-$ = require('./jquery-1.10.2')
-fisherYates = require('./fisher')
-Board = require('./board')
+$ = require('jquery-1.10.2')
+fisherYates = require('fisher')
+Board = require('board')
 board = false
 
 
 $(document).ready ->
+  $('.toggle').click ->
+    $('.toggle').toggleClass('hidden')
+    $('.config').toggleClass('collapsed')
+
   $('#my_canvas').mousedown (e)->
     return unless board
     canvas_x = e.pageX - $(this).offset().left

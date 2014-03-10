@@ -1,84 +1,90 @@
 <html lang='en' xml:lang='en' xmlns='http://www.w3.org/1999/xhtml'>
-  <head>
-    <link href='css/style.css' rel='stylesheet' type='text/css'>
-    <script src='scripts/bundle.js'></script>
-  </head>
-  <body>
-    <div class='options'>
-      <ul class='config'>
-        <li>
-          1
-          <input class='1' type='text' value='1'>
-        </li>
-        <li>
-          2 Straight:
-          <input class='2-straight' type='text' value='2'>
-        </li>
-        <li>
-          2 Turn:
-          <input class='2-turn' type='text' value='2'>
-        </li>
-        <li>
-          3:
-          <input class='3' type='text' value='0'>
-        </li>
-        <li>
-          4:
-          <input class='4' type='text' value='1'>
-        </li>
-        <li>
-          Size:
-          <select class='size'>
-            <option value='121'>Big</option>
-            <option selected value='60'>Small</option>
-          </select>
-        </li>
-        <li>
-          Zones:
-          <select class='zones'>
-            <option value='1'>1</option>
-            <option value='2'>2</option>
-            <option value='3'>3</option>
-            <option value='4'>4</option>
-            <option value='5'>5</option>
-            <option value='6'>6</option>
-            <option value='7'>7</option>
-            <option value='8'>8</option>
-            <option selected value='9'>9</option>
-          </select>
-        </li>
-        <li>
-          Speed:
-          <select class='interval'>
-            <option value='0'>PLAID!</option>
-            <option value='10'>10ms</option>
-            <option value='20'>20ms</option>
-            <option selected value='50'>50ms</option>
-            <option value='100'>100ms</option>
-            <option value='200'>200ms</option>
-            <option value='500'>500ms</option>
-            <option value='1000'>1s</option>
-            <option value='2000'>2s</option>
-            <option value='5000'>5s</option>
-          </select>
-        </li>
-        <li>
-          Tiles:
-          <span class='min'>0</span>
-          /
-          <span class='max'>0</span>
-        </li>
-        <li>
-          <input class='submit' type='submit' value='Generate'>
-        </li>
-        <li>
-          <button class='save'>Save</button>
-        </li>
-      </ul>
-      <div class='info hidden'></div>
-    </div>
-    <div class='main'>
-      <canvas height='2057' id='my_canvas' width='2057'></canvas>
-    </div>
-  </body>
+<head>
+<link href='css/style.css' rel='stylesheet' type='text/css'>
+<script src='scripts/bundle.js'></script>
+</head>
+<body>
+<div class='options'>
+<ul class='config collapsed'>
+<li>
+1
+<input class='1' type='text' value='1'>
+</li>
+<li>
+2 Straight:
+<input class='2-straight' type='text' value='2'>
+</li>
+<li>
+2 Turn:
+<input class='2-turn' type='text' value='2'>
+</li>
+<li>
+3:
+<input class='3' type='text' value='0'>
+</li>
+<li>
+4:
+<input class='4' type='text' value='1'>
+</li>
+<li>
+Size:
+<select class='size'>
+<option value='121'>Big</option>
+<option selected value='60'>Small</option>
+</select>
+</li>
+<li>
+Zones:
+<select class='zones'>
+<option value='1'>1</option>
+<option value='2'>2</option>
+<option value='3'>3</option>
+<option value='4'>4</option>
+<option value='5'>5</option>
+<option value='6'>6</option>
+<option value='7'>7</option>
+<option value='8'>8</option>
+<option selected value='9'>9</option>
+</select>
+</li>
+<li>
+Speed:
+<select class='interval'>
+<option value='0'>PLAID!</option>
+<option value='10'>10ms</option>
+<option value='20'>20ms</option>
+<option selected value='50'>50ms</option>
+<option value='100'>100ms</option>
+<option value='200'>200ms</option>
+<option value='500'>500ms</option>
+<option value='1000'>1s</option>
+<option value='2000'>2s</option>
+<option value='5000'>5s</option>
+</select>
+</li>
+<li>
+Tiles:
+<span class='min'>0</span>
+/
+<span class='max'>0</span>
+</li>
+<li>
+<button class='save'>Save</button>
+</li>
+<li>
+<input class='submit' type='submit' value='Generate'>
+<div class='toggle show'>
+options
+</div>
+<div class='toggle hide hidden'>
+collapse
+</div>
+<div class='info hidden'></div>
+</li>
+</ul>
+</div>
+<div class='main'>
+<canvas height='2057' id='my_canvas' width='2057'></canvas>
+</div>
+</body>
 </html>
