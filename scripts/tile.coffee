@@ -39,16 +39,16 @@ module.exports = class Tile
     exits = []
     exits.push ['N'] if @north && !@neighbor_to_the('north')
     exits.push ['E'] if @east && !@neighbor_to_the('east')
-    exits.push ['W'] if @west && !@neighbor_to_the('west')
     exits.push ['S'] if @south && !@neighbor_to_the('south')
+    exits.push ['W'] if @west && !@neighbor_to_the('west')
     return exits.join ', '
 
   exit_list: ->
     exits = []
     exits.push ['N'] if @north
     exits.push ['E'] if @east
-    exits.push ['W'] if @west
     exits.push ['S'] if @south
+    exits.push ['W'] if @west
     return exits.join ', '
 
   canvas_rect: ->

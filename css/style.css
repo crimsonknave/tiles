@@ -32,7 +32,8 @@
       .options .config li input.submit {
         width: 70px; }
     .options .config li:last-child {
-      border: none; }
+      border: none;
+      display: inline-flex; }
   .options span.green {
     color: green;
     font-weight: bold; }

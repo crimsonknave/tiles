@@ -10147,11 +10147,11 @@ module.exports = Tile = (function() {
     if (this.east && !this.neighbor_to_the('east')) {
       exits.push(['E']);
     }
-    if (this.west && !this.neighbor_to_the('west')) {
-      exits.push(['W']);
-    }
     if (this.south && !this.neighbor_to_the('south')) {
       exits.push(['S']);
+    }
+    if (this.west && !this.neighbor_to_the('west')) {
+      exits.push(['W']);
     }
     return exits.join(', ');
   };
@@ -10165,11 +10165,11 @@ module.exports = Tile = (function() {
     if (this.east) {
       exits.push(['E']);
     }
-    if (this.west) {
-      exits.push(['W']);
-    }
     if (this.south) {
       exits.push(['S']);
+    }
+    if (this.west) {
+      exits.push(['W']);
     }
     return exits.join(', ');
   };
