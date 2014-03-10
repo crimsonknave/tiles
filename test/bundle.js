@@ -5714,6 +5714,8 @@ Library.prototype.test = function (obj, type) {
   }
 };
 
+},{}],"board":[function(require,module,exports){
+module.exports=require('+D+V+z');
 },{}],"+D+V+z":[function(require,module,exports){
 (function() {
   var $, Board, Tile, fisherYates;
@@ -5907,9 +5909,7 @@ Library.prototype.test = function (obj, type) {
 
 }).call(this);
 
-},{"fisher":"MEx4Tl","jquery-1.10.2":"2k0Sg5","tile":"WPtRLW"}],"board":[function(require,module,exports){
-module.exports=require('+D+V+z');
-},{}],"fisher":[function(require,module,exports){
+},{"fisher":"MEx4Tl","jquery-1.10.2":"2k0Sg5","tile":"WPtRLW"}],"fisher":[function(require,module,exports){
 module.exports=require('MEx4Tl');
 },{}],"MEx4Tl":[function(require,module,exports){
 (function() {
@@ -15725,6 +15725,8 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
 
 })( window );
 
+},{}],"script":[function(require,module,exports){
+module.exports=require('wVSOeC');
 },{}],"wVSOeC":[function(require,module,exports){
 (function() {
   var $, Board, board, build_map, fisherYates;
@@ -15807,9 +15809,7 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
 
 }).call(this);
 
-},{"board":"+D+V+z","fisher":"MEx4Tl","jquery-1.10.2":"2k0Sg5"}],"script":[function(require,module,exports){
-module.exports=require('wVSOeC');
-},{}],"WPtRLW":[function(require,module,exports){
+},{"board":"+D+V+z","fisher":"MEx4Tl","jquery-1.10.2":"2k0Sg5"}],"WPtRLW":[function(require,module,exports){
 (function() {
   var $, Tile, fisherYates, _,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -16091,12 +16091,25 @@ Tile = require('tile');
 
 describe('Tile', function() {
   return describe('start tile', function() {
-    return it('basic info', function() {
-      var tile;
-      tile = new Tile('start', '4', this.size, this);
-      assert.equal(tile.zone, 'start');
-      assert.equal(tile.x, 0);
-      return assert.equal(tile.y, 0);
+    beforeEach(function() {
+      return this.tile = new Tile('start', '4', this.size, this);
+    });
+    it('basic info', function() {
+      assert.equal(this.tile.zone, 'start');
+      assert.equal(this.tile.x, 0);
+      return assert.equal(this.tile.y, 0);
+    });
+    it('has four exits', function() {
+      assert.isTrue(this.tile.north);
+      assert.isTrue(this.tile.east);
+      assert.isTrue(this.tile.south);
+      return assert.isTrue(this.tile.west);
+    });
+    return it('has no neighbors', function() {
+      assert.isFalse(this.tile.neighbor_to_the('north'));
+      assert.isFalse(this.tile.neighbor_to_the('east'));
+      assert.isFalse(this.tile.neighbor_to_the('south'));
+      return assert.isFalse(this.tile.neighbor_to_the('west'));
     });
   });
 });

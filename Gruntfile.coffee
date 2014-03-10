@@ -5,13 +5,8 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-haml'
   grunt.loadNpmTasks 'grunt-karma'
   grunt.loadNpmTasks 'grunt-newer'
-  grunt.loadNpmTasks 'grunt-notify'
   grunt.initConfig {
     pkg: grunt.file.readJSON('package.json'),
-    notify_hooks: {
-      enabled: true,
-      title: 'foo'
-    }
     watch: {
       haml: {
         files: ['**/*.haml']
@@ -65,4 +60,3 @@ module.exports = (grunt) ->
     }
   }
   grunt.registerTask 'default', ['karma', 'watch']
-  grunt.task.run 'notify_hooks'
