@@ -3,6 +3,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-haml'
+  grunt.loadNpmTasks 'grunt-contrib-sass'
   grunt.loadNpmTasks 'grunt-karma'
   grunt.loadNpmTasks 'grunt-newer'
   grunt.initConfig {
@@ -16,13 +17,23 @@ module.exports = (grunt) ->
         files: ['scripts/*.coffee', 'test/*.coffee']
         tasks: ['newer:browserify', 'karma:unit:run']
       }
+      sass: {
+        files: ['style.scss'],
+        tasks: ['sass']
+      }
     },
     karma: {
       unit: {
         configFile: 'karma.conf.js',
         background: true
       }
-    }
+    },
+    sass: {
+      dist: {
+        src: 'style.scss',
+        dest: 'css/style.css'
+      }
+    },
     haml: {
       index: {
         src: 'index.html.haml',
@@ -41,7 +52,7 @@ module.exports = (grunt) ->
           language: 'ruby'
         }
       }
-    }
+    },
     browserify: {
       dist: {
         files: {

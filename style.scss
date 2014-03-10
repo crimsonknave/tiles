@@ -11,16 +11,14 @@
     text-decoration: underline;
     color: steelblue;
     cursor: pointer;
-    position: relative;
-    top: 4px;
-    float: right;
+    padding: 5px
   }
   .config.collapsed {
     li {
       display:none;
     }
     li:last-child {
-      display:block
+      display:inline-flex;
     }
   }
   .config {
