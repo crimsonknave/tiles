@@ -6,7 +6,10 @@ module.exports = function(config) {
 
     // base path, that will be used to resolve files and exclude
     basePath: '',
-
+    
+    preprocessors: {
+      '**/*.html': ['html2js']
+    },
 
     // frameworks to use
     frameworks: ['mocha'],
