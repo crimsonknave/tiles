@@ -53,7 +53,7 @@ module.exports = (grunt) ->
           fullPaths: true,
           aliasMappings: {
             cwd: 'scripts',
-            src: ['**/*.js', '!bundle.js']
+            src: ['**/*.coffee', '**/*.js', '!bundle.js']
           }
         }
       }
