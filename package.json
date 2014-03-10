@@ -11,6 +11,6 @@
     "coffeeify": "^0.6.0",
     "chai": "^1.9.0",
     "mocha": "^1.17.1",
-    "grunt-notify": "^0.2.18"
+    "grunt-contrib-sass": "~0.7.3"
   }
 }
