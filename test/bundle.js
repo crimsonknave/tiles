@@ -16135,17 +16135,58 @@ $ = require('jquery-1.10.2');
 
 describe('Board', function() {
   before(function() {
-    var canvas, context, interval, selected_zones;
+    var canvas;
     document.body.innerHTML = __html__['index.html'];
     canvas = document.getElementById('my_canvas');
-    context = canvas.getContext('2d');
-    selected_zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
-    interval = 0;
-    return this.board = new Board(context, 60, [], selected_zones, interval);
+    this.context = canvas.getContext('2d');
+    this.selected_zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
+    this.interval = 0;
+    return this.board = new Board(this.context, 60, [], this.selected_zones, this.interval);
+  });
+  describe('basics', function() {
+    describe('size 121', function() {
+      beforeEach(function() {
+        return this.board = new Board(this.context, 121, [], this.selected_zones, this.interval);
+      });
+      return it('should have walls past 16', function() {
+        expect(this.board.wall_at(9, 0)).to.be["true"];
+        expect(this.board.wall_at(0, 9)).to.be["true"];
+        expect(this.board.wall_at(-9, 0)).to.be["true"];
+        expect(this.board.wall_at(0, -9)).to.be["true"];
+        return expect(this.board.wall_at(0, 0)).to.be["false"];
+      });
+    });
+    return describe('size 60', function() {
+      return it('should have walls past 16', function() {
+        expect(this.board.wall_at(17, 0)).to.be["true"];
+        expect(this.board.wall_at(0, 17)).to.be["true"];
+        expect(this.board.wall_at(-17, 0)).to.be["true"];
+        expect(this.board.wall_at(0, -17)).to.be["true"];
+        return expect(this.board.wall_at(0, 0)).to.be["false"];
+      });
+    });
   });
   return describe('empty', function() {
-    return it('should have no tiles', function() {
-      return expect(_.size(this.board.tiles)).to.be.eq(0);
+    it('should have no tiles', function() {
+      expect(_.size(this.board.tiles)).to.eq(0);
+      return expect(this.board.count).to.eq(0);
+    });
+    it('should have no unplaceable tiles', function() {
+      return expect(this.board.unplaceable.length).to.eq(0);
+    });
+    return it('should have no valid openings', function() {
+      var openings;
+      openings = this.board.find_valid_openings();
+      expect(openings['start']).to.eql([]);
+      expect(openings['first']).to.eql([]);
+      expect(openings['second']).to.eql([]);
+      expect(openings['third']).to.eql([]);
+      expect(openings['fourth']).to.eql([]);
+      expect(openings['fifth']).to.eql([]);
+      expect(openings['sixth']).to.eql([]);
+      expect(openings['seventh']).to.eql([]);
+      expect(openings['eighth']).to.eql([]);
+      return expect(openings['ninth']).to.eql([]);
     });
   });
 });
