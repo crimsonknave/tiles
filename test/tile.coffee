@@ -1,8 +1,8 @@
 expect = require('chai').expect
 Tile = require 'tile'
 Board = require 'board'
-_ = require 'underscore-min'
-$ = require 'jquery-1.10.2'
+_ = require 'underscore'
+$ = require 'jquery'
 describe 'Tile', ->
   before ->
     document.body.innerHTML = __html__['index.html']

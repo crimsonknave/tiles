@@ -1,5 +1,5 @@
 Tile = require 'tile'
-$ = require 'jquery-1.10.2'
+$ = require 'jquery'
 fisherYates = require 'fisher'
 module.exports = class Board
   constructor: (@context, @size, @tile_list, @zones, @interval)->

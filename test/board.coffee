@@ -1,7 +1,7 @@
 expect = require('chai').expect
 Board = require 'board'
-_ = require 'underscore-min'
-$ = require 'jquery-1.10.2'
+_ = require 'underscore'
+$ = require 'jquery'
 
 describe 'Board', ->
   before ->
