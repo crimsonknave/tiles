@@ -51,11 +51,6 @@
             %option{value:2000} 2s
             %option{value:5000} 5s
         %li
-          Tiles: 
-          %span.min 0
-          \/
-          %span.max 0
-        %li
           %button.save Save
         %li
           %input.submit{type: :submit, value: 'Generate'}
@@ -63,7 +58,12 @@
             options
           .toggle.hide.hidden
             collapse
-          .info.hidden
+        %li
+          Tiles: 
+          %span.min 0
+          \/
+          %span.max 0
+      .info.hidden
 
     .main
       %canvas{id: 'my_canvas', width: 2057, height: 2057}

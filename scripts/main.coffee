@@ -1,8 +1,8 @@
-$ = require('jquery-1.10.2')
+$ = require('jquery')
 fisherYates = require('fisher')
 Board = require('board')
+fabric = require('fabric').fabric
 board = false
-
 
 $(document).ready ->
   $('.toggle').click ->
@@ -18,7 +18,7 @@ $(document).ready ->
       tile.toggle()
 
   $('.save').click ->
-    #canvas = document.getElementById('my_canvas')
+    canvas = document.getElementById('my_canvas')
     image = canvas.toDataURL('map.png').replace('image/png', 'image/octet-stream')
     lnk = document.createElement('a') unless @lnk
     lnk.download = 'map.png'
@@ -39,19 +39,17 @@ $(document).ready ->
     build_map(tiles, size, interval)
 
 build_map = (tiles, size, interval)->
-  canvas = document.getElementById('my_canvas')
-  context = canvas.getContext('2d')
+  canvas = new fabric.StaticCanvas('my_canvas')
 
   if board
     board.stop_placing = true
   stopping = setInterval (->
     if board && board.running
     else
-      context.clearRect( 0, 0, 2057, 2057)
       number_of_zones = $('select.zones').val()
       zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']
       selected_zones = zones.slice(0,number_of_zones)
-      board = new Board context, size, tiles, selected_zones, interval
+      board = new Board canvas, size, tiles, selected_zones, interval
       board.add_start_tile()
       board.lay_tiles()
       clearInterval(stopping)

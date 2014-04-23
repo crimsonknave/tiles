@@ -1,16 +1,18 @@
 expect = require('chai').expect
 Tile = require 'tile'
 Board = require 'board'
-_ = require 'underscore-min'
-$ = require 'jquery-1.10.2'
+fabric = require('fabric').fabric
+_ = require 'underscore'
+$ = require 'jquery'
 describe 'Tile', ->
   before ->
     document.body.innerHTML = __html__['index.html']
-    canvas = document.getElementById('my_canvas')
-    context = canvas.getContext('2d')
+    #canvas = document.getElementById('my_canvas')
+    #context = canvas.getContext('2d')
+    canvas = new fabric.StaticCanvas('my_canvas')
     selected_zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']
     interval = 0
-    @board = new Board context, 60, [], selected_zones, interval
+    @board = new Board canvas, 60, [], selected_zones, interval
   describe 'start tile', ->
     beforeEach ->
       @tile = new Tile 'start', '4', @board.size, @board

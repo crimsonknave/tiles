@@ -1,6 +1,7 @@
 fisherYates = require 'fisher'
-$ = require 'jquery-1.10.2'
-_ = require 'underscore-min'
+$ = require 'jquery'
+_ = require 'underscore'
+fabric = require('fabric').fabric
 module.exports = class Tile
   constructor: (@zone, @type, @size, @board, @id = false) ->
     if @zone == 'start'
@@ -51,26 +52,18 @@ module.exports = class Tile
     exits.push ['W'] if @west
     return exits.join ', '
 
-  canvas_rect: ->
-    rect = []
-    x = @x* @board.size
-    x_shift = @board.x*@board.size
-    y = @y* @board.size
-    y_shift = @board.y*@board.size
-    rect.push(x + x_shift)
-    rect.push((-1*y) + y_shift)
-    rect.push @board.size
-    rect.push @board.size
-    return rect
+  untoggle: ->
+    @toggled = false
+    @fimg.opacity = 1
+    @redraw()
 
-  toggle: =>
+  toggle: ->
     @toggled = !@toggled
-    @board.context.save()
-    @board.context.globalAlpha = 0.5 if @toggled
-    rect = @canvas_rect()
-    @board.context.clearRect(rect[0], rect[1], rect[2], rect[3])
-    @board.context.drawImage(@img,@img.setAtX*@size,@img.setAtY*@size, @size,@size)
-    @board.context.restore()
+    if @board.toggled_tile && @board.toggled_tile != this
+      @board.toggled_tile.untoggle()
+    @board.toggled_tile = this
+    @fimg.opacity = if @toggled then 0.5 else 1
+    @redraw()
     $.get('templates/info.html', (data)=>
       html = _.template(data, this)
       info = $('.info')
@@ -78,12 +71,25 @@ module.exports = class Tile
       info.removeClass('hidden')
     , 'html')
 
-  draw: ->
+  create_image: ->
     @img = new Image
     @img.setAtX=@x+@offset
     @img.setAtY=-1*@y+@offset
+    @fimg = new fabric.Image(@img, {
+      left: @img.setAtX*@size,
+      top: @img.setAtY*@size,
+      width: @size,
+      height: @size
+    })
+
+  redraw: ->
+    @board.canvas.remove(@fimg)
+    @board.canvas.add(@fimg)
+
+  draw: ->
+    @create_image() unless (@img && @fimg)
     @img.onload = =>
-      @board.context.drawImage(@img,@img.setAtX*@size,@img.setAtY*@size, @size,@size)
+      @board.canvas.add(@fimg)
     @img.src = @file
     return this
 
