@@ -2,7 +2,7 @@ Tile = require 'tile'
 $ = require 'jquery'
 fisherYates = require 'fisher'
 module.exports = class Board
-  constructor: (@context, @size, @tile_list, @zones, @interval)->
+  constructor: (@canvas, @size, @tile_list, @zones, @interval)->
     @tiles = {}
     @count = 0
     @last_was_placeable = true
