@@ -13,7 +13,7 @@
     padding: 5px; }
   .options .config.collapsed li {
     display: none; }
-  .options .config.collapsed li:last-child {
+  .options .config.collapsed li:nth-last-child(-n+2) {
     display: inline-flex; }
   .options .config {
     border: 1px solid black;
