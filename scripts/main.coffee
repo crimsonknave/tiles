@@ -9,6 +9,7 @@ $(document).ready ->
     $('.toggle').toggleClass('hidden')
     $('.config').toggleClass('collapsed')
 
+  # FIXME: Probably can do this easier with fabric
   $('#my_canvas').mousedown (e)->
     return unless board
     canvas_x = e.pageX - $(this).offset().left

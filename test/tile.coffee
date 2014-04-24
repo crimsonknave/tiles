@@ -1,4 +1,9 @@
-expect = require('chai').expect
+chai = require('chai')
+sinon = require 'sinon'
+sinon_chai = require 'sinon-chai'
+expect = chai.expect
+chai.use(sinon_chai)
+
 Tile = require 'tile'
 Board = require 'board'
 fabric = require('fabric').fabric
@@ -7,8 +12,6 @@ $ = require 'jquery'
 describe 'Tile', ->
   before ->
     document.body.innerHTML = __html__['index.html']
-    #canvas = document.getElementById('my_canvas')
-    #context = canvas.getContext('2d')
     canvas = new fabric.StaticCanvas('my_canvas')
     selected_zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']
     interval = 0
@@ -58,6 +61,27 @@ describe 'Tile', ->
       expect(@tile.place()).to.be.false
       expect(@tile.x).to.be.undefined
       expect(@tile.y).to.be.undefined
-      
-
+  describe '- 2 turn tile', ->
+    it 'should have tests'
+  describe '- 2 straight tile', ->
+    it 'should have tests'
+  describe '- 3 tile', ->
+    it 'should have tests'
+  describe '- 4 tile', ->
+    it 'should have tests'
+  describe 'toggling', ->
+    beforeEach ->
+      @board.add_start_tile()
+      @tile = @board.tiles[0][0]
+    it 'should set toggled', ->
+      expect(@tile.toggled).to.be.undefined
+      @tile.toggle()
+      expect(@tile.toggled).to.be.true
+      @tile.toggle()
+      expect(@tile.toggled).to.be.false
+    it 'should untoggle others'
+    it 'should redraw', ->
+      sinon.spy(@tile, 'redraw')
+      @tile.toggle()
+      expect(@tile.redraw).to.have.been.calledOnce
 

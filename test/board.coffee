@@ -1,4 +1,9 @@
-expect = require('chai').expect
+chai = require('chai')
+sinon = require 'sinon'
+sinon_chai = require 'sinon-chai'
+expect = chai.expect
+chai.use(sinon_chai)
+
 Board = require 'board'
 _ = require 'underscore'
 $ = require 'jquery'
