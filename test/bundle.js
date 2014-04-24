@@ -16311,14 +16311,14 @@ return jQuery;
   }
 }).call(this);
 
-},{}],"board":[function(require,module,exports){
-module.exports=require('vrNTnI');
 },{}],"vrNTnI":[function(require,module,exports){
-var $, Board, Tile, fisherYates;
+var $, Board, Tile, fisherYates, _;
 
 Tile = require('tile');
 
 $ = require('jquery');
+
+_ = require('underscore');
 
 fisherYates = require('fisher');
 
@@ -16435,8 +16435,8 @@ module.exports = Board = (function() {
     return openings;
   };
 
-  Board.prototype.lay_tiles = function() {
-    var i, num, stack, tile, tile_stack, timer, type, zone, _i, _j, _len, _ref, _ref1;
+  Board.prototype.process_tiles_for_laying = function() {
+    var i, num, stack, tile, tile_stack, type, zone, _i, _j, _len, _ref, _ref1;
     this.stop_placing = false;
     this.running = true;
     tile_stack = [];
@@ -16460,11 +16460,16 @@ module.exports = Board = (function() {
     $('span.max').text(tile_stack.length);
     $('span.min').removeClass('green');
     $('span.min').removeClass('red');
+    return tile_stack;
+  };
+
+  Board.prototype.lay_tiles = function() {
+    var tile_stack, timer;
+    tile_stack = this.process_tiles_for_laying();
     return timer = setInterval(((function(_this) {
       return function() {
         var next_tile;
         if (_this.stop_placing) {
-          console.log('Stopping as requested');
           clearInterval(timer);
           _this.running = false;
           return false;
@@ -16500,7 +16505,9 @@ module.exports = Board = (function() {
 })();
 
 
-},{"fisher":"M0zJQM","jquery":36,"tile":"MtwR2O"}],"NlWBxo":[function(require,module,exports){
+},{"fisher":"M0zJQM","jquery":36,"tile":"MtwR2O","underscore":37}],"board":[function(require,module,exports){
+module.exports=require('vrNTnI');
+},{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2013, Printio (Juriy Zaytsev, Maxim Chernyak) */
 
@@ -26734,7 +26741,8 @@ $(document).ready(function() {
     }
   });
   $('.save').click(function() {
-    var image, lnk;
+    var canvas, image, lnk;
+    canvas = document.getElementById('my_canvas');
     image = canvas.toDataURL('map.png').replace('image/png', 'image/octet-stream');
     if (!this.lnk) {
       lnk = document.createElement('a');
@@ -26784,8 +26792,7 @@ build_map = function(tiles, size, interval) {
 },{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":36}],"main":[function(require,module,exports){
 module.exports=require('zE4Rgs');
 },{}],"MtwR2O":[function(require,module,exports){
-var $, Tile, fabric, fisherYates, _,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+var $, Tile, fabric, fisherYates, _;
 
 fisherYates = require('fisher');
 
@@ -26802,7 +26809,6 @@ module.exports = Tile = (function() {
     this.size = size;
     this.board = board;
     this.id = id != null ? id : false;
-    this.toggle = __bind(this.toggle, this);
     if (this.zone === 'start') {
       this.file = 'images/start.png';
       this.x = 0;
@@ -26878,31 +26884,20 @@ module.exports = Tile = (function() {
     return exits.join(', ');
   };
 
-  Tile.prototype.canvas_rect = function() {
-    var rect, x, x_shift, y, y_shift;
-    rect = [];
-    x = this.x * this.board.size;
-    x_shift = this.board.x * this.board.size;
-    y = this.y * this.board.size;
-    y_shift = this.board.y * this.board.size;
-    rect.push(x + x_shift);
-    rect.push((-1 * y) + y_shift);
-    rect.push(this.board.size);
-    rect.push(this.board.size);
-    return rect;
+  Tile.prototype.untoggle = function() {
+    this.toggled = false;
+    this.fimg.opacity = 1;
+    return this.redraw();
   };
 
   Tile.prototype.toggle = function() {
-    var rect;
     this.toggled = !this.toggled;
-    this.board.context.save();
-    if (this.toggled) {
-      this.board.context.globalAlpha = 0.5;
+    if (this.board.toggled_tile && this.board.toggled_tile !== this) {
+      this.board.toggled_tile.untoggle();
     }
-    rect = this.canvas_rect();
-    this.board.context.clearRect(rect[0], rect[1], rect[2], rect[3]);
-    this.board.context.drawImage(this.img, this.img.setAtX * this.size, this.img.setAtY * this.size, this.size, this.size);
-    this.board.context.restore();
+    this.board.toggled_tile = this;
+    this.fimg.opacity = this.toggled ? 0.5 : 1;
+    this.redraw();
     return $.get('templates/info.html', (function(_this) {
       return function(data) {
         var html, info;
@@ -26914,20 +26909,30 @@ module.exports = Tile = (function() {
     })(this), 'html');
   };
 
-  Tile.prototype.draw = function() {
+  Tile.prototype.create_image = function() {
     this.img = new Image;
     this.img.setAtX = this.x + this.offset;
     this.img.setAtY = -1 * this.y + this.offset;
+    return this.fimg = new fabric.Image(this.img, {
+      left: this.img.setAtX * this.size,
+      top: this.img.setAtY * this.size,
+      width: this.size,
+      height: this.size
+    });
+  };
+
+  Tile.prototype.redraw = function() {
+    this.board.canvas.remove(this.fimg);
+    return this.board.canvas.add(this.fimg);
+  };
+
+  Tile.prototype.draw = function() {
+    if (!(this.img && this.fimg)) {
+      this.create_image();
+    }
     this.img.onload = (function(_this) {
       return function() {
-        var fimg;
-        fimg = new fabric.Image(_this.img, {
-          left: _this.img.setAtX * _this.size,
-          top: _this.img.setAtY * _this.size,
-          width: _this.size,
-          height: _this.size
-        });
-        return _this.board.canvas.add(fimg);
+        return _this.board.canvas.add(_this.fimg);
       };
     })(this);
     this.img.src = this.file;
@@ -27098,7 +27103,7 @@ describe('Board', function() {
       });
     });
   });
-  return describe('empty', function() {
+  describe('empty', function() {
     it('should have no tiles', function() {
       expect(_.size(this.board.tiles)).to.eq(0);
       return expect(this.board.count).to.eq(0);
@@ -27106,7 +27111,7 @@ describe('Board', function() {
     it('should have no unplaceable tiles', function() {
       return expect(this.board.unplaceable.length).to.eq(0);
     });
-    return it('should have no valid openings', function() {
+    it('should have no valid openings', function() {
       var openings;
       openings = this.board.find_valid_openings();
       expect(openings['start']).to.eql([]);
@@ -27119,6 +27124,66 @@ describe('Board', function() {
       expect(openings['seventh']).to.eql([]);
       expect(openings['eighth']).to.eql([]);
       return expect(openings['ninth']).to.eql([]);
+    });
+    return it('should place the start tile correctly', function() {
+      this.board.add_start_tile();
+      expect(_.size(this.board.tiles)).to.eq(1);
+      expect(this.board.tiles[0][0].zone).to.eq('start');
+      expect(this.board.tiles[0][0].x).to.eq(0);
+      return expect(this.board.tiles[0][0].y).to.eq(0);
+    });
+  });
+  describe('laying tiless', function() {
+    it('should place all the tiles', function(done) {
+      var board, tiles, wait;
+      tiles = {
+        '4': 20
+      };
+      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      board.lay_tiles();
+      return wait = setInterval((function() {
+        if (!board.running) {
+          clearInterval(wait);
+          expect(_.size(board.unplaceable)).to.eq(0);
+          expect(board.count).to.eq(21);
+          return done();
+        }
+      }), 1);
+    });
+    it('should fail to place 5 dead ends', function(done) {
+      var board, tiles, wait;
+      tiles = {
+        '1': 5
+      };
+      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      board.lay_tiles();
+      return wait = setInterval((function() {
+        if (!board.running) {
+          clearInterval(wait);
+          expect(_.size(board.unplaceable)).to.eq(1);
+          expect(board.count).to.eq(5);
+          return done();
+        }
+      }), 1);
+    });
+    it('should clear the placed count');
+    return it('should list unplaceable tiles');
+  });
+  return describe('processing tiles for layout', function() {
+    return it('should sort tiles in (reverse) order', function() {
+      var board, tile_list, tiles;
+      tiles = {
+        '4': 2
+      };
+      board = new Board(this.context, 60, tiles, ['first', 'second'], this.interval);
+      tile_list = board.process_tiles_for_laying();
+      expect(_.size(tile_list)).to.eq(4);
+      expect(tile_list.pop().zone).to.eq('first');
+      expect(tile_list.pop().zone).to.eq('irst');
+      expect(tile_list.pop().zone).to.eq('second');
+      return expect(tile_list.pop().zone).to.eq('second');
     });
   });
 });

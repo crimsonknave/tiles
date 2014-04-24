@@ -10457,11 +10457,13 @@ return jQuery;
 }).call(this);
 
 },{}],"vrNTnI":[function(require,module,exports){
-var $, Board, Tile, fisherYates;
+var $, Board, Tile, fisherYates, _;
 
 Tile = require('tile');
 
 $ = require('jquery');
+
+_ = require('underscore');
 
 fisherYates = require('fisher');
 
@@ -10578,8 +10580,8 @@ module.exports = Board = (function() {
     return openings;
   };
 
-  Board.prototype.lay_tiles = function() {
-    var i, num, stack, tile, tile_stack, timer, type, zone, _i, _j, _len, _ref, _ref1;
+  Board.prototype.process_tiles_for_laying = function() {
+    var i, num, stack, tile, tile_stack, type, zone, _i, _j, _len, _ref, _ref1;
     this.stop_placing = false;
     this.running = true;
     tile_stack = [];
@@ -10603,11 +10605,16 @@ module.exports = Board = (function() {
     $('span.max').text(tile_stack.length);
     $('span.min').removeClass('green');
     $('span.min').removeClass('red');
+    return tile_stack;
+  };
+
+  Board.prototype.lay_tiles = function() {
+    var tile_stack, timer;
+    tile_stack = this.process_tiles_for_laying();
     return timer = setInterval(((function(_this) {
       return function() {
         var next_tile;
         if (_this.stop_placing) {
-          console.log('Stopping as requested');
           clearInterval(timer);
           _this.running = false;
           return false;
@@ -10643,7 +10650,7 @@ module.exports = Board = (function() {
 })();
 
 
-},{"fisher":"M0zJQM","jquery":1,"tile":"MtwR2O"}],"board":[function(require,module,exports){
+},{"fisher":"M0zJQM","jquery":1,"tile":"MtwR2O","underscore":2}],"board":[function(require,module,exports){
 module.exports=require('vrNTnI');
 },{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
@@ -20848,6 +20855,8 @@ module.exports = function(arr) {
 };
 
 
+},{}],"main":[function(require,module,exports){
+module.exports=require('zE4Rgs');
 },{}],"zE4Rgs":[function(require,module,exports){
 var $, Board, board, build_map, fabric, fisherYates;
 
@@ -20927,11 +20936,7 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":1}],"main":[function(require,module,exports){
-module.exports=require('zE4Rgs');
-},{}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],"MtwR2O":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":1}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, fisherYates, _;
 
 fisherYates = require('fisher');
@@ -21197,4 +21202,6 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":1,"underscore":2}]},{},["vrNTnI","M0zJQM","zE4Rgs","MtwR2O"])
+},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":1,"underscore":2}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
+},{}]},{},["vrNTnI","M0zJQM","zE4Rgs","MtwR2O"])
