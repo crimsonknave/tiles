@@ -6,29 +6,16 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-sass'
   grunt.loadNpmTasks 'grunt-karma'
   grunt.loadNpmTasks 'grunt-newer'
-  grunt.loadNpmTasks 'grunt-notify'
   grunt.initConfig {
     pkg: grunt.file.readJSON('package.json'),
-    notify: {
-      options: {
-        enabled: true,
-        title: 'Tiles -foo'
-      },
-      watch: {
-        options: {
-          title: 'Compilation',
-          message: 'Completed'
-        }
-      }
-    },
     watch: {
       haml: {
         files: ['**/*.haml']
-        tasks: ['newer:haml', 'karma:unit']
+        tasks: ['newer:haml', 'karma:unit:run']
       },
       coffee: {
         files: ['scripts/*.coffee', 'test/*.coffee']
-        tasks: ['browserify', 'karma:unit']
+        tasks: ['browserify', 'karma:unit:run']
       }
       sass: {
         files: ['style.scss'],
@@ -38,7 +25,7 @@ module.exports = (grunt) ->
     karma: {
       unit: {
         configFile: 'karma.conf.js',
-        background: false
+        background: true
       }
     },
     sass: {
@@ -83,4 +70,4 @@ module.exports = (grunt) ->
       }
     }
   }
-  grunt.registerTask 'default', ['watch', 'notify', 'notify:watch']
+  grunt.registerTask 'default', ['karma', 'watch']

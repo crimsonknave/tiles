@@ -94,7 +94,7 @@ describe 'Board', ->
       tile_list = board.process_tiles_for_laying()
       expect(_.size tile_list).to.eq 4
       expect(tile_list.pop().zone).to.eq 'first'
-      expect(tile_list.pop().zone).to.eq 'irst'
+      expect(tile_list.pop().zone).to.eq 'first'
       expect(tile_list.pop().zone).to.eq 'second'
       expect(tile_list.pop().zone).to.eq 'second'
 
