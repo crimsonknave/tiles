@@ -10529,7 +10529,7 @@ module.exports = Board = (function() {
     if (ys) {
       exists = ys[y];
     }
-    return exists;
+    return exists || false;
   };
 
   Board.prototype.find_valid_openings = function() {
@@ -20855,6 +20855,8 @@ module.exports = function(arr) {
 };
 
 
+},{}],"main":[function(require,module,exports){
+module.exports=require('zE4Rgs');
 },{}],"zE4Rgs":[function(require,module,exports){
 var $, Board, board, build_map, fabric, fisherYates;
 
@@ -20934,11 +20936,7 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":1}],"main":[function(require,module,exports){
-module.exports=require('zE4Rgs');
-},{}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],"MtwR2O":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":1}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, fisherYates, _;
 
 fisherYates = require('fisher');
@@ -21204,4 +21202,6 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":1,"underscore":2}]},{},["vrNTnI","M0zJQM","zE4Rgs","MtwR2O"])
+},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":1,"underscore":2}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
+},{}]},{},["vrNTnI","M0zJQM","zE4Rgs","MtwR2O"])

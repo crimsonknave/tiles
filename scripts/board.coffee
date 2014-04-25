@@ -48,7 +48,7 @@ module.exports = class Board
     ys = @tiles[x]
     if ys
       exists = ys[y]
-    return exists
+    return exists || false
 
   find_valid_openings: ->
     openings = {

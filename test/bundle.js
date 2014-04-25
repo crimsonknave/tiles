@@ -21049,7 +21049,7 @@ module.exports = Board = (function() {
     if (ys) {
       exists = ys[y];
     }
-    return exists;
+    return exists || false;
   };
 
   Board.prototype.find_valid_openings = function() {
@@ -31375,8 +31375,6 @@ module.exports = function(arr) {
 };
 
 
-},{}],"main":[function(require,module,exports){
-module.exports=require('zE4Rgs');
 },{}],"zE4Rgs":[function(require,module,exports){
 var $, Board, board, build_map, fabric, fisherYates;
 
@@ -31456,7 +31454,11 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":40}],"MtwR2O":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":40}],"main":[function(require,module,exports){
+module.exports=require('zE4Rgs');
+},{}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
+},{}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, fisherYates, _;
 
 fisherYates = require('fisher');
@@ -31722,9 +31724,7 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":40,"underscore":57}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],68:[function(require,module,exports){
+},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":40,"underscore":57}],68:[function(require,module,exports){
 var $, Board, chai, expect, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -31886,7 +31886,7 @@ _ = require('underscore');
 $ = require('jquery');
 
 describe('Tile', function() {
-  before(function() {
+  beforeEach(function() {
     var canvas, interval, selected_zones;
     document.body.innerHTML = __html__['index.html'];
     canvas = new fabric.StaticCanvas('my_canvas');
@@ -31937,7 +31937,7 @@ describe('Tile', function() {
       expect(this.tile.x).to.not.be.undefined;
       return expect(this.tile.y).to.not.be.undefined;
     });
-    return it('should not be placed if there is no room', function() {
+    it('should not be placed if there is no room', function() {
       _(4).times((function(_this) {
         return function() {
           var tile;
@@ -31949,20 +31949,146 @@ describe('Tile', function() {
       expect(this.tile.x).to.be.undefined;
       return expect(this.tile.y).to.be.undefined;
     });
+    return it('has four rotations', function() {
+      return expect(this.tile.rotations()).to.eql([1, 2, 3, 4]);
+    });
   });
   describe('- 2 turn tile', function() {
-    return it('should have tests');
+    beforeEach(function() {
+      return this.tile = new Tile('first', '2-turn', this.board.size, this.board);
+    });
+    it('has four rotations', function() {
+      return expect(this.tile.rotations()).to.eql([1, 2, 3, 4]);
+    });
+    it('has two exits', function() {
+      var count, exit, orientation, _i, _j, _len, _len1, _ref, _ref1, _results;
+      _ref = [1, 2, 3, 4];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        orientation = _ref[_i];
+        count = 0;
+        this.tile.rotate(orientation);
+        _ref1 = ['north', 'east', 'south', 'west'];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          exit = _ref1[_j];
+          if (this.tile[exit]) {
+            count++;
+          }
+        }
+        _results.push(expect(count).to.eq(2));
+      }
+      return _results;
+    });
+    return it('has exits that are next to eachother', function() {
+      var orientation, _i, _len, _ref, _results;
+      _ref = [1, 2, 3, 4];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        orientation = _ref[_i];
+        this.tile.rotate(orientation);
+        if (this.tile.north) {
+          expect(this.tile.south).to.be["false"];
+          expect(this.tile.east || this.tile.west).to.be["true"];
+        }
+        if (this.tile.east) {
+          expect(this.tile.west).to.be["false"];
+          expect(this.tile.south || this.tile.north).to.be["true"];
+        }
+        if (this.tile.south) {
+          expect(this.tile.north).to.be["false"];
+          expect(this.tile.east || this.tile.west).to.be["true"];
+        }
+        if (this.tile.west) {
+          expect(this.tile.east).to.be["false"];
+          _results.push(expect(this.tile.south || this.tile.north).to.be["true"]);
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    });
   });
   describe('- 2 straight tile', function() {
-    return it('should have tests');
+    beforeEach(function() {
+      return this.tile = new Tile('first', '2-straight', this.board.size, this.board);
+    });
+    it('has two rotations', function() {
+      return expect(this.tile.rotations()).to.eql([1, 2]);
+    });
+    it('has two exits', function() {
+      var count, exit, orientation, _i, _j, _len, _len1, _ref, _ref1, _results;
+      _ref = [1, 2];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        orientation = _ref[_i];
+        count = 0;
+        this.tile.rotate(orientation);
+        _ref1 = ['north', 'east', 'south', 'west'];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          exit = _ref1[_j];
+          if (this.tile[exit]) {
+            count++;
+          }
+        }
+        _results.push(expect(count).to.eq(2));
+      }
+      return _results;
+    });
+    return it('has exits that are across from eachother', function() {
+      var orientation, _i, _len, _ref, _results;
+      _ref = [1, 2];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        orientation = _ref[_i];
+        this.tile.rotate(orientation);
+        expect(this.tile.north).to.eql(this.tile.south);
+        _results.push(expect(this.tile.east).to.eql(this.tile.west));
+      }
+      return _results;
+    });
   });
   describe('- 3 tile', function() {
-    return it('should have tests');
+    beforeEach(function() {
+      return this.tile = new Tile('first', '3', this.board.size, this.board);
+    });
+    it('has four rotations', function() {
+      return expect(this.tile.rotations()).to.eql([1, 2, 3, 4]);
+    });
+    return it('has three exits', function() {
+      var count, exit, orientation, _i, _j, _len, _len1, _ref, _ref1, _results;
+      _ref = [1, 2, 3, 4];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        orientation = _ref[_i];
+        count = 0;
+        this.tile.rotate(orientation);
+        _ref1 = ['north', 'east', 'south', 'west'];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          exit = _ref1[_j];
+          if (this.tile[exit]) {
+            count++;
+          }
+        }
+        _results.push(expect(count).to.eq(3));
+      }
+      return _results;
+    });
   });
   describe('- 4 tile', function() {
-    return it('should have tests');
+    beforeEach(function() {
+      return this.tile = new Tile('first', '4', this.board.size, this.board);
+    });
+    it('has one rotations', function() {
+      return expect(this.tile.rotations()).to.eql([1]);
+    });
+    return it('has four exits', function() {
+      expect(this.tile.north).to.be["true"];
+      expect(this.tile.east).to.be["true"];
+      expect(this.tile.south).to.be["true"];
+      return expect(this.tile.west).to.be["true"];
+    });
   });
-  return describe('toggling', function() {
+  describe('toggling', function() {
     beforeEach(function() {
       this.board.add_start_tile();
       return this.tile = this.board.tiles[0][0];
@@ -31974,12 +32100,80 @@ describe('Tile', function() {
       this.tile.toggle();
       return expect(this.tile.toggled).to.be["false"];
     });
-    it('should untoggle others');
+    it('should untoggle others', function() {
+      var tile;
+      tile = new Tile('first', '1', this.board.size, this.board);
+      tile.place();
+      expect(this.tile.toggled).to.be.undefined;
+      expect(tile.toggled).to.be.undefined;
+      this.tile.toggle();
+      expect(this.tile.toggled).to.be["true"];
+      tile.toggle();
+      expect(tile.toggled).to.be["true"];
+      return expect(this.tile.toggled).to.be["false"];
+    });
     return it('should redraw', function() {
       sinon.spy(this.tile, 'redraw');
       this.tile.toggle();
       return expect(this.tile.redraw).to.have.been.calledOnce;
     });
+  });
+  describe('neighbors', function() {
+    beforeEach(function() {
+      var coords, tile, _i, _len, _ref, _results;
+      this.board.add_start_tile();
+      this.start = this.board.tiles[0][0];
+      _ref = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        coords = _ref[_i];
+        tile = new Tile('first', '4', this.board.size, this.board);
+        tile.x = coords[0], tile.y = coords[1];
+        _results.push(this.board.add_tile(tile));
+      }
+      return _results;
+    });
+    it('start should have neighbors in all directions', function() {
+      expect(this.start.neighbor_to_the('north')).to.be.ok;
+      expect(this.start.neighbor_to_the('east')).to.be.ok;
+      expect(this.start.neighbor_to_the('south')).to.be.ok;
+      return expect(this.start.neighbor_to_the('west')).to.be.ok;
+    });
+    it('north of start', function() {
+      var tile;
+      tile = this.start.neighbor_to_the('north');
+      expect(tile.neighbor_to_the('north')).to.be["false"];
+      expect(tile.neighbor_to_the('east')).to.be["false"];
+      expect(tile.neighbor_to_the('south')).to.be.ok;
+      return expect(tile.neighbor_to_the('west')).to.be["false"];
+    });
+    it('east of start', function() {
+      var tile;
+      tile = this.start.neighbor_to_the('east');
+      expect(tile.neighbor_to_the('north')).to.be["false"];
+      expect(tile.neighbor_to_the('east')).to.be["false"];
+      expect(tile.neighbor_to_the('south')).to.be["false"];
+      return expect(tile.neighbor_to_the('west')).to.be.ok;
+    });
+    it('south of start', function() {
+      var tile;
+      tile = this.start.neighbor_to_the('south');
+      expect(tile.neighbor_to_the('north')).to.be.ok;
+      expect(tile.neighbor_to_the('east')).to.be["false"];
+      expect(tile.neighbor_to_the('south')).to.be["false"];
+      return expect(tile.neighbor_to_the('west')).to.be["false"];
+    });
+    return it('west of start', function() {
+      var tile;
+      tile = this.start.neighbor_to_the('west');
+      expect(tile.neighbor_to_the('north')).to.be["false"];
+      expect(tile.neighbor_to_the('east')).to.be.ok;
+      expect(tile.neighbor_to_the('south')).to.be["false"];
+      return expect(tile.neighbor_to_the('west')).to.be["false"];
+    });
+  });
+  return describe('exits', function() {
+    return it('should have tests');
   });
 });
 
