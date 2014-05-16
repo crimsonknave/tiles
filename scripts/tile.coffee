@@ -4,6 +4,7 @@ _ = require 'underscore'
 fabric = require('fabric').fabric
 module.exports = class Tile
   constructor: (@zone, @type, @size, @board, @id = false) ->
+    @characters = []
     if @zone == 'start'
       @file = 'images/start.png'
       @x = 0
@@ -19,6 +20,11 @@ module.exports = class Tile
       @offset = 8
     else
       @offset = 16
+
+  character_list: ->
+    _.map(@characters, (char)->
+      char.color
+    )
 
   neighbor_to_the: (dir)->
     switch dir
@@ -87,6 +93,9 @@ module.exports = class Tile
   redraw: ->
     @board.canvas.remove(@fimg)
     @board.canvas.add(@fimg)
+    _.map(@characters, (char)->
+      char.redraw()
+    )
 
   draw: ->
     @create_image() unless (@img && @fimg)

@@ -20977,9 +20977,12 @@ if (typeof module !== 'undefined' && module.exports) {
 }).call(this);
 
 },{}],"vrNTnI":[function(require,module,exports){
-var $, Board, Tile, fisherYates, _;
+var $, Board, Character, Tile, fisherYates, _,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 Tile = require('tile');
+
+Character = require('character');
 
 $ = require('jquery');
 
@@ -20994,10 +20997,12 @@ module.exports = Board = (function() {
     this.tile_list = tile_list;
     this.zones = zones;
     this.interval = interval;
+    this.add_character = __bind(this.add_character, this);
     this.tiles = {};
     this.count = 0;
     this.last_was_placeable = true;
     this.unplaceable = [];
+    this.characters = [];
     if (this.size === 60) {
       this.x = 16;
       this.y = 16;
@@ -21007,10 +21012,15 @@ module.exports = Board = (function() {
     }
   }
 
+  Board.prototype.add_character = function(color) {
+    var character;
+    console.log("adding chara with color: " + color);
+    return character = new Character(this, color);
+  };
+
   Board.prototype.add_start_tile = function() {
-    var start_tile;
-    start_tile = new Tile('start', '4', this.size, this);
-    return this.add_tile(start_tile);
+    this.start_tile = new Tile('start', '4', this.size, this);
+    return this.add_tile(this.start_tile);
   };
 
   Board.prototype.add_tile = function(tile) {
@@ -21100,8 +21110,25 @@ module.exports = Board = (function() {
     return openings;
   };
 
+  Board.prototype.move_character = function(number, dir) {
+    return this.characters[number].move(dir);
+  };
+
+  Board.prototype.call_when_ready = function(func, params) {
+    var running;
+    return running = setInterval(((function(_this) {
+      return function() {
+        if (!_this.running) {
+          func.apply(_this, params);
+          return clearInterval(running);
+        }
+      };
+    })(this)), 10);
+  };
+
   Board.prototype.process_tiles_for_laying = function() {
     var i, num, stack, tile, tile_stack, type, zone, _i, _j, _len, _ref, _ref1;
+    console.log('processing');
     this.stop_placing = false;
     this.running = true;
     tile_stack = [];
@@ -21170,8 +21197,100 @@ module.exports = Board = (function() {
 })();
 
 
-},{"fisher":"M0zJQM","jquery":40,"tile":"MtwR2O","underscore":57}],"board":[function(require,module,exports){
+},{"character":"BakdVC","fisher":"M0zJQM","jquery":40,"tile":"MtwR2O","underscore":57}],"board":[function(require,module,exports){
 module.exports=require('vrNTnI');
+},{}],"BakdVC":[function(require,module,exports){
+var $, Character, fabric, _;
+
+_ = require('underscore');
+
+$ = require('jquery');
+
+fabric = require('fabric').fabric;
+
+module.exports = Character = (function() {
+  function Character(board, color) {
+    this.board = board;
+    this.color = color;
+    console.log('creating a character');
+    this.tile = this.board.start_tile;
+    this.tile.characters.push(this);
+    this.size = this.board.size / 6;
+    this.board.characters.push(this);
+    this.player_number = _.size(this.board.characters);
+    console.log("color: " + this.color);
+    this.draw();
+  }
+
+  Character.prototype.move = function(dir) {
+    var new_tile;
+    console.log("moving " + dir);
+    if (!this.tile[dir]) {
+      return false;
+    }
+    new_tile = this.tile.neighbor_to_the(dir);
+    if (!new_tile) {
+      return false;
+    }
+    this.tile.characters.splice($.inArray(this, this.tile.characters), 1);
+    this.tile = new_tile;
+    this.tile.characters.push(this);
+    this.set_icon_coords();
+    return this.redraw();
+  };
+
+  Character.prototype.create_icon = function() {
+    this.icon = new fabric.Circle({
+      radius: this.size,
+      fill: this.color
+    });
+    return this.set_icon_coords();
+  };
+
+  Character.prototype.set_icon_coords = function() {
+    var offset, player_offset, x_offset, y_offset;
+    offset = 7 * this.size / 10;
+    player_offset = this.tile.fimg.getBoundingRect().width / 2;
+    switch (this.player_number) {
+      case 1:
+        x_offset = offset;
+        y_offset = offset;
+        break;
+      case 2:
+        x_offset = (offset / 2) + player_offset;
+        y_offset = offset;
+        break;
+      case 3:
+        x_offset = (offset / 2) + player_offset;
+        y_offset = (offset / 2) + player_offset;
+        break;
+      case 4:
+        x_offset = offset;
+        y_offset = (offset / 2) + player_offset;
+    }
+    this.icon.left = this.tile.fimg.left + x_offset;
+    return this.icon.top = this.tile.fimg.top + y_offset;
+  };
+
+  Character.prototype.draw = function() {
+    if (!this.icon) {
+      this.create_icon();
+    }
+    return this.board.canvas.add(this.icon);
+  };
+
+  Character.prototype.redraw = function() {
+    this.board.canvas.remove(this.icon);
+    return this.board.canvas.add(this.icon);
+  };
+
+  return Character;
+
+})();
+
+
+},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
 },{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2013, Printio (Juriy Zaytsev, Maxim Chernyak) */
@@ -31391,6 +31510,22 @@ fabric = require('fabric').fabric;
 board = false;
 
 $(document).ready(function() {
+  $(document).keydown(function(e) {
+    switch (e.which) {
+      case 37:
+        board.move_character(3, 'west');
+        return e.preventDefault();
+      case 38:
+        board.move_character(3, 'north');
+        return e.preventDefault();
+      case 39:
+        board.move_character(3, 'east');
+        return e.preventDefault();
+      case 40:
+        board.move_character(3, 'south');
+        return e.preventDefault();
+    }
+  });
   $('.toggle').click(function() {
     $('.toggle').toggleClass('hidden');
     return $('.config').toggleClass('collapsed');
@@ -31471,12 +31606,10 @@ build_map = function(tiles, size, interval) {
       zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
       selected_zones = zones.slice(0, number_of_zones);
       if ($('.bag input')[0].checked) {
-        console.log('pulling from bag');
         zone_numbers = get_zone_numbers();
         tile_list = {};
         for (_i = 0, _len = selected_zones.length; _i < _len; _i++) {
           zone = selected_zones[_i];
-          console.log("parsing " + zone);
           tile_list[zone] = {
             '4': 0,
             '3': 0,
@@ -31492,16 +31625,13 @@ build_map = function(tiles, size, interval) {
               return bag.push(tile);
             });
           }
-          console.log(bag);
           fisherYates(bag);
           _(6).times(function() {
             tile = bag.pop();
             return tile_list[zone][tile] += 1;
           });
         }
-        console.log(tile_list);
       } else {
-        console.log('static tile numbers');
         tile_list = {};
         for (_j = 0, _len1 = selected_zones.length; _j < _len1; _j++) {
           zone = selected_zones[_j];
@@ -31511,6 +31641,11 @@ build_map = function(tiles, size, interval) {
       board = new Board(canvas, size, tile_list, selected_zones, interval);
       board.add_start_tile();
       board.lay_tiles();
+      board.call_when_ready(board.add_character, ['green']);
+      board.call_when_ready(board.add_character, ['black']);
+      board.call_when_ready(board.add_character, ['red']);
+      board.call_when_ready(board.add_character, ['purple']);
+      board.call_when_ready(board.move_character, [3, 'north']);
       return clearInterval(stopping);
     }
   }), 10);
@@ -31537,6 +31672,7 @@ module.exports = Tile = (function() {
     this.size = size;
     this.board = board;
     this.id = id != null ? id : false;
+    this.characters = [];
     if (this.zone === 'start') {
       this.file = 'images/start.png';
       this.x = 0;
@@ -31553,6 +31689,12 @@ module.exports = Tile = (function() {
       this.offset = 16;
     }
   }
+
+  Tile.prototype.character_list = function() {
+    return _.map(this.characters, function(char) {
+      return char.color;
+    });
+  };
 
   Tile.prototype.neighbor_to_the = function(dir) {
     var x, y;
@@ -31651,7 +31793,10 @@ module.exports = Tile = (function() {
 
   Tile.prototype.redraw = function() {
     this.board.canvas.remove(this.fimg);
-    return this.board.canvas.add(this.fimg);
+    this.board.canvas.add(this.fimg);
+    return _.map(this.characters, function(char) {
+      return char.redraw();
+    });
   };
 
   Tile.prototype.draw = function() {
@@ -31787,7 +31932,7 @@ module.exports = Tile = (function() {
 
 },{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":40,"underscore":57}],"tile":[function(require,module,exports){
 module.exports=require('MtwR2O');
-},{}],68:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 var $, Board, chai, expect, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -31934,7 +32079,54 @@ describe('Board', function() {
 });
 
 
-},{"board":"vrNTnI","chai":1,"jquery":40,"sinon":42,"sinon-chai":41,"underscore":57}],69:[function(require,module,exports){
+},{"board":"vrNTnI","chai":1,"jquery":40,"sinon":42,"sinon-chai":41,"underscore":57}],71:[function(require,module,exports){
+var $, Board, Character, chai, expect, fabric, sinon, sinon_chai, _;
+
+chai = require('chai');
+
+sinon = require('sinon');
+
+sinon_chai = require('sinon-chai');
+
+expect = chai.expect;
+
+chai.use(sinon_chai);
+
+Board = require('board');
+
+Character = require('character');
+
+fabric = require('fabric').fabric;
+
+_ = require('underscore');
+
+$ = require('jquery');
+
+describe('Character', function() {
+  beforeEach(function() {
+    var canvas, interval, selected_zones;
+    document.body.innerHTML = __html__['index.html'];
+    canvas = new fabric.StaticCanvas('my_canvas');
+    selected_zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
+    interval = 0;
+    this.board = new Board(canvas, 60, [], selected_zones, interval);
+    return this.board.add_start_tile();
+  });
+  it('a new character', function() {
+    var character;
+    character = new Character(this.board, 'black');
+    return expect(character.tile).to.equal(this.board.start_tile);
+  });
+  return describe('drawing', function() {
+    return it('uses fabric', function() {
+      var character;
+      return character = new Character(this.board);
+    });
+  });
+});
+
+
+},{"board":"vrNTnI","chai":1,"character":"BakdVC","fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"underscore":57}],72:[function(require,module,exports){
 var $, Board, Tile, chai, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -32250,4 +32442,4 @@ describe('Tile', function() {
 });
 
 
-},{"board":"vrNTnI","chai":1,"fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}]},{},[68,69])
+},{"board":"vrNTnI","chai":1,"fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}]},{},[70,71,72])

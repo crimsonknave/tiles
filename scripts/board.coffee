@@ -1,4 +1,5 @@
 Tile = require 'tile'
+Character = require 'character'
 $ = require 'jquery'
 _ = require 'underscore'
 fisherYates = require 'fisher'
@@ -8,6 +9,7 @@ module.exports = class Board
     @count = 0
     @last_was_placeable = true
     @unplaceable = []
+    @characters = []
     if @size == 60
       @x = 16
       @y = 16
@@ -15,9 +17,13 @@ module.exports = class Board
       @x = 8
       @y = 8
 
+  add_character: (color)=>
+    console.log "adding chara with color: #{color}"
+    character = new Character(this, color)
+
   add_start_tile: ->
-    start_tile = new Tile 'start', '4', @size, this
-    @add_tile(start_tile)
+    @start_tile = new Tile 'start', '4', @size, this
+    @add_tile(@start_tile)
 
   add_tile: (tile)->
     return false if @tile_at tile.x, tile.y
@@ -79,7 +85,18 @@ module.exports = class Board
           openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
     return openings
 
+  move_character: (number, dir)->
+    @characters[number].move dir
+
+  call_when_ready: (func, params)->
+    running = setInterval (=>
+      unless @running
+        func.apply(this, params)
+        clearInterval(running)
+    ), 10
+
   process_tiles_for_laying: ->
+    console.log 'processing'
     @stop_placing = false
     @running = true
     tile_stack = []
