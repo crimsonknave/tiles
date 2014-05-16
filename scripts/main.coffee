@@ -72,30 +72,30 @@ build_map = (tiles, size, interval)->
       zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']
       selected_zones = zones.slice(0,number_of_zones)
       if $('.bag input')[0].checked
-        console.log 'pulling from bag'
         zone_numbers = get_zone_numbers()
 
         tile_list = {}
         for zone in selected_zones
-          console.log "parsing #{zone}"
           tile_list[zone] = { '4': 0, '3': 0, '2-straight': 0, '2-turn': 0, '1': 0 }
           bag = []
           for tile, number of zone_numbers[zone]
             _(number).times ->
               bag.push(tile)
-          console.log bag
           fisherYates(bag)
           _(6).times ->
             tile = bag.pop()
             tile_list[zone][tile] += 1
-        console.log tile_list
       else
-        console.log 'static tile numbers'
         tile_list = {}
         for zone in selected_zones
           tile_list[zone] = tiles
       board = new Board canvas, size, tile_list, selected_zones, interval
       board.add_start_tile()
       board.lay_tiles()
+      board.call_when_ready(board.add_character, ['green'])
+      board.call_when_ready(board.add_character, ['black'])
+      board.call_when_ready(board.add_character, ['red'])
+      board.call_when_ready(board.add_character, ['purple'])
+      board.call_when_ready(board.move_character, [3, 'north'])
       clearInterval(stopping)
   ), 10
