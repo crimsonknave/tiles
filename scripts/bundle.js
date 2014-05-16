@@ -10705,6 +10705,10 @@ module.exports = Character = (function() {
   Character.prototype.move = function(dir) {
     var new_tile;
     console.log("moving " + dir);
+    if (!this.tile[dir]) {
+      return false;
+    }
+    console.log('found an exit');
     new_tile = this.tile.neighbor_to_the(dir);
     if (!new_tile) {
       return false;
@@ -10746,9 +10750,7 @@ module.exports = Character = (function() {
         y_offset = (offset / 2) + player_offset;
     }
     this.icon.left = this.tile.fimg.left + x_offset;
-    this.icon.top = this.tile.fimg.top + y_offset;
-    console.log(this.icon.left);
-    return console.log(this.icon.top);
+    return this.icon.top = this.tile.fimg.top + y_offset;
   };
 
   Character.prototype.draw = function() {
@@ -20989,6 +20991,22 @@ fabric = require('fabric').fabric;
 board = false;
 
 $(document).ready(function() {
+  $(document).keydown(function(e) {
+    switch (e.which) {
+      case 37:
+        board.move_character(3, 'west');
+        return e.preventDefault();
+      case 38:
+        board.move_character(3, 'north');
+        return e.preventDefault();
+      case 39:
+        board.move_character(3, 'east');
+        return e.preventDefault();
+      case 40:
+        board.move_character(3, 'south');
+        return e.preventDefault();
+    }
+  });
   $('.toggle').click(function() {
     $('.toggle').toggleClass('hidden');
     return $('.config').toggleClass('collapsed');

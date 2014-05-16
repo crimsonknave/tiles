@@ -6,6 +6,21 @@ fabric = require('fabric').fabric
 board = false
 
 $(document).ready ->
+  $(document).keydown (e)->
+    switch e.which
+      when 37
+        board.move_character(3, 'west')
+        e.preventDefault()
+      when 38
+        board.move_character(3, 'north')
+        e.preventDefault()
+      when 39
+        board.move_character(3, 'east')
+        e.preventDefault()
+      when 40
+        board.move_character(3, 'south')
+        e.preventDefault()
+
   $('.toggle').click ->
     $('.toggle').toggleClass('hidden')
     $('.config').toggleClass('collapsed')

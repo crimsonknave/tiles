@@ -21199,8 +21199,6 @@ module.exports = Board = (function() {
 
 },{"character":"BakdVC","fisher":"M0zJQM","jquery":40,"tile":"MtwR2O","underscore":57}],"board":[function(require,module,exports){
 module.exports=require('vrNTnI');
-},{}],"character":[function(require,module,exports){
-module.exports=require('BakdVC');
 },{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
@@ -21227,6 +21225,9 @@ module.exports = Character = (function() {
   Character.prototype.move = function(dir) {
     var new_tile;
     console.log("moving " + dir);
+    if (!this.tile[dir]) {
+      return false;
+    }
     new_tile = this.tile.neighbor_to_the(dir);
     if (!new_tile) {
       return false;
@@ -21268,9 +21269,7 @@ module.exports = Character = (function() {
         y_offset = (offset / 2) + player_offset;
     }
     this.icon.left = this.tile.fimg.left + x_offset;
-    this.icon.top = this.tile.fimg.top + y_offset;
-    console.log(this.icon.left);
-    return console.log(this.icon.top);
+    return this.icon.top = this.tile.fimg.top + y_offset;
   };
 
   Character.prototype.draw = function() {
@@ -21290,7 +21289,9 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"NlWBxo":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
+},{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2013, Printio (Juriy Zaytsev, Maxim Chernyak) */
 
@@ -31509,6 +31510,22 @@ fabric = require('fabric').fabric;
 board = false;
 
 $(document).ready(function() {
+  $(document).keydown(function(e) {
+    switch (e.which) {
+      case 37:
+        board.move_character(3, 'west');
+        return e.preventDefault();
+      case 38:
+        board.move_character(3, 'north');
+        return e.preventDefault();
+      case 39:
+        board.move_character(3, 'east');
+        return e.preventDefault();
+      case 40:
+        board.move_character(3, 'south');
+        return e.preventDefault();
+    }
+  });
   $('.toggle').click(function() {
     $('.toggle').toggleClass('hidden');
     return $('.config').toggleClass('collapsed');

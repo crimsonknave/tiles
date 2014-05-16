@@ -16,6 +16,7 @@ module.exports = class Character
 
   move: (dir)->
     console.log "moving #{dir}"
+    return false unless @tile[dir]
     new_tile = @tile.neighbor_to_the(dir)
     return false unless new_tile
     @tile.characters.splice($.inArray(this, @tile.characters), 1)
@@ -46,8 +47,6 @@ module.exports = class Character
         y_offset = ( offset / 2 ) + player_offset
     @icon.left = @tile.fimg.left + x_offset
     @icon.top = @tile.fimg.top + y_offset
-    console.log @icon.left
-    console.log @icon.top
 
   draw: ->
     @create_icon() unless @icon
