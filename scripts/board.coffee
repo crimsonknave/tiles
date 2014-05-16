@@ -87,7 +87,7 @@ module.exports = class Board
     @last_was_placeable = true
     for zone in @zones.reverse()
       stack = []
-      for type, num of @tile_list
+      for type, num of @tile_list[zone]
         for i in [1..num] by 1
           tile = new Tile zone, type, @size, this
           stack.push tile

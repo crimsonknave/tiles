@@ -7,26 +7,39 @@
 <div class='options'>
 <ul class='config collapsed'>
 <li>
+<input class='submit' type='submit' value='Generate'>
+<div class='toggle'>
+options
+</div>
+<div class='toggle hidden'>
+collapse
+</div>
+</li>
+<li class='bag'>
+Draw tiles from bag?
+<input checked type='checkbox' value>
+</li>
+<li class='non-bag hidden'>
 1
 <input class='1' type='text' value='1'>
 </li>
-<li>
+<li class='non-bag hidden'>
 2 Straight:
 <input class='2-straight' type='text' value='2'>
 </li>
-<li>
+<li class='non-bag hidden'>
 2 Turn:
 <input class='2-turn' type='text' value='2'>
 </li>
-<li>
+<li class='non-bag hidden'>
 3:
 <input class='3' type='text' value='0'>
 </li>
-<li>
+<li class='non-bag hidden'>
 4:
 <input class='4' type='text' value='1'>
 </li>
-<li>
+<li class='non-bag hidden'>
 Size:
 <select class='size'>
 <option value='121'>Big</option>
@@ -52,8 +65,8 @@ Speed:
 <select class='interval'>
 <option value='0'>PLAID!</option>
 <option value='10'>10ms</option>
-<option value='20'>20ms</option>
-<option selected value='50'>50ms</option>
+<option selected value='20'>20ms</option>
+<option value='50'>50ms</option>
 <option value='100'>100ms</option>
 <option value='200'>200ms</option>
 <option value='500'>500ms</option>
@@ -64,15 +77,6 @@ Speed:
 </li>
 <li>
 <button class='save'>Save</button>
-</li>
-<li>
-<input class='submit' type='submit' value='Generate'>
-<div class='toggle show'>
-options
-</div>
-<div class='toggle hide hidden'>
-collapse
-</div>
 </li>
 <li>
 Tiles:

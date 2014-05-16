@@ -81,6 +81,8 @@ module.exports = class Tile
       width: @size,
       height: @size
     })
+    #@fimg.mousedown ->
+      #@toggle()
 
   redraw: ->
     @board.canvas.remove(@fimg)

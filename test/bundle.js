@@ -21111,7 +21111,7 @@ module.exports = Board = (function() {
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       zone = _ref[_i];
       stack = [];
-      _ref1 = this.tile_list;
+      _ref1 = this.tile_list[zone];
       for (type in _ref1) {
         num = _ref1[type];
         for (i = _j = 1; _j <= num; i = _j += 1) {
@@ -31376,9 +31376,11 @@ module.exports = function(arr) {
 
 
 },{}],"zE4Rgs":[function(require,module,exports){
-var $, Board, board, build_map, fabric, fisherYates;
+var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, _;
 
 $ = require('jquery');
+
+_ = require('underscore');
 
 fisherYates = require('fisher');
 
@@ -31392,6 +31394,14 @@ $(document).ready(function() {
   $('.toggle').click(function() {
     $('.toggle').toggleClass('hidden');
     return $('.config').toggleClass('collapsed');
+  });
+  $('.bag').click(function(e) {
+    var box;
+    $('.non-bag').toggleClass('hidden');
+    box = $('.bag input')[0];
+    if (e.target.type !== 'checkbox') {
+      return box.checked = !box.checked;
+    }
   });
   $('#my_canvas').mousedown(function(e) {
     var canvas_x, canvas_y, tile;
@@ -31431,6 +31441,21 @@ $(document).ready(function() {
   });
 });
 
+get_zone_numbers = function() {
+  var json;
+  json = null;
+  $.ajax({
+    async: false,
+    global: false,
+    url: 'zone_numbers.json',
+    dataType: 'json',
+    success: function(data) {
+      return json = data;
+    }
+  });
+  return json;
+};
+
 build_map = function(tiles, size, interval) {
   var canvas, stopping;
   canvas = new fabric.StaticCanvas('my_canvas');
@@ -31438,14 +31463,52 @@ build_map = function(tiles, size, interval) {
     board.stop_placing = true;
   }
   return stopping = setInterval((function() {
-    var number_of_zones, selected_zones, zones;
+    var bag, number, number_of_zones, selected_zones, tile, tile_list, zone, zone_numbers, zones, _i, _j, _len, _len1, _ref;
     if (board && board.running) {
 
     } else {
       number_of_zones = $('select.zones').val();
       zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
       selected_zones = zones.slice(0, number_of_zones);
-      board = new Board(canvas, size, tiles, selected_zones, interval);
+      if ($('.bag input')[0].checked) {
+        console.log('pulling from bag');
+        zone_numbers = get_zone_numbers();
+        tile_list = {};
+        for (_i = 0, _len = selected_zones.length; _i < _len; _i++) {
+          zone = selected_zones[_i];
+          console.log("parsing " + zone);
+          tile_list[zone] = {
+            '4': 0,
+            '3': 0,
+            '2-straight': 0,
+            '2-turn': 0,
+            '1': 0
+          };
+          bag = [];
+          _ref = zone_numbers[zone];
+          for (tile in _ref) {
+            number = _ref[tile];
+            _(number).times(function() {
+              return bag.push(tile);
+            });
+          }
+          console.log(bag);
+          fisherYates(bag);
+          _(6).times(function() {
+            tile = bag.pop();
+            return tile_list[zone][tile] += 1;
+          });
+        }
+        console.log(tile_list);
+      } else {
+        console.log('static tile numbers');
+        tile_list = {};
+        for (_j = 0, _len1 = selected_zones.length; _j < _len1; _j++) {
+          zone = selected_zones[_j];
+          tile_list[zone] = tiles;
+        }
+      }
+      board = new Board(canvas, size, tile_list, selected_zones, interval);
       board.add_start_tile();
       board.lay_tiles();
       return clearInterval(stopping);
@@ -31454,10 +31517,8 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":40}],"main":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":40,"underscore":57}],"main":[function(require,module,exports){
 module.exports=require('zE4Rgs');
-},{}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
 },{}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, fisherYates, _;
 
@@ -31724,7 +31785,9 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":40,"underscore":57}],68:[function(require,module,exports){
+},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":40,"underscore":57}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
+},{}],68:[function(require,module,exports){
 var $, Board, chai, expect, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -31810,7 +31873,9 @@ describe('Board', function() {
     it('should place all the tiles', function(done) {
       var board, tiles, wait;
       tiles = {
-        '4': 20
+        'first': {
+          '4': 20
+        }
       };
       board = new Board(this.context, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
@@ -31827,7 +31892,9 @@ describe('Board', function() {
     it('should fail to place 5 dead ends', function(done) {
       var board, tiles, wait;
       tiles = {
-        '1': 5
+        'first': {
+          '1': 5
+        }
       };
       board = new Board(this.context, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
@@ -31848,7 +31915,12 @@ describe('Board', function() {
     return it('should sort tiles in (reverse) order', function() {
       var board, tile_list, tiles;
       tiles = {
-        '4': 2
+        'first': {
+          '4': 2
+        },
+        'second': {
+          '4': 2
+        }
       };
       board = new Board(this.context, 60, tiles, ['first', 'second'], this.interval);
       tile_list = board.process_tiles_for_laying();

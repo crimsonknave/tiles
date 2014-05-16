@@ -67,7 +67,7 @@ describe 'Board', ->
 
   describe 'laying tiless', ->
     it 'should place all the tiles', (done) ->
-      tiles = { '4': 20 }
+      tiles = { 'first': { '4': 20 } }
       board = new Board @context, 60, tiles, ['first'], @interval
       board.add_start_tile()
       board.lay_tiles()
@@ -79,7 +79,7 @@ describe 'Board', ->
           done()
       ), 1
     it 'should fail to place 5 dead ends', (done)->
-      tiles = { '1': 5 }
+      tiles = { 'first': { '1': 5 } }
       board = new Board @context, 60, tiles, ['first'], @interval
       board.add_start_tile()
       board.lay_tiles()
@@ -94,7 +94,7 @@ describe 'Board', ->
     it 'should list unplaceable tiles'
   describe 'processing tiles for layout', ->
     it 'should sort tiles in (reverse) order', ->
-      tiles = { '4': 2 }
+      tiles = { 'first': { '4': 2 }, 'second': { '4': 2 } }
       board = new Board @context, 60, tiles, ['first', 'second'], @interval
       tile_list = board.process_tiles_for_laying()
       expect(_.size tile_list).to.eq 4

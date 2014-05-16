@@ -11,13 +11,17 @@
     text-decoration: underline;
     color: steelblue;
     cursor: pointer;
-    padding: 5px
+    padding: 5px;
+    width: 55px;
   }
   .config.collapsed {
     li {
       display:none;
     }
-    li:nth-last-child(-n+2) {
+    li:first-child {
+      display:inline-flex;
+    }
+    li:last-child {
       display:inline-flex;
     }
   }
@@ -37,6 +41,7 @@
       input {
         width: 40px;
         padding-left: 2px;
+        margin-left: -5px;
       }
       input.submit {
         width: 70px;
@@ -44,6 +49,8 @@
     }
     li:last-child {
       border: none;
+    }
+    li:first-child {
       display:inline-flex;
     }
   }
@@ -57,7 +64,7 @@
   }
 
   .hidden {
-    display: none;
+    display: none !important;
   }
   .info {
     border: 1px solid green;

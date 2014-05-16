@@ -1,0 +1,3 @@
+--ignore-dir=node_modules
+--ignore-file=is:bundle.js
+--ignore-file=is:fabric.js
