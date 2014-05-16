@@ -1,5 +1,6 @@
 Tile = require 'tile'
 $ = require 'jquery'
+_ = require 'underscore'
 fisherYates = require 'fisher'
 module.exports = class Board
   constructor: (@canvas, @size, @tile_list, @zones, @interval)->
@@ -47,7 +48,7 @@ module.exports = class Board
     ys = @tiles[x]
     if ys
       exists = ys[y]
-    return exists
+    return exists || false
 
   find_valid_openings: ->
     openings = {
@@ -78,7 +79,7 @@ module.exports = class Board
           openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
     return openings
 
-  lay_tiles: ->
+  process_tiles_for_laying: ->
     @stop_placing = false
     @running = true
     tile_stack = []
@@ -86,7 +87,7 @@ module.exports = class Board
     @last_was_placeable = true
     for zone in @zones.reverse()
       stack = []
-      for type, num of @tile_list
+      for type, num of @tile_list[zone]
         for i in [1..num] by 1
           tile = new Tile zone, type, @size, this
           stack.push tile
@@ -96,9 +97,12 @@ module.exports = class Board
     $('span.max').text tile_stack.length
     $('span.min').removeClass('green')
     $('span.min').removeClass('red')
+    return tile_stack
+
+  lay_tiles: ->
+    tile_stack = @process_tiles_for_laying()
     timer = setInterval (=>
       if @stop_placing
-        console.log 'Stopping as requested'
         clearInterval(timer)
         @running = false
         return false
@@ -119,6 +123,6 @@ module.exports = class Board
       else
         next_tile = tile_stack.pop()
       if next_tile
-        next_tile.place() 
+        next_tile.place()
         $('span.min').text @count - 1
     ), @interval

@@ -6,21 +6,30 @@
     .options
       %ul.config.collapsed
         %li
+          %input.submit{type: :submit, value: 'Generate'}
+          .toggle
+            options
+          .toggle.hidden
+            collapse
+        %li.bag
+          Draw tiles from bag?
+          %input{type: :checkbox, value: true, checked: true}
+        %li.non-bag.hidden
           1
           %input.1{type: :text, value: 1}
-        %li
+        %li.non-bag.hidden
           2 Straight: 
           %input.2-straight{type: :text, value: 2}
-        %li
+        %li.non-bag.hidden
           2 Turn:
           %input.2-turn{type: :text, value: 2}
-        %li
+        %li.non-bag.hidden
           3:
           %input.3{type: :text, value: 0}
-        %li
+        %li.non-bag.hidden
           4:
           %input.4{type: :text, value: 1}
-        %li
+        %li.non-bag.hidden
           Size:
           %select.size
             %option{value: 121} Big
@@ -42,8 +51,8 @@
           %select.interval
             %option{value:0} PLAID!
             %option{value:10} 10ms
-            %option{value:20} 20ms
-            %option{value:50, selected: true} 50ms
+            %option{value:20, selected: true} 20ms
+            %option{value:50} 50ms
             %option{value:100} 100ms
             %option{value:200} 200ms
             %option{value:500} 500ms
@@ -52,12 +61,6 @@
             %option{value:5000} 5s
         %li
           %button.save Save
-        %li
-          %input.submit{type: :submit, value: 'Generate'}
-          .toggle.show
-            options
-          .toggle.hide.hidden
-            collapse
         %li
           Tiles: 
           %span.min 0

@@ -10,10 +10,13 @@
     text-decoration: underline;
     color: steelblue;
     cursor: pointer;
-    padding: 5px; }
+    padding: 5px;
+    width: 55px; }
   .options .config.collapsed li {
     display: none; }
-  .options .config.collapsed li:nth-last-child(-n+2) {
+  .options .config.collapsed li:first-child {
+    display: inline-flex; }
+  .options .config.collapsed li:last-child {
     display: inline-flex; }
   .options .config {
     border: 1px solid black;
@@ -28,11 +31,13 @@
       border-bottom: 1px dotted grey; }
       .options .config li input {
         width: 40px;
-        padding-left: 2px; }
+        padding-left: 2px;
+        margin-left: -5px; }
       .options .config li input.submit {
         width: 70px; }
     .options .config li:last-child {
-      border: none;
+      border: none; }
+    .options .config li:first-child {
       display: inline-flex; }
   .options span.green {
     color: green;
@@ -41,7 +46,7 @@
     color: red;
     font-weight: bold; }
   .options .hidden {
-    display: none; }
+    display: none !important; }
   .options .info {
     border: 1px solid green;
     position: fixed;

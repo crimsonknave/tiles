@@ -15,7 +15,7 @@ module.exports = (grunt) ->
       },
       coffee: {
         files: ['scripts/*.coffee', 'test/*.coffee']
-        tasks: ['newer:browserify', 'karma:unit:run']
+        tasks: ['browserify', 'karma:unit:run']
       }
       sass: {
         files: ['style.scss'],
