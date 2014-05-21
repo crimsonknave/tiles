@@ -21,8 +21,34 @@
     li:first-child {
       display:inline-flex;
     }
-    li:last-child {
+    li:nth-last-child(-n+2) {
       display:inline-flex;
+    }
+    .characters {
+      padding:0px;
+      li {
+        padding: 0px;
+        .character {
+          margin-right: 1px;
+          opacity: 0.5;
+          border: none;
+        }
+        .first {
+          background: green;
+        }
+        .second {
+          background: black;
+        }
+        .third {
+          background: red;
+        }
+        .fourth {
+          background: purple;
+        }
+        .active {
+          opacity: 1;
+        }
+      }
     }
   }
   .config {

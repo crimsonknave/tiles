@@ -16,8 +16,26 @@
     display: none; }
   .options .config.collapsed li:first-child {
     display: inline-flex; }
-  .options .config.collapsed li:last-child {
+  .options .config.collapsed li:nth-last-child(-n+2) {
     display: inline-flex; }
+  .options .config.collapsed .characters {
+    padding: 0px; }
+    .options .config.collapsed .characters li {
+      padding: 0px; }
+      .options .config.collapsed .characters li .character {
+        margin-right: 1px;
+        opacity: 0.5;
+        border: none; }
+      .options .config.collapsed .characters li .first {
+        background: green; }
+      .options .config.collapsed .characters li .second {
+        background: black; }
+      .options .config.collapsed .characters li .third {
+        background: red; }
+      .options .config.collapsed .characters li .fourth {
+        background: purple; }
+      .options .config.collapsed .characters li .active {
+        opacity: 1; }
   .options .config {
     border: 1px solid black;
     padding: 5px;

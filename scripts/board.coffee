@@ -18,7 +18,6 @@ module.exports = class Board
       @y = 8
 
   add_character: (color)=>
-    console.log "adding chara with color: #{color}"
     character = new Character(this, color)
 
   add_start_tile: ->
@@ -96,7 +95,6 @@ module.exports = class Board
     ), 10
 
   process_tiles_for_laying: ->
-    console.log 'processing'
     @stop_placing = false
     @running = true
     tile_stack = []
