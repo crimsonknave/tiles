@@ -7,20 +7,28 @@ board = false
 
 $(document).ready ->
   $(document).keydown (e)->
+    active_char = $('.character.active')[0]
+    return unless active_char
+    console.log active_char.value
     switch e.which
       when 37
-        board.move_character(3, 'west')
+        board.move_character(active_char.value, 'west')
         e.preventDefault()
       when 38
-        board.move_character(3, 'north')
+        board.move_character(active_char.value, 'north')
         e.preventDefault()
       when 39
-        board.move_character(3, 'east')
+        board.move_character(active_char.value, 'east')
         e.preventDefault()
       when 40
-        board.move_character(3, 'south')
+        board.move_character(active_char.value, 'south')
         e.preventDefault()
 
+  $('.character').click ->
+    console.log 'button'
+    $('.character').removeClass('active')
+    console.log 'foo'
+    $(this).addClass('active')
   $('.toggle').click ->
     $('.toggle').toggleClass('hidden')
     $('.config').toggleClass('collapsed')
@@ -111,6 +119,5 @@ build_map = (tiles, size, interval)->
       board.call_when_ready(board.add_character, ['black'])
       board.call_when_ready(board.add_character, ['red'])
       board.call_when_ready(board.add_character, ['purple'])
-      board.call_when_ready(board.move_character, [3, 'north'])
       clearInterval(stopping)
   ), 10

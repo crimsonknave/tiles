@@ -3,19 +3,16 @@ $ = require 'jquery'
 fabric = require('fabric').fabric
 module.exports = class Character
   constructor: (@board, @color)->
-    console.log 'creating a character'
     @tile = @board.start_tile
     @tile.characters.push this
     @size = @board.size/6
     @board.characters.push this
     @player_number =_.size @board.characters
-    console.log "color: #{@color}"
 
     @draw()
 
 
   move: (dir)->
-    console.log "moving #{dir}"
     return false unless @tile[dir]
     new_tile = @tile.neighbor_to_the(dir)
     return false unless new_tile

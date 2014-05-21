@@ -10496,7 +10496,6 @@ module.exports = Board = (function() {
 
   Board.prototype.add_character = function(color) {
     var character;
-    console.log("adding chara with color: " + color);
     return character = new Character(this, color);
   };
 
@@ -10610,7 +10609,6 @@ module.exports = Board = (function() {
 
   Board.prototype.process_tiles_for_laying = function() {
     var i, num, stack, tile, tile_stack, type, zone, _i, _j, _len, _ref, _ref1;
-    console.log('processing');
     this.stop_placing = false;
     this.running = true;
     tile_stack = [];
@@ -10692,23 +10690,19 @@ module.exports = Character = (function() {
   function Character(board, color) {
     this.board = board;
     this.color = color;
-    console.log('creating a character');
     this.tile = this.board.start_tile;
     this.tile.characters.push(this);
     this.size = this.board.size / 6;
     this.board.characters.push(this);
     this.player_number = _.size(this.board.characters);
-    console.log("color: " + this.color);
     this.draw();
   }
 
   Character.prototype.move = function(dir) {
     var new_tile;
-    console.log("moving " + dir);
     if (!this.tile[dir]) {
       return false;
     }
-    console.log('found an exit');
     new_tile = this.tile.neighbor_to_the(dir);
     if (!new_tile) {
       return false;
@@ -20992,20 +20986,32 @@ board = false;
 
 $(document).ready(function() {
   $(document).keydown(function(e) {
+    var active_char;
+    active_char = $('.character.active')[0];
+    if (!active_char) {
+      return;
+    }
+    console.log(active_char.value);
     switch (e.which) {
       case 37:
-        board.move_character(3, 'west');
+        board.move_character(active_char.value, 'west');
         return e.preventDefault();
       case 38:
-        board.move_character(3, 'north');
+        board.move_character(active_char.value, 'north');
         return e.preventDefault();
       case 39:
-        board.move_character(3, 'east');
+        board.move_character(active_char.value, 'east');
         return e.preventDefault();
       case 40:
-        board.move_character(3, 'south');
+        board.move_character(active_char.value, 'south');
         return e.preventDefault();
     }
+  });
+  $('.character').click(function() {
+    console.log('button');
+    $('.character').removeClass('active');
+    console.log('foo');
+    return $(this).addClass('active');
   });
   $('.toggle').click(function() {
     $('.toggle').toggleClass('hidden');
@@ -21126,7 +21132,6 @@ build_map = function(tiles, size, interval) {
       board.call_when_ready(board.add_character, ['black']);
       board.call_when_ready(board.add_character, ['red']);
       board.call_when_ready(board.add_character, ['purple']);
-      board.call_when_ready(board.move_character, [3, 'north']);
       return clearInterval(stopping);
     }
   }), 10);
