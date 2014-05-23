@@ -78,6 +78,13 @@
         display: block;
         padding-left: 2px; }
 
+.character_info {
+  border: 1px solid grey;
+  position: fixed;
+  left: 162px; }
+  .character_info .hidden {
+    display: none !important; }
+
 body {
   width: 4000px;
   height: 4000px; }

@@ -21197,8 +21197,6 @@ module.exports = Board = (function() {
 
 },{"character":"BakdVC","fisher":"M0zJQM","jquery":40,"tile":"MtwR2O","underscore":57}],"board":[function(require,module,exports){
 module.exports=require('vrNTnI');
-},{}],"character":[function(require,module,exports){
-module.exports=require('BakdVC');
 },{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
@@ -21286,7 +21284,9 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"NlWBxo":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
+},{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2013, Printio (Juriy Zaytsev, Maxim Chernyak) */
 
@@ -31490,7 +31490,7 @@ module.exports = function(arr) {
 
 
 },{}],"zE4Rgs":[function(require,module,exports){
-var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, _;
+var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, next_character, _;
 
 $ = require('jquery');
 
@@ -31508,29 +31508,38 @@ $(document).ready(function() {
   $(document).keydown(function(e) {
     var active_char;
     active_char = $('.character.active')[0];
-    if (!active_char) {
-      return;
-    }
-    console.log(active_char.value);
     switch (e.which) {
       case 37:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'west');
         return e.preventDefault();
       case 38:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'north');
         return e.preventDefault();
       case 39:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'east');
         return e.preventDefault();
       case 40:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'south');
+        return e.preventDefault();
+      case 9:
+        next_character();
         return e.preventDefault();
     }
   });
   $('.character').click(function() {
-    console.log('button');
     $('.character').removeClass('active');
-    console.log('foo');
     return $(this).addClass('active');
   });
   $('.toggle').click(function() {
@@ -31582,6 +31591,22 @@ $(document).ready(function() {
     return build_map(tiles, size, interval);
   });
 });
+
+next_character = function() {
+  var char, next;
+  char = $('.character.active')[0];
+  if (!char) {
+    char = $('.character.fourth')[0];
+  }
+  $('.character').removeClass('active');
+  next = {
+    0: '.second',
+    1: '.third',
+    2: '.fourth',
+    3: '.first'
+  };
+  return $(".character" + next[char.value]).addClass('active');
+};
 
 get_zone_numbers = function() {
   var json;
@@ -32086,7 +32111,7 @@ describe('Board', function() {
 
 
 },{"board":"vrNTnI","chai":1,"jquery":40,"sinon":42,"sinon-chai":41,"underscore":57}],71:[function(require,module,exports){
-var $, Board, Character, chai, expect, fabric, sinon, sinon_chai, _;
+var $, Board, Character, Tile, chai, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');
 
@@ -32101,6 +32126,8 @@ chai.use(sinon_chai);
 Board = require('board');
 
 Character = require('character');
+
+Tile = require('tile');
 
 fabric = require('fabric').fabric;
 
@@ -32121,18 +32148,43 @@ describe('Character', function() {
   it('a new character', function() {
     var character;
     character = new Character(this.board, 'black');
-    return expect(character.tile).to.equal(this.board.start_tile);
+    expect(character.tile).to.equal(this.board.start_tile);
+    return expect(character.player_number).to.equal(1);
   });
-  return describe('drawing', function() {
-    return it('uses fabric', function() {
-      var character;
-      return character = new Character(this.board);
+  describe('drawing', function() {
+    return it('uses fabric');
+  });
+  return describe('movement', function() {
+    beforeEach(function() {
+      var tile, _ref, _ref1, _ref2;
+      this.character = new Character(this.board, 'black');
+      tile = new Tile('first', '1', this.board.size, this.board);
+      tile.rotate(4);
+      _ref = [0, 1], tile.x = _ref[0], tile.y = _ref[1];
+      this.board.add_tile(tile);
+      tile = new Tile('first', '4', this.board.size, this.board);
+      _ref1 = [-1, 0], tile.x = _ref1[0], tile.y = _ref1[1];
+      this.board.add_tile(tile);
+      tile = new Tile('first', '2-straight', this.board.size, this.board);
+      tile.rotate(2);
+      _ref2 = [0, 1], tile.x = _ref2[0], tile.y = _ref2[1];
+      return this.board.add_tile(tile);
+    });
+    it('fails when there is no tile there', function() {
+      return expect(this.character.move('south')).to.be["false"];
+    });
+    it('fails when there is no exit there', function() {
+      expect(this.character.move('north')).to.not.be["false"];
+      return expect(this.character.move('west')).to.be["false"];
+    });
+    return it('succeedes', function() {
+      return expect(this.character.move('north')).to.not.be["false"];
     });
   });
 });
 
 
-},{"board":"vrNTnI","chai":1,"character":"BakdVC","fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"underscore":57}],72:[function(require,module,exports){
+},{"board":"vrNTnI","chai":1,"character":"BakdVC","fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}],72:[function(require,module,exports){
 var $, Board, Tile, chai, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');

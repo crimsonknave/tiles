@@ -6,6 +6,7 @@ chai.use(sinon_chai)
 
 Board = require 'board'
 Character = require 'character'
+Tile = require 'tile'
 fabric = require('fabric').fabric
 _ = require 'underscore'
 $ = require 'jquery'
@@ -21,8 +22,35 @@ describe 'Character', ->
   it 'a new character', ->
     character = new Character @board, 'black'
     expect(character.tile).to.equal(@board.start_tile)
+    expect(character.player_number).to.equal(1)
 
   describe 'drawing', ->
-    it 'uses fabric', ->
-      character = new Character @board
+    it 'uses fabric'
+
+  describe 'movement', ->
+    beforeEach ->
+      @character = new Character @board, 'black'
+      tile = new Tile 'first', '1', @board.size, @board
+      tile.rotate(4)
+      [tile.x, tile.y] = [0, 1]
+      @board.add_tile(tile)
+
+      tile = new Tile 'first', '4', @board.size, @board
+      [tile.x, tile.y] = [-1, 0]
+      @board.add_tile(tile)
+
+      tile = new Tile 'first', '2-straight', @board.size, @board
+      tile.rotate(2)
+      [tile.x, tile.y] = [0, 1]
+      @board.add_tile(tile)
+
+    it 'fails when there is no tile there', ->
+      expect(@character.move('south')).to.be.false
+
+    it 'fails when there is no exit there', ->
+      expect(@character.move('north')).to.not.be.false
+      expect(@character.move('west')).to.be.false
+
+    it 'succeedes', ->
+      expect(@character.move('north')).to.not.be.false
 

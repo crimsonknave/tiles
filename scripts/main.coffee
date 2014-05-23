@@ -8,26 +8,29 @@ board = false
 $(document).ready ->
   $(document).keydown (e)->
     active_char = $('.character.active')[0]
-    return unless active_char
-    console.log active_char.value
     switch e.which
       when 37
+        return unless active_char
         board.move_character(active_char.value, 'west')
         e.preventDefault()
       when 38
+        return unless active_char
         board.move_character(active_char.value, 'north')
         e.preventDefault()
       when 39
+        return unless active_char
         board.move_character(active_char.value, 'east')
         e.preventDefault()
       when 40
+        return unless active_char
         board.move_character(active_char.value, 'south')
+        e.preventDefault()
+      when 9
+        next_character()
         e.preventDefault()
 
   $('.character').click ->
-    console.log 'button'
     $('.character').removeClass('active')
-    console.log 'foo'
     $(this).addClass('active')
   $('.toggle').click ->
     $('.toggle').toggleClass('hidden')
@@ -70,6 +73,18 @@ $(document).ready ->
       '1': parseInt($('.1').val()) || 0
     }
     build_map(tiles, size, interval)
+
+next_character = ->
+  char = $('.character.active')[0]
+  char = $('.character.fourth')[0] unless char
+  $('.character').removeClass('active')
+  next = {
+    0: '.second',
+    1: '.third',
+    2: '.fourth',
+    3: '.first'
+  }
+  $(".character#{next[char.value]}").addClass('active')
 
 get_zone_numbers = ->
   json = null

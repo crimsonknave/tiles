@@ -10456,8 +10456,6 @@ return jQuery;
   }
 }).call(this);
 
-},{}],"board":[function(require,module,exports){
-module.exports=require('vrNTnI');
 },{}],"vrNTnI":[function(require,module,exports){
 var $, Board, Character, Tile, fisherYates, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -10677,7 +10675,11 @@ module.exports = Board = (function() {
 })();
 
 
-},{"character":"BakdVC","fisher":"M0zJQM","jquery":1,"tile":"MtwR2O","underscore":2}],"BakdVC":[function(require,module,exports){
+},{"character":"BakdVC","fisher":"M0zJQM","jquery":1,"tile":"MtwR2O","underscore":2}],"board":[function(require,module,exports){
+module.exports=require('vrNTnI');
+},{}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
+},{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
 _ = require('underscore');
@@ -10764,11 +10766,7 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":1,"underscore":2}],"character":[function(require,module,exports){
-module.exports=require('BakdVC');
-},{}],"fabric":[function(require,module,exports){
-module.exports=require('NlWBxo');
-},{}],"NlWBxo":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":1,"underscore":2}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2013, Printio (Juriy Zaytsev, Maxim Chernyak) */
 
@@ -20948,6 +20946,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
+},{}],"fabric":[function(require,module,exports){
+module.exports=require('NlWBxo');
 },{}],"fisher":[function(require,module,exports){
 module.exports=require('M0zJQM');
 },{}],"M0zJQM":[function(require,module,exports){
@@ -20970,7 +20970,7 @@ module.exports = function(arr) {
 
 
 },{}],"zE4Rgs":[function(require,module,exports){
-var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, _;
+var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, next_character, _;
 
 $ = require('jquery');
 
@@ -20988,29 +20988,38 @@ $(document).ready(function() {
   $(document).keydown(function(e) {
     var active_char;
     active_char = $('.character.active')[0];
-    if (!active_char) {
-      return;
-    }
-    console.log(active_char.value);
     switch (e.which) {
       case 37:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'west');
         return e.preventDefault();
       case 38:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'north');
         return e.preventDefault();
       case 39:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'east');
         return e.preventDefault();
       case 40:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'south');
+        return e.preventDefault();
+      case 9:
+        next_character();
         return e.preventDefault();
     }
   });
   $('.character').click(function() {
-    console.log('button');
     $('.character').removeClass('active');
-    console.log('foo');
     return $(this).addClass('active');
   });
   $('.toggle').click(function() {
@@ -21062,6 +21071,22 @@ $(document).ready(function() {
     return build_map(tiles, size, interval);
   });
 });
+
+next_character = function() {
+  var char, next;
+  char = $('.character.active')[0];
+  if (!char) {
+    char = $('.character.fourth')[0];
+  }
+  $('.character').removeClass('active');
+  next = {
+    0: '.second',
+    1: '.third',
+    2: '.fourth',
+    3: '.first'
+  };
+  return $(".character" + next[char.value]).addClass('active');
+};
 
 get_zone_numbers = function() {
   var json;

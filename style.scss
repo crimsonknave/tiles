@@ -108,6 +108,14 @@
     }
   }
 }
+.character_info {
+  .hidden {
+    display: none !important
+  }
+  border: 1px solid grey;
+  position: fixed;
+  left: 162px;
+}
 
 body {
   width: 4000px;
