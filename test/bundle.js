@@ -31593,19 +31593,33 @@ $(document).ready(function() {
 });
 
 next_character = function() {
-  var char, next;
+  var char, next, next_char;
   char = $('.character.active')[0];
   if (!char) {
     char = $('.character.fourth')[0];
   }
   $('.character').removeClass('active');
   next = {
-    0: '.second',
-    1: '.third',
-    2: '.fourth',
-    3: '.first'
+    0: {
+      label: '.second',
+      color: 'rgba(0,0,0,0.25)'
+    },
+    1: {
+      label: '.third',
+      color: 'rgba(255,0,0,0.25)'
+    },
+    2: {
+      label: '.fourth',
+      color: 'rgba(128,0,128,0.25)'
+    },
+    3: {
+      label: '.first',
+      color: 'rgba(0,128,0,0.25'
+    }
   };
-  return $(".character" + next[char.value]).addClass('active');
+  next_char = next[char.value];
+  $(".character" + next_char.label).addClass('active');
+  return $('.character_info')[0].style.backgroundColor = next_char.color;
 };
 
 get_zone_numbers = function() {

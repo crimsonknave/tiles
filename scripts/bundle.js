@@ -10456,6 +10456,8 @@ return jQuery;
   }
 }).call(this);
 
+},{}],"board":[function(require,module,exports){
+module.exports=require('vrNTnI');
 },{}],"vrNTnI":[function(require,module,exports){
 var $, Board, Character, Tile, fisherYates, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -10675,11 +10677,7 @@ module.exports = Board = (function() {
 })();
 
 
-},{"character":"BakdVC","fisher":"M0zJQM","jquery":1,"tile":"MtwR2O","underscore":2}],"board":[function(require,module,exports){
-module.exports=require('vrNTnI');
-},{}],"character":[function(require,module,exports){
-module.exports=require('BakdVC');
-},{}],"BakdVC":[function(require,module,exports){
+},{"character":"BakdVC","fisher":"M0zJQM","jquery":1,"tile":"MtwR2O","underscore":2}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
 _ = require('underscore');
@@ -10766,7 +10764,11 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":1,"underscore":2}],"NlWBxo":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":1,"underscore":2}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
+},{}],"fabric":[function(require,module,exports){
+module.exports=require('NlWBxo');
+},{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2013, Printio (Juriy Zaytsev, Maxim Chernyak) */
 
@@ -20946,8 +20948,6 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-},{}],"fabric":[function(require,module,exports){
-module.exports=require('NlWBxo');
 },{}],"fisher":[function(require,module,exports){
 module.exports=require('M0zJQM');
 },{}],"M0zJQM":[function(require,module,exports){
@@ -21073,19 +21073,33 @@ $(document).ready(function() {
 });
 
 next_character = function() {
-  var char, next;
+  var char, next, next_char;
   char = $('.character.active')[0];
   if (!char) {
     char = $('.character.fourth')[0];
   }
   $('.character').removeClass('active');
   next = {
-    0: '.second',
-    1: '.third',
-    2: '.fourth',
-    3: '.first'
+    0: {
+      label: '.second',
+      color: 'rgba(0,0,0,0.25)'
+    },
+    1: {
+      label: '.third',
+      color: 'rgba(255,0,0,0.25)'
+    },
+    2: {
+      label: '.fourth',
+      color: 'rgba(128,0,128,0.25)'
+    },
+    3: {
+      label: '.first',
+      color: 'rgba(0,128,0,0.25'
+    }
   };
-  return $(".character" + next[char.value]).addClass('active');
+  next_char = next[char.value];
+  $(".character" + next_char.label).addClass('active');
+  return $('.character_info')[0].style.backgroundColor = next_char.color;
 };
 
 get_zone_numbers = function() {
