@@ -20970,7 +20970,7 @@ module.exports = function(arr) {
 
 
 },{}],"zE4Rgs":[function(require,module,exports){
-var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, _;
+var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, next_character, _;
 
 $ = require('jquery');
 
@@ -20988,29 +20988,38 @@ $(document).ready(function() {
   $(document).keydown(function(e) {
     var active_char;
     active_char = $('.character.active')[0];
-    if (!active_char) {
-      return;
-    }
-    console.log(active_char.value);
     switch (e.which) {
       case 37:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'west');
         return e.preventDefault();
       case 38:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'north');
         return e.preventDefault();
       case 39:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'east');
         return e.preventDefault();
       case 40:
+        if (!active_char) {
+          return;
+        }
         board.move_character(active_char.value, 'south');
+        return e.preventDefault();
+      case 9:
+        next_character();
         return e.preventDefault();
     }
   });
   $('.character').click(function() {
-    console.log('button');
     $('.character').removeClass('active');
-    console.log('foo');
     return $(this).addClass('active');
   });
   $('.toggle').click(function() {
@@ -21062,6 +21071,36 @@ $(document).ready(function() {
     return build_map(tiles, size, interval);
   });
 });
+
+next_character = function() {
+  var char, next, next_char;
+  char = $('.character.active')[0];
+  if (!char) {
+    char = $('.character.fourth')[0];
+  }
+  $('.character').removeClass('active');
+  next = {
+    0: {
+      label: '.second',
+      color: 'rgba(0,0,0,0.25)'
+    },
+    1: {
+      label: '.third',
+      color: 'rgba(255,0,0,0.25)'
+    },
+    2: {
+      label: '.fourth',
+      color: 'rgba(128,0,128,0.25)'
+    },
+    3: {
+      label: '.first',
+      color: 'rgba(0,128,0,0.25'
+    }
+  };
+  next_char = next[char.value];
+  $(".character" + next_char.label).addClass('active');
+  return $('.character_info')[0].style.backgroundColor = next_char.color;
+};
 
 get_zone_numbers = function() {
   var json;
