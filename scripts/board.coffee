@@ -114,6 +114,55 @@ module.exports = class Board
     $('span.min').removeClass('red')
     return tile_stack
 
+  place_tile: (tile) ->
+    openings = @find_valid_openings()
+    other_zones = []
+    # TODO: rewrite to use hash access?
+    for key, value of openings
+      if key == tile.zone
+        if value.length > 0
+          matching_slots = value
+        else
+          matching_slots = []
+      else
+        if value.length > 0
+          other_zones = other_zones.concat value
+    fisherYates(matching_slots)
+    fisherYates(other_zones)
+    all_slots = matching_slots.concat other_zones
+    i = 0
+    for slot in all_slots
+      loop
+        [x,y] = slot
+
+        north_tile = @tile_at(x, y+1)
+        east_tile = @tile_at(x+1, y)
+        south_tile = @tile_at(x, y-1)
+        west_tile = @tile_at(x-1, y)
+        fits = true
+        if north_tile && (north_tile.south != tile.north)
+          fits = false
+        if east_tile && (east_tile.west != tile.east)
+          fits = false
+        if south_tile && (south_tile.north != tile.south)
+          fits = false
+        if west_tile && (west_tile.east != tile.west)
+          fits = false
+
+        if fits
+          tile.x = x
+          tile.y = y
+          @add_tile(tile)
+          @last_was_placeable = true
+          return true
+        break if tile.orientations.length == 0
+        tile.rotate tile.orientations.pop()
+    @unplaceable.push tile
+    tile.set_orientations()
+    @last_was_placeable = false
+    return false
+
+
   lay_tiles: ->
     tile_stack = @process_tiles_for_laying()
     timer = setInterval (=>
@@ -138,6 +187,6 @@ module.exports = class Board
       else
         next_tile = tile_stack.pop()
       if next_tile
-        next_tile.place()
-        $('span.min').text @count - 1
+        success = @place_tile next_tile
+        $('span.min').text @count - 1 if success
     ), @interval

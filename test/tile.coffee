@@ -54,15 +54,15 @@ describe 'Tile', ->
       expect(@tile.y).to.be.undefined
 
     it 'should be placed', ->
-      expect(@tile.place()).to.be.ok
+      expect(@board.place_tile @tile).to.be.ok
       expect(@tile.x).to.not.be.undefined
       expect(@tile.y).to.not.be.undefined
 
     it 'should not be placed if there is no room', ->
       _(4).times =>
         tile = new Tile 'first', '1', @board.size, @board
-        tile.place()
-      expect(@tile.place()).to.be.false
+        @board.place_tile tile
+      expect(@board.place_tile @tile).to.be.false
       expect(@tile.x).to.be.undefined
       expect(@tile.y).to.be.undefined
     it 'has four rotations', ->
@@ -161,7 +161,7 @@ describe 'Tile', ->
 
     it 'should untoggle others', ->
       tile = new Tile 'first', '1', @board.size, @board
-      tile.place()
+      @board.place_tile tile
       expect(@tile.toggled).to.be.undefined
       expect(tile.toggled).to.be.undefined
       @tile.toggle()

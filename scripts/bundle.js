@@ -10635,12 +10635,74 @@ module.exports = Board = (function() {
     return tile_stack;
   };
 
+  Board.prototype.place_tile = function(tile) {
+    var all_slots, east_tile, fits, i, key, matching_slots, north_tile, openings, other_zones, slot, south_tile, value, west_tile, x, y, _i, _len;
+    openings = this.find_valid_openings();
+    other_zones = [];
+    for (key in openings) {
+      value = openings[key];
+      if (key === tile.zone) {
+        if (value.length > 0) {
+          matching_slots = value;
+        } else {
+          matching_slots = [];
+        }
+      } else {
+        if (value.length > 0) {
+          other_zones = other_zones.concat(value);
+        }
+      }
+    }
+    fisherYates(matching_slots);
+    fisherYates(other_zones);
+    all_slots = matching_slots.concat(other_zones);
+    i = 0;
+    for (_i = 0, _len = all_slots.length; _i < _len; _i++) {
+      slot = all_slots[_i];
+      while (true) {
+        x = slot[0], y = slot[1];
+        north_tile = this.tile_at(x, y + 1);
+        east_tile = this.tile_at(x + 1, y);
+        south_tile = this.tile_at(x, y - 1);
+        west_tile = this.tile_at(x - 1, y);
+        fits = true;
+        if (north_tile && (north_tile.south !== tile.north)) {
+          fits = false;
+        }
+        if (east_tile && (east_tile.west !== tile.east)) {
+          fits = false;
+        }
+        if (south_tile && (south_tile.north !== tile.south)) {
+          fits = false;
+        }
+        if (west_tile && (west_tile.east !== tile.west)) {
+          fits = false;
+        }
+        if (fits) {
+          tile.x = x;
+          tile.y = y;
+          this.add_tile(tile);
+          this.last_was_placeable = true;
+          return true;
+        }
+        if (tile.orientations.length === 0) {
+          break;
+        }
+        tile.rotate(tile.orientations.pop());
+      }
+    }
+    this.unplaceable.push(tile);
+    tile.set_orientations();
+    this.last_was_placeable = false;
+    return false;
+  };
+
   Board.prototype.lay_tiles = function() {
     var tile_stack, timer;
     tile_stack = this.process_tiles_for_laying();
     return timer = setInterval(((function(_this) {
       return function() {
-        var next_tile;
+        var next_tile, success;
         if (_this.stop_placing) {
           clearInterval(timer);
           _this.running = false;
@@ -10665,8 +10727,10 @@ module.exports = Board = (function() {
           next_tile = tile_stack.pop();
         }
         if (next_tile) {
-          next_tile.place();
-          return $('span.min').text(_this.count - 1);
+          success = _this.place_tile(next_tile);
+          if (success) {
+            return $('span.min').text(_this.count - 1);
+          }
         }
       };
     })(this)), this.interval);
@@ -21164,7 +21228,7 @@ build_map = function(tiles, size, interval) {
           tile_list[zone] = tiles;
         }
       }
-      board = new Board(canvas, size, tile_list, selected_zones, interval);
+      window.board = board = new Board(canvas, size, tile_list, selected_zones, interval);
       board.add_start_tile();
       board.lay_tiles();
       board.call_when_ready(board.add_character, ['green']);
@@ -21204,9 +21268,7 @@ module.exports = Tile = (function() {
       this.y = 0;
       this.set_exits();
     } else {
-      this.orientations = this.rotations();
-      fisherYates(this.orientations);
-      this.rotate(this.orientations.pop());
+      this.set_orientations();
     }
     if (this.size === 121) {
       this.offset = 8;
@@ -21214,6 +21276,12 @@ module.exports = Tile = (function() {
       this.offset = 16;
     }
   }
+
+  Tile.prototype.set_orientations = function() {
+    this.orientations = this.rotations();
+    fisherYates(this.orientations);
+    return this.rotate(this.orientations.pop());
+  };
 
   Tile.prototype.character_list = function() {
     return _.map(this.characters, function(char) {
@@ -21386,68 +21454,6 @@ module.exports = Tile = (function() {
     this.orientation = orientation;
     this.file = "images/" + this.zone + this.type + "-" + this.orientation + ".png";
     return this.set_exits();
-  };
-
-  Tile.prototype.place = function() {
-    var all_slots, east_tile, fits, i, key, matching_slots, north_tile, other_slots, slot, slots, south_tile, value, west_tile, x, y, _i, _len;
-    slots = this.board.find_valid_openings();
-    other_slots = [];
-    for (key in slots) {
-      value = slots[key];
-      if (key === this.zone) {
-        if (value.length > 0) {
-          matching_slots = value;
-        } else {
-          matching_slots = [];
-        }
-      } else {
-        if (value.length > 0) {
-          other_slots = other_slots.concat(value);
-        }
-      }
-    }
-    fisherYates(matching_slots);
-    fisherYates(other_slots);
-    all_slots = matching_slots.concat(other_slots);
-    i = 0;
-    for (_i = 0, _len = all_slots.length; _i < _len; _i++) {
-      slot = all_slots[_i];
-      while (true) {
-        x = slot[0];
-        y = slot[1];
-        north_tile = this.board.tile_at(x, y + 1);
-        east_tile = this.board.tile_at(x + 1, y);
-        south_tile = this.board.tile_at(x, y - 1);
-        west_tile = this.board.tile_at(x - 1, y);
-        fits = true;
-        if (north_tile && (north_tile.south !== this.north)) {
-          fits = false;
-        }
-        if (east_tile && (east_tile.west !== this.east)) {
-          fits = false;
-        }
-        if (south_tile && (south_tile.north !== this.south)) {
-          fits = false;
-        }
-        if (west_tile && (west_tile.east !== this.west)) {
-          fits = false;
-        }
-        if (fits) {
-          this.x = x;
-          this.y = y;
-          this.board.add_tile(this);
-          this.board.last_was_placeable = true;
-          return true;
-        }
-        if (this.orientations.length === 0) {
-          break;
-        }
-        this.rotate(this.orientations.pop());
-      }
-    }
-    this.board.unplaceable.push(this);
-    this.board.last_was_placeable = false;
-    return false;
   };
 
   return Tile;

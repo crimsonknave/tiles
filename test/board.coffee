@@ -5,8 +5,59 @@ expect = chai.expect
 chai.use(sinon_chai)
 
 Board = require 'board'
+Tile = require 'tile'
 _ = require 'underscore'
 $ = require 'jquery'
+
+create_box = (board)->
+  board.add_start_tile()
+  turns = []
+  straight = []
+  _(4).times ->
+    turns.push(new Tile 'first', '2-turn', 60, board)
+  _(3).times ->
+    straight.push(new Tile 'first', '2-straight', 60, board)
+
+  #2-turn 0,-1
+  tile = turns.pop()
+  [tile.x, tile.y] = [0,-1]
+  tile.rotate 3
+  board.add_tile(tile)
+  #2-straight -1,-1
+  tile = straight.pop()
+  [tile.x, tile.y] = [-1,-1]
+  tile.rotate 1
+  board.add_tile(tile)
+  #2-turn -2,-1
+  tile = turns.pop()
+  [tile.x, tile.y] = [-2,-1]
+  tile.rotate 4
+  board.add_tile(tile)
+  #2-straight, -2,0
+  tile = straight.pop()
+  [tile.x, tile.y] = [-2,0]
+  tile.rotate 2
+  board.add_tile(tile)
+  #2-turn -2,1
+  tile = turns.pop()
+  [tile.x, tile.y] = [-2,1]
+  tile.rotate 1
+  board.add_tile(tile)
+  #2-straight -1,1
+  tile = straight.pop()
+  [tile.x, tile.y] = [-1,1]
+  tile.rotate 1
+  board.add_tile(tile)
+  #2-turn 0,1
+  tile = turns.pop()
+  [tile.x, tile.y] = [0,1]
+  tile.rotate 2
+  board.add_tile(tile)
+  #1 1,0
+  tile = new Tile 'first', '1', 60, board
+  [tile.x, tile.y] = [1,0]
+  tile.rotate 1
+  board.add_tile(tile)
 
 describe 'Board', ->
   before ->
@@ -90,6 +141,36 @@ describe 'Board', ->
           expect(board.count).to.eq 5
           done()
       ), 1
+    it 'should place a 1 when it is surrounded, but fits', (done) ->
+      tiles = { 'first': {'1', 1} }
+      board = new Board @context, 60, tiles, ['first'], @interval
+      create_box(board)
+
+      board.lay_tiles()
+      wait = setInterval (->
+        console.log 'waiti8ng'
+        if !board.running
+          clearInterval(wait)
+          expect(_.size board.unplaceable).to.eq 0
+          expect(board.count).to.eq 10
+          expect(board.tile_at(-1,0)).to.not.be.false
+          done()
+      ), 1
+
+    it 'replaces the orientations when unplaceable', (done) ->
+      tiles = { 'first': { '3': 1 } }
+      board = new Board @context, 60, tiles, ['first'], @interval
+      create_box(board)
+      board.lay_tiles()
+      wait = setInterval (->
+        if !board.running
+          clearInterval(wait)
+          expect(_.size board.unplaceable).to.eq 1
+          expect(_.size board.unplaceable[0].orientations).to.eq 3
+          expect(board.unplaceable[0].orientations).to.not.include board.unplaceable[0].orientation
+          done()
+      ), 1
+
     it 'should clear the placed count'
     it 'should list unplaceable tiles'
   describe 'processing tiles for layout', ->
@@ -103,6 +184,8 @@ describe 'Board', ->
       expect(tile_list.pop().zone).to.eq 'second'
       expect(tile_list.pop().zone).to.eq 'second'
 
+  describe 'add_tile', ->
+    it 'checks if the connections are valid'
       
 
 
