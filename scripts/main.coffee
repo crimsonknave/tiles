@@ -129,7 +129,7 @@ build_map = (tiles, size, interval)->
         tile_list = {}
         for zone in selected_zones
           tile_list[zone] = tiles
-      board = new Board canvas, size, tile_list, selected_zones, interval
+      window.board = board = new Board canvas, size, tile_list, selected_zones, interval
       board.add_start_tile()
       board.lay_tiles()
       board.call_when_ready(board.add_character, ['green'])

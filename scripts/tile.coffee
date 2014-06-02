@@ -11,15 +11,17 @@ module.exports = class Tile
       @y = 0
       @set_exits()
     else
-      # Get a list of random orientations and pop the first
-      @orientations = @rotations()
-      fisherYates(@orientations)
-      @rotate @orientations.pop()
+      @set_orientations()
 
     if @size == 121
       @offset = 8
     else
       @offset = 16
+
+  set_orientations: ->
+    @orientations = @rotations()
+    fisherYates(@orientations)
+    @rotate @orientations.pop()
 
   character_list: ->
     _.map(@characters, (char)->
@@ -149,59 +151,3 @@ module.exports = class Tile
     @orientation = orientation
     @file = "images/#{@zone}#{@type}-#{@orientation}.png"
     @set_exits()
-
-  # We iterate over all the slots
-  # For each slot we try a random rotation and see if the tile fits
-  # If not we try all the other orientations in order
-  # If none of those fit we move on to the next random slot
-  # If none of the slots fit we place the tile in unplaceable and 
-  # note that we could not place a tile
-  # We will try and place the tiles in unplaceable once we've places a new
-  # tile
-  place: ->
-    slots = @board.find_valid_openings()
-    other_slots = []
-    for key, value of slots
-      if key == @zone
-        if value.length > 0
-          matching_slots = value
-        else
-          matching_slots = []
-      else
-        if value.length > 0
-          other_slots = other_slots.concat value
-
-    fisherYates(matching_slots)
-    fisherYates(other_slots)
-    all_slots = matching_slots.concat other_slots
-    i = 0
-    for slot in all_slots
-      loop
-        x = slot[0]
-        y = slot[1]
-
-        north_tile = @board.tile_at(x, y+1)
-        east_tile = @board.tile_at(x+1, y)
-        south_tile = @board.tile_at(x, y-1)
-        west_tile = @board.tile_at(x-1, y)
-        fits = true
-        if north_tile && (north_tile.south != @north)
-          fits = false
-        if east_tile && (east_tile.west != @east)
-          fits = false
-        if south_tile && (south_tile.north != @south)
-          fits = false
-        if west_tile && (west_tile.east != @west)
-          fits = false
-
-        if fits
-          @x = x
-          @y = y
-          @board.add_tile(this)
-          @board.last_was_placeable = true
-          return true
-        break if @orientations.length == 0
-        @rotate @orientations.pop()
-    @board.unplaceable.push this
-    @board.last_was_placeable = false
-    return false
