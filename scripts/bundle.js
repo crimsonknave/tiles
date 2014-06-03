@@ -10665,7 +10665,7 @@ module.exports = Board = (function() {
           stack.push(tile);
         }
       }
-      _.shuffle(stack);
+      stack = _.shuffle(stack);
       tile_stack = tile_stack.concat(stack);
     }
     $('span.max').text(tile_stack.length);
@@ -10674,8 +10674,8 @@ module.exports = Board = (function() {
     return tile_stack;
   };
 
-  Board.prototype.place_tile = function(tile) {
-    var all_slots, i, matching_slots, openings, other_zones, slot, _i, _len;
+  Board.prototype.sort_openings = function(tile) {
+    var matching_slots, openings, other_zones;
     openings = this.find_valid_openings();
     other_zones = [];
     matching_slots = openings[tile.zone];
@@ -10683,9 +10683,14 @@ module.exports = Board = (function() {
     _.each(_.values(openings), function(value) {
       return other_zones = other_zones.concat(value);
     });
-    _.shuffle(matching_slots);
-    _.shuffle(other_zones);
-    all_slots = matching_slots.concat(other_zones);
+    matching_slots = _.shuffle(matching_slots);
+    other_zones = _.shuffle(other_zones);
+    return matching_slots.concat(other_zones);
+  };
+
+  Board.prototype.place_tile = function(tile) {
+    var all_slots, i, slot, _i, _len;
+    all_slots = this.sort_openings(tile);
     i = 0;
     for (_i = 0, _len = all_slots.length; _i < _len; _i++) {
       slot = all_slots[_i];
@@ -21203,7 +21208,7 @@ build_map = function(tiles, size, interval) {
               return bag.push(tile);
             });
           }
-          _.shuffle(bag);
+          bag = _.shuffle(bag);
           _(6).times(function() {
             tile = bag.pop();
             return tile_list[zone][tile] += 1;
@@ -21264,8 +21269,7 @@ module.exports = Tile = (function() {
   }
 
   Tile.prototype.set_orientations = function() {
-    this.orientations = this.rotations();
-    _.shuffle(this.orientations);
+    this.orientations = _.shuffle(this.rotations());
     return this.rotate(this.orientations.pop());
   };
 

@@ -18,8 +18,7 @@ module.exports = class Tile
       @offset = 16
 
   set_orientations: ->
-    @orientations = @rotations()
-    _.shuffle(@orientations)
+    @orientations = _.shuffle(@rotations())
     @rotate @orientations.pop()
 
   character_list: ->

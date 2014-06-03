@@ -120,7 +120,7 @@ build_map = (tiles, size, interval)->
           for tile, number of zone_numbers[zone]
             _(number).times ->
               bag.push(tile)
-          _.shuffle(bag)
+          bag = _.shuffle(bag)
           _(6).times ->
             tile = bag.pop()
             tile_list[zone][tile] += 1

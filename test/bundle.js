@@ -20976,8 +20976,6 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 }).call(this);
 
-},{}],"board":[function(require,module,exports){
-module.exports=require('vrNTnI');
 },{}],"vrNTnI":[function(require,module,exports){
 var $, Board, Character, Tile, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -21187,7 +21185,7 @@ module.exports = Board = (function() {
           stack.push(tile);
         }
       }
-      _.shuffle(stack);
+      stack = _.shuffle(stack);
       tile_stack = tile_stack.concat(stack);
     }
     $('span.max').text(tile_stack.length);
@@ -21196,8 +21194,8 @@ module.exports = Board = (function() {
     return tile_stack;
   };
 
-  Board.prototype.place_tile = function(tile) {
-    var all_slots, i, matching_slots, openings, other_zones, slot, _i, _len;
+  Board.prototype.sort_openings = function(tile) {
+    var matching_slots, openings, other_zones;
     openings = this.find_valid_openings();
     other_zones = [];
     matching_slots = openings[tile.zone];
@@ -21205,9 +21203,14 @@ module.exports = Board = (function() {
     _.each(_.values(openings), function(value) {
       return other_zones = other_zones.concat(value);
     });
-    _.shuffle(matching_slots);
-    _.shuffle(other_zones);
-    all_slots = matching_slots.concat(other_zones);
+    matching_slots = _.shuffle(matching_slots);
+    other_zones = _.shuffle(other_zones);
+    return matching_slots.concat(other_zones);
+  };
+
+  Board.prototype.place_tile = function(tile) {
+    var all_slots, i, slot, _i, _len;
+    all_slots = this.sort_openings(tile);
     i = 0;
     for (_i = 0, _len = all_slots.length; _i < _len; _i++) {
       slot = all_slots[_i];
@@ -21272,8 +21275,8 @@ module.exports = Board = (function() {
 })();
 
 
-},{"character":"BakdVC","jquery":40,"tile":"MtwR2O","underscore":57}],"character":[function(require,module,exports){
-module.exports=require('BakdVC');
+},{"character":"BakdVC","jquery":40,"tile":"MtwR2O","underscore":57}],"board":[function(require,module,exports){
+module.exports=require('vrNTnI');
 },{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
@@ -21361,7 +21364,9 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"fabric":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
+},{}],"fabric":[function(require,module,exports){
 module.exports=require('NlWBxo');
 },{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
@@ -31723,7 +31728,7 @@ build_map = function(tiles, size, interval) {
               return bag.push(tile);
             });
           }
-          _.shuffle(bag);
+          bag = _.shuffle(bag);
           _(6).times(function() {
             tile = bag.pop();
             return tile_list[zone][tile] += 1;
@@ -31751,6 +31756,8 @@ build_map = function(tiles, size, interval) {
 
 },{"board":"vrNTnI","fabric":"NlWBxo","jquery":40,"underscore":57}],"main":[function(require,module,exports){
 module.exports=require('zE4Rgs');
+},{}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
 },{}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, _;
 
@@ -31784,8 +31791,7 @@ module.exports = Tile = (function() {
   }
 
   Tile.prototype.set_orientations = function() {
-    this.orientations = this.rotations();
-    _.shuffle(this.orientations);
+    this.orientations = _.shuffle(this.rotations());
     return this.rotate(this.orientations.pop());
   };
 
@@ -31967,9 +31973,7 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],68:[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":40,"underscore":57}],68:[function(require,module,exports){
 var $, Board, Tile, chai, close_all_but_east, create_box, expect, sinon, sinon_chai, _;
 
 chai = require('chai');

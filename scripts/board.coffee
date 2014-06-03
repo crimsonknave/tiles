@@ -129,7 +129,7 @@ module.exports = class Board
         for i in [1..num] by 1
           tile = new Tile zone, type, @size, this
           stack.push tile
-      _.shuffle(stack)
+      stack = _.shuffle(stack)
       tile_stack = tile_stack.concat stack
 
     $('span.max').text tile_stack.length
@@ -137,7 +137,7 @@ module.exports = class Board
     $('span.min').removeClass('red')
     return tile_stack
 
-  place_tile: (tile) ->
+  sort_openings: (tile) ->
     openings = @find_valid_openings()
     other_zones = []
 
@@ -146,9 +146,11 @@ module.exports = class Board
     _.each _.values(openings), (value)->
       other_zones = other_zones.concat value
 
-    _.shuffle(matching_slots)
-    _.shuffle(other_zones)
-    all_slots = matching_slots.concat other_zones
+    matching_slots = _.shuffle(matching_slots)
+    other_zones = _.shuffle(other_zones)
+    return matching_slots.concat other_zones
+  place_tile: (tile) ->
+    all_slots = @sort_openings(tile)
     i = 0
     for slot in all_slots
       loop
