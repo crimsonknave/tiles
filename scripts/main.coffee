@@ -1,6 +1,5 @@
 $ = require('jquery')
 _ = require('underscore')
-fisherYates = require('fisher')
 Board = require('board')
 fabric = require('fabric').fabric
 board = false
@@ -121,7 +120,7 @@ build_map = (tiles, size, interval)->
           for tile, number of zone_numbers[zone]
             _(number).times ->
               bag.push(tile)
-          fisherYates(bag)
+          _.shuffle(bag)
           _(6).times ->
             tile = bag.pop()
             tile_list[zone][tile] += 1

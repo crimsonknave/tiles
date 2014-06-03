@@ -9,6 +9,25 @@ Tile = require 'tile'
 _ = require 'underscore'
 $ = require 'jquery'
 
+close_all_but_east = (board) ->
+  board.add_start_tile()
+  ends = []
+  _(3).times ->
+    ends.push(new Tile 'first', '1', 60, board)
+
+  # north of start
+  tile = ends.pop()
+  tile.rotate 4
+  expect(board.add_tile(tile, 0, 1)).to.not.be.false
+  # south of start
+  tile = ends.pop()
+  tile.rotate 2
+  expect(board.add_tile(tile, 0, -1)).to.not.be.false
+  # west of start
+  tile = ends.pop()
+  tile.rotate 3
+  expect(board.add_tile(tile, -1, 0)).to.not.be.false
+
 create_box = (board)->
   board.add_start_tile()
   turns = []
@@ -20,44 +39,36 @@ create_box = (board)->
 
   #2-turn 0,-1
   tile = turns.pop()
-  [tile.x, tile.y] = [0,-1]
   tile.rotate 3
-  board.add_tile(tile)
+  board.add_tile(tile, 0, -1)
   #2-straight -1,-1
   tile = straight.pop()
-  [tile.x, tile.y] = [-1,-1]
   tile.rotate 1
-  board.add_tile(tile)
+  board.add_tile(tile, -1, -1)
   #2-turn -2,-1
   tile = turns.pop()
-  [tile.x, tile.y] = [-2,-1]
   tile.rotate 4
-  board.add_tile(tile)
+  board.add_tile(tile, -2, -1)
   #2-straight, -2,0
   tile = straight.pop()
-  [tile.x, tile.y] = [-2,0]
   tile.rotate 2
-  board.add_tile(tile)
+  board.add_tile(tile, -2, 0)
   #2-turn -2,1
   tile = turns.pop()
-  [tile.x, tile.y] = [-2,1]
   tile.rotate 1
-  board.add_tile(tile)
+  board.add_tile(tile, -2, 1)
   #2-straight -1,1
   tile = straight.pop()
-  [tile.x, tile.y] = [-1,1]
   tile.rotate 1
-  board.add_tile(tile)
+  board.add_tile(tile, -1, 1)
   #2-turn 0,1
   tile = turns.pop()
-  [tile.x, tile.y] = [0,1]
   tile.rotate 2
-  board.add_tile(tile)
+  board.add_tile(tile, 0, 1)
   #1 1,0
   tile = new Tile 'first', '1', 60, board
-  [tile.x, tile.y] = [1,0]
   tile.rotate 1
-  board.add_tile(tile)
+  board.add_tile(tile, 1, 0)
 
 describe 'Board', ->
   before ->
@@ -116,7 +127,7 @@ describe 'Board', ->
       expect(@board.tiles[0][0].x).to.eq 0
       expect(@board.tiles[0][0].y).to.eq 0
 
-  describe 'laying tiless', ->
+  describe 'laying tiles', ->
     it 'should place all the tiles', (done) ->
       tiles = { 'first': { '4': 20 } }
       board = new Board @context, 60, tiles, ['first'], @interval
@@ -148,7 +159,6 @@ describe 'Board', ->
 
       board.lay_tiles()
       wait = setInterval (->
-        console.log 'waiti8ng'
         if !board.running
           clearInterval(wait)
           expect(_.size board.unplaceable).to.eq 0
@@ -171,6 +181,21 @@ describe 'Board', ->
           done()
       ), 1
 
+    it 'places tiles in zone order', (done) ->
+      tiles = { 'first': { '2-straight': 1 } , 'second': { '2-straight': 1 }, 'third': { '2-straight': 1 }, 'fourth': { '2-straight': 1 }, 'fifth': { '2-straight': 1 } }
+      board = new Board @context, 60, tiles, ['first', 'second', 'third', 'fourth', 'fifth'], @interval
+      close_all_but_east(board)
+      board.lay_tiles()
+      wait = setInterval (->
+        if !board.running
+          clearInterval(wait)
+          expect(board.tile_at(1,0).zone).to.eq 'first'
+          expect(board.tile_at(2,0).zone).to.eq 'second'
+          expect(board.tile_at(3,0).zone).to.eq 'third'
+          expect(board.tile_at(4,0).zone).to.eq 'fourth'
+          expect(board.tile_at(5,0).zone).to.eq 'fifth'
+          done()
+      ), 1
     it 'should clear the placed count'
     it 'should list unplaceable tiles'
   describe 'processing tiles for layout', ->
@@ -185,7 +210,48 @@ describe 'Board', ->
       expect(tile_list.pop().zone).to.eq 'second'
 
   describe 'add_tile', ->
-    it 'checks if the connections are valid'
-      
+    it 'checks if the connections are valid', ->
+      tiles = { 'first': { '1': 2 } }
+      board = new Board @context, 60, tiles, ['first'], @interval
+      board.add_start_tile()
 
+      tile = new Tile 'first', '1', 60, board
+      # east
+      tile.rotate 3
+      expect(board.add_tile(tile, 0, 1)).to.be.false
 
+    it 'must be next to at least one tile', ->
+      tiles = { 'first': { '1': 2 } }
+      board = new Board @context, 60, tiles, ['first'], @interval
+      board.add_start_tile()
+
+      tile = new Tile 'first', '1', 60, board
+      expect(board.add_tile(tile, 2, 2)).to.be.false
+
+    it 'allows the start tile to have no neighbors', ->
+      tiles = { 'first': { '1': 2 } }
+      board = new Board @context, 60, tiles, ['first'], @interval
+      expect(board.add_start_tile()).to.not.be.false
+
+    it 'may not be where a tile exists', ->
+      tiles = { 'first': { '1': 2 } }
+      board = new Board @context, 60, tiles, ['first'], @interval
+      board.add_start_tile()
+      tile = new Tile 'first', '1', 60, board
+      expect(board.add_tile(tile, 0, 0)).to.be.false
+
+    it 'must have an x', ->
+      tiles = { 'first': { '1': 2 } }
+      board = new Board @context, 60, tiles, ['first'], @interval
+      board.add_start_tile()
+
+      tile = new Tile 'first', '1', 60, board
+      expect(board.add_tile(tile, undefined, 1)).to.be.false
+
+    it 'must have a y', ->
+      tiles = { 'first': { '1': 2 } }
+      board = new Board @context, 60, tiles, ['first'], @interval
+      board.add_start_tile()
+
+      tile = new Tile 'first', '1', 60, board
+      expect(board.add_tile(tile, 1)).to.be.false

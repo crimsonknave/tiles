@@ -32,17 +32,14 @@ describe 'Character', ->
       @character = new Character @board, 'black'
       tile = new Tile 'first', '1', @board.size, @board
       tile.rotate(4)
-      [tile.x, tile.y] = [0, 1]
-      @board.add_tile(tile)
+      @board.add_tile(tile, 0, 1)
 
       tile = new Tile 'first', '4', @board.size, @board
-      [tile.x, tile.y] = [-1, 0]
-      @board.add_tile(tile)
+      @board.add_tile(tile, -1, 0)
 
       tile = new Tile 'first', '2-straight', @board.size, @board
       tile.rotate(2)
-      [tile.x, tile.y] = [0, 1]
-      @board.add_tile(tile)
+      @board.add_tile(tile, 0, 1)
 
     it 'fails when there is no tile there', ->
       expect(@character.move('south')).to.be.false
