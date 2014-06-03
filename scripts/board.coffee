@@ -2,7 +2,6 @@ Tile = require 'tile'
 Character = require 'character'
 $ = require 'jquery'
 _ = require 'underscore'
-fisherYates = require 'fisher'
 module.exports = class Board
   constructor: (@canvas, @size, @tile_list, @zones, @interval)->
     @tiles = {}
@@ -22,10 +21,17 @@ module.exports = class Board
 
   add_start_tile: ->
     @start_tile = new Tile 'start', '4', @size, this
-    @add_tile(@start_tile)
+    @add_tile(@start_tile, 0, 0)
 
-  add_tile: (tile)->
-    return false if @tile_at tile.x, tile.y
+  add_tile: (tile, x=false, y=false)->
+    return false if x == false
+    return false if y == false
+    return false if @tile_at x, y
+    if @tile_fits(tile, x,y)
+      tile.x = x
+      tile.y = y
+    else
+      return false
 
     if @tiles[tile.x]
       obj = @tiles[tile.x]
@@ -39,6 +45,23 @@ module.exports = class Board
 
     tile.draw()
     tile.placement_id = @count - 1
+  tile_fits: (tile, x, y)->
+    north_tile = @tile_at(x, y+1)
+    east_tile = @tile_at(x+1, y)
+    south_tile = @tile_at(x, y-1)
+    west_tile = @tile_at(x-1, y)
+    fits = true
+    if north_tile && (north_tile.south != tile.north)
+      fits = false
+    if east_tile && (east_tile.west != tile.east)
+      fits = false
+    if south_tile && (south_tile.north != tile.south)
+      fits = false
+    if west_tile && (west_tile.east != tile.west)
+      fits = false
+    unless north_tile || east_tile || south_tile || west_tile || tile.zone == 'start'
+      fits = false
+    return fits
 
   wall_at: (x,y)->
     Math.abs(x) > @x || Math.abs(y) > @y
@@ -106,7 +129,7 @@ module.exports = class Board
         for i in [1..num] by 1
           tile = new Tile zone, type, @size, this
           stack.push tile
-      fisherYates(stack)
+      stack = _.shuffle(stack)
       tile_stack = tile_stack.concat stack
 
     $('span.max').text tile_stack.length
@@ -114,45 +137,24 @@ module.exports = class Board
     $('span.min').removeClass('red')
     return tile_stack
 
-  place_tile: (tile) ->
+  sort_openings: (tile) ->
     openings = @find_valid_openings()
     other_zones = []
-    # TODO: rewrite to use hash access?
-    for key, value of openings
-      if key == tile.zone
-        if value.length > 0
-          matching_slots = value
-        else
-          matching_slots = []
-      else
-        if value.length > 0
-          other_zones = other_zones.concat value
-    fisherYates(matching_slots)
-    fisherYates(other_zones)
-    all_slots = matching_slots.concat other_zones
+
+    matching_slots = openings[tile.zone]
+    delete openings[tile.zone]
+    _.each _.values(openings), (value)->
+      other_zones = other_zones.concat value
+
+    matching_slots = _.shuffle(matching_slots)
+    other_zones = _.shuffle(other_zones)
+    return matching_slots.concat other_zones
+  place_tile: (tile) ->
+    all_slots = @sort_openings(tile)
     i = 0
     for slot in all_slots
       loop
-        [x,y] = slot
-
-        north_tile = @tile_at(x, y+1)
-        east_tile = @tile_at(x+1, y)
-        south_tile = @tile_at(x, y-1)
-        west_tile = @tile_at(x-1, y)
-        fits = true
-        if north_tile && (north_tile.south != tile.north)
-          fits = false
-        if east_tile && (east_tile.west != tile.east)
-          fits = false
-        if south_tile && (south_tile.north != tile.south)
-          fits = false
-        if west_tile && (west_tile.east != tile.west)
-          fits = false
-
-        if fits
-          tile.x = x
-          tile.y = y
-          @add_tile(tile)
+        if @add_tile(tile, slot[0], slot[1])
           @last_was_placeable = true
           return true
         break if tile.orientations.length == 0

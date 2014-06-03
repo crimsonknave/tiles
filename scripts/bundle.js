@@ -10456,10 +10456,8 @@ return jQuery;
   }
 }).call(this);
 
-},{}],"board":[function(require,module,exports){
-module.exports=require('vrNTnI');
 },{}],"vrNTnI":[function(require,module,exports){
-var $, Board, Character, Tile, fisherYates, _,
+var $, Board, Character, Tile, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 Tile = require('tile');
@@ -10469,8 +10467,6 @@ Character = require('character');
 $ = require('jquery');
 
 _ = require('underscore');
-
-fisherYates = require('fisher');
 
 module.exports = Board = (function() {
   function Board(canvas, size, tile_list, zones, interval) {
@@ -10501,12 +10497,30 @@ module.exports = Board = (function() {
 
   Board.prototype.add_start_tile = function() {
     this.start_tile = new Tile('start', '4', this.size, this);
-    return this.add_tile(this.start_tile);
+    return this.add_tile(this.start_tile, 0, 0);
   };
 
-  Board.prototype.add_tile = function(tile) {
+  Board.prototype.add_tile = function(tile, x, y) {
     var obj;
-    if (this.tile_at(tile.x, tile.y)) {
+    if (x == null) {
+      x = false;
+    }
+    if (y == null) {
+      y = false;
+    }
+    if (x === false) {
+      return false;
+    }
+    if (y === false) {
+      return false;
+    }
+    if (this.tile_at(x, y)) {
+      return false;
+    }
+    if (this.tile_fits(tile, x, y)) {
+      tile.x = x;
+      tile.y = y;
+    } else {
       return false;
     }
     if (this.tiles[tile.x]) {
@@ -10520,6 +10534,31 @@ module.exports = Board = (function() {
     this.count += 1;
     tile.draw();
     return tile.placement_id = this.count - 1;
+  };
+
+  Board.prototype.tile_fits = function(tile, x, y) {
+    var east_tile, fits, north_tile, south_tile, west_tile;
+    north_tile = this.tile_at(x, y + 1);
+    east_tile = this.tile_at(x + 1, y);
+    south_tile = this.tile_at(x, y - 1);
+    west_tile = this.tile_at(x - 1, y);
+    fits = true;
+    if (north_tile && (north_tile.south !== tile.north)) {
+      fits = false;
+    }
+    if (east_tile && (east_tile.west !== tile.east)) {
+      fits = false;
+    }
+    if (south_tile && (south_tile.north !== tile.south)) {
+      fits = false;
+    }
+    if (west_tile && (west_tile.east !== tile.west)) {
+      fits = false;
+    }
+    if (!(north_tile || east_tile || south_tile || west_tile || tile.zone === 'start')) {
+      fits = false;
+    }
+    return fits;
   };
 
   Board.prototype.wall_at = function(x, y) {
@@ -10626,7 +10665,7 @@ module.exports = Board = (function() {
           stack.push(tile);
         }
       }
-      fisherYates(stack);
+      stack = _.shuffle(stack);
       tile_stack = tile_stack.concat(stack);
     }
     $('span.max').text(tile_stack.length);
@@ -10635,53 +10674,28 @@ module.exports = Board = (function() {
     return tile_stack;
   };
 
-  Board.prototype.place_tile = function(tile) {
-    var all_slots, east_tile, fits, i, key, matching_slots, north_tile, openings, other_zones, slot, south_tile, value, west_tile, x, y, _i, _len;
+  Board.prototype.sort_openings = function(tile) {
+    var matching_slots, openings, other_zones;
     openings = this.find_valid_openings();
     other_zones = [];
-    for (key in openings) {
-      value = openings[key];
-      if (key === tile.zone) {
-        if (value.length > 0) {
-          matching_slots = value;
-        } else {
-          matching_slots = [];
-        }
-      } else {
-        if (value.length > 0) {
-          other_zones = other_zones.concat(value);
-        }
-      }
-    }
-    fisherYates(matching_slots);
-    fisherYates(other_zones);
-    all_slots = matching_slots.concat(other_zones);
+    matching_slots = openings[tile.zone];
+    delete openings[tile.zone];
+    _.each(_.values(openings), function(value) {
+      return other_zones = other_zones.concat(value);
+    });
+    matching_slots = _.shuffle(matching_slots);
+    other_zones = _.shuffle(other_zones);
+    return matching_slots.concat(other_zones);
+  };
+
+  Board.prototype.place_tile = function(tile) {
+    var all_slots, i, slot, _i, _len;
+    all_slots = this.sort_openings(tile);
     i = 0;
     for (_i = 0, _len = all_slots.length; _i < _len; _i++) {
       slot = all_slots[_i];
       while (true) {
-        x = slot[0], y = slot[1];
-        north_tile = this.tile_at(x, y + 1);
-        east_tile = this.tile_at(x + 1, y);
-        south_tile = this.tile_at(x, y - 1);
-        west_tile = this.tile_at(x - 1, y);
-        fits = true;
-        if (north_tile && (north_tile.south !== tile.north)) {
-          fits = false;
-        }
-        if (east_tile && (east_tile.west !== tile.east)) {
-          fits = false;
-        }
-        if (south_tile && (south_tile.north !== tile.south)) {
-          fits = false;
-        }
-        if (west_tile && (west_tile.east !== tile.west)) {
-          fits = false;
-        }
-        if (fits) {
-          tile.x = x;
-          tile.y = y;
-          this.add_tile(tile);
+        if (this.add_tile(tile, slot[0], slot[1])) {
           this.last_was_placeable = true;
           return true;
         }
@@ -10741,7 +10755,9 @@ module.exports = Board = (function() {
 })();
 
 
-},{"character":"BakdVC","fisher":"M0zJQM","jquery":1,"tile":"MtwR2O","underscore":2}],"BakdVC":[function(require,module,exports){
+},{"character":"BakdVC","jquery":1,"tile":"MtwR2O","underscore":2}],"board":[function(require,module,exports){
+module.exports=require('vrNTnI');
+},{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
 _ = require('underscore');
@@ -21012,35 +21028,12 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-},{}],"fisher":[function(require,module,exports){
-module.exports=require('M0zJQM');
-},{}],"M0zJQM":[function(require,module,exports){
-module.exports = function(arr) {
-  var i, j, _ref, _results;
-  if (!arr) {
-    return false;
-  }
-  i = arr.length;
-  if (i === 0) {
-    return false;
-  }
-  _results = [];
-  while (--i) {
-    j = Math.floor(Math.random() * (i + 1));
-    _results.push((_ref = [arr[j], arr[i]], arr[i] = _ref[0], arr[j] = _ref[1], _ref));
-  }
-  return _results;
-};
-
-
 },{}],"zE4Rgs":[function(require,module,exports){
-var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, next_character, _;
+var $, Board, board, build_map, fabric, get_zone_numbers, next_character, _;
 
 $ = require('jquery');
 
 _ = require('underscore');
-
-fisherYates = require('fisher');
 
 Board = require('board');
 
@@ -21215,7 +21208,7 @@ build_map = function(tiles, size, interval) {
               return bag.push(tile);
             });
           }
-          fisherYates(bag);
+          bag = _.shuffle(bag);
           _(6).times(function() {
             tile = bag.pop();
             return tile_list[zone][tile] += 1;
@@ -21241,12 +21234,10 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":1,"underscore":2}],"main":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","jquery":1,"underscore":2}],"main":[function(require,module,exports){
 module.exports=require('zE4Rgs');
 },{}],"MtwR2O":[function(require,module,exports){
-var $, Tile, fabric, fisherYates, _;
-
-fisherYates = require('fisher');
+var $, Tile, fabric, _;
 
 $ = require('jquery');
 
@@ -21278,8 +21269,7 @@ module.exports = Tile = (function() {
   }
 
   Tile.prototype.set_orientations = function() {
-    this.orientations = this.rotations();
-    fisherYates(this.orientations);
+    this.orientations = _.shuffle(this.rotations());
     return this.rotate(this.orientations.pop());
   };
 
@@ -21461,6 +21451,6 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":1,"underscore":2}],"tile":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":1,"underscore":2}],"tile":[function(require,module,exports){
 module.exports=require('MtwR2O');
-},{}]},{},["vrNTnI","BakdVC","M0zJQM","zE4Rgs","MtwR2O"])
+},{}]},{},["vrNTnI","BakdVC","zE4Rgs","MtwR2O"])

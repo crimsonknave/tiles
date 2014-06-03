@@ -20977,7 +20977,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }).call(this);
 
 },{}],"vrNTnI":[function(require,module,exports){
-var $, Board, Character, Tile, fisherYates, _,
+var $, Board, Character, Tile, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 Tile = require('tile');
@@ -20987,8 +20987,6 @@ Character = require('character');
 $ = require('jquery');
 
 _ = require('underscore');
-
-fisherYates = require('fisher');
 
 module.exports = Board = (function() {
   function Board(canvas, size, tile_list, zones, interval) {
@@ -21019,12 +21017,30 @@ module.exports = Board = (function() {
 
   Board.prototype.add_start_tile = function() {
     this.start_tile = new Tile('start', '4', this.size, this);
-    return this.add_tile(this.start_tile);
+    return this.add_tile(this.start_tile, 0, 0);
   };
 
-  Board.prototype.add_tile = function(tile) {
+  Board.prototype.add_tile = function(tile, x, y) {
     var obj;
-    if (this.tile_at(tile.x, tile.y)) {
+    if (x == null) {
+      x = false;
+    }
+    if (y == null) {
+      y = false;
+    }
+    if (x === false) {
+      return false;
+    }
+    if (y === false) {
+      return false;
+    }
+    if (this.tile_at(x, y)) {
+      return false;
+    }
+    if (this.tile_fits(tile, x, y)) {
+      tile.x = x;
+      tile.y = y;
+    } else {
       return false;
     }
     if (this.tiles[tile.x]) {
@@ -21038,6 +21054,31 @@ module.exports = Board = (function() {
     this.count += 1;
     tile.draw();
     return tile.placement_id = this.count - 1;
+  };
+
+  Board.prototype.tile_fits = function(tile, x, y) {
+    var east_tile, fits, north_tile, south_tile, west_tile;
+    north_tile = this.tile_at(x, y + 1);
+    east_tile = this.tile_at(x + 1, y);
+    south_tile = this.tile_at(x, y - 1);
+    west_tile = this.tile_at(x - 1, y);
+    fits = true;
+    if (north_tile && (north_tile.south !== tile.north)) {
+      fits = false;
+    }
+    if (east_tile && (east_tile.west !== tile.east)) {
+      fits = false;
+    }
+    if (south_tile && (south_tile.north !== tile.south)) {
+      fits = false;
+    }
+    if (west_tile && (west_tile.east !== tile.west)) {
+      fits = false;
+    }
+    if (!(north_tile || east_tile || south_tile || west_tile || tile.zone === 'start')) {
+      fits = false;
+    }
+    return fits;
   };
 
   Board.prototype.wall_at = function(x, y) {
@@ -21144,7 +21185,7 @@ module.exports = Board = (function() {
           stack.push(tile);
         }
       }
-      fisherYates(stack);
+      stack = _.shuffle(stack);
       tile_stack = tile_stack.concat(stack);
     }
     $('span.max').text(tile_stack.length);
@@ -21153,53 +21194,28 @@ module.exports = Board = (function() {
     return tile_stack;
   };
 
-  Board.prototype.place_tile = function(tile) {
-    var all_slots, east_tile, fits, i, key, matching_slots, north_tile, openings, other_zones, slot, south_tile, value, west_tile, x, y, _i, _len;
+  Board.prototype.sort_openings = function(tile) {
+    var matching_slots, openings, other_zones;
     openings = this.find_valid_openings();
     other_zones = [];
-    for (key in openings) {
-      value = openings[key];
-      if (key === tile.zone) {
-        if (value.length > 0) {
-          matching_slots = value;
-        } else {
-          matching_slots = [];
-        }
-      } else {
-        if (value.length > 0) {
-          other_zones = other_zones.concat(value);
-        }
-      }
-    }
-    fisherYates(matching_slots);
-    fisherYates(other_zones);
-    all_slots = matching_slots.concat(other_zones);
+    matching_slots = openings[tile.zone];
+    delete openings[tile.zone];
+    _.each(_.values(openings), function(value) {
+      return other_zones = other_zones.concat(value);
+    });
+    matching_slots = _.shuffle(matching_slots);
+    other_zones = _.shuffle(other_zones);
+    return matching_slots.concat(other_zones);
+  };
+
+  Board.prototype.place_tile = function(tile) {
+    var all_slots, i, slot, _i, _len;
+    all_slots = this.sort_openings(tile);
     i = 0;
     for (_i = 0, _len = all_slots.length; _i < _len; _i++) {
       slot = all_slots[_i];
       while (true) {
-        x = slot[0], y = slot[1];
-        north_tile = this.tile_at(x, y + 1);
-        east_tile = this.tile_at(x + 1, y);
-        south_tile = this.tile_at(x, y - 1);
-        west_tile = this.tile_at(x - 1, y);
-        fits = true;
-        if (north_tile && (north_tile.south !== tile.north)) {
-          fits = false;
-        }
-        if (east_tile && (east_tile.west !== tile.east)) {
-          fits = false;
-        }
-        if (south_tile && (south_tile.north !== tile.south)) {
-          fits = false;
-        }
-        if (west_tile && (west_tile.east !== tile.west)) {
-          fits = false;
-        }
-        if (fits) {
-          tile.x = x;
-          tile.y = y;
-          this.add_tile(tile);
+        if (this.add_tile(tile, slot[0], slot[1])) {
           this.last_was_placeable = true;
           return true;
         }
@@ -21259,10 +21275,8 @@ module.exports = Board = (function() {
 })();
 
 
-},{"character":"BakdVC","fisher":"M0zJQM","jquery":40,"tile":"MtwR2O","underscore":57}],"board":[function(require,module,exports){
+},{"character":"BakdVC","jquery":40,"tile":"MtwR2O","underscore":57}],"board":[function(require,module,exports){
 module.exports=require('vrNTnI');
-},{}],"character":[function(require,module,exports){
-module.exports=require('BakdVC');
 },{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
@@ -21350,7 +21364,11 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"NlWBxo":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
+},{}],"fabric":[function(require,module,exports){
+module.exports=require('NlWBxo');
+},{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2013, Printio (Juriy Zaytsev, Maxim Chernyak) */
 
@@ -31530,37 +31548,12 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-},{}],"fabric":[function(require,module,exports){
-module.exports=require('NlWBxo');
-},{}],"fisher":[function(require,module,exports){
-module.exports=require('M0zJQM');
-},{}],"M0zJQM":[function(require,module,exports){
-module.exports = function(arr) {
-  var i, j, _ref, _results;
-  if (!arr) {
-    return false;
-  }
-  i = arr.length;
-  if (i === 0) {
-    return false;
-  }
-  _results = [];
-  while (--i) {
-    j = Math.floor(Math.random() * (i + 1));
-    _results.push((_ref = [arr[j], arr[i]], arr[i] = _ref[0], arr[j] = _ref[1], _ref));
-  }
-  return _results;
-};
-
-
 },{}],"zE4Rgs":[function(require,module,exports){
-var $, Board, board, build_map, fabric, fisherYates, get_zone_numbers, next_character, _;
+var $, Board, board, build_map, fabric, get_zone_numbers, next_character, _;
 
 $ = require('jquery');
 
 _ = require('underscore');
-
-fisherYates = require('fisher');
 
 Board = require('board');
 
@@ -31735,7 +31728,7 @@ build_map = function(tiles, size, interval) {
               return bag.push(tile);
             });
           }
-          fisherYates(bag);
+          bag = _.shuffle(bag);
           _(6).times(function() {
             tile = bag.pop();
             return tile_list[zone][tile] += 1;
@@ -31761,12 +31754,12 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","fisher":"M0zJQM","jquery":40,"underscore":57}],"main":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","jquery":40,"underscore":57}],"main":[function(require,module,exports){
 module.exports=require('zE4Rgs');
+},{}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
 },{}],"MtwR2O":[function(require,module,exports){
-var $, Tile, fabric, fisherYates, _;
-
-fisherYates = require('fisher');
+var $, Tile, fabric, _;
 
 $ = require('jquery');
 
@@ -31798,8 +31791,7 @@ module.exports = Tile = (function() {
   }
 
   Tile.prototype.set_orientations = function() {
-    this.orientations = this.rotations();
-    fisherYates(this.orientations);
+    this.orientations = _.shuffle(this.rotations());
     return this.rotate(this.orientations.pop());
   };
 
@@ -31981,10 +31973,8 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","fisher":"M0zJQM","jquery":40,"underscore":57}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],70:[function(require,module,exports){
-var $, Board, Tile, chai, create_box, expect, sinon, sinon_chai, _;
+},{"fabric":"NlWBxo","jquery":40,"underscore":57}],68:[function(require,module,exports){
+var $, Board, Tile, chai, close_all_but_east, create_box, expect, sinon, sinon_chai, _;
 
 chai = require('chai');
 
@@ -32004,8 +31994,26 @@ _ = require('underscore');
 
 $ = require('jquery');
 
+close_all_but_east = function(board) {
+  var ends, tile;
+  board.add_start_tile();
+  ends = [];
+  _(3).times(function() {
+    return ends.push(new Tile('first', '1', 60, board));
+  });
+  tile = ends.pop();
+  tile.rotate(4);
+  expect(board.add_tile(tile, 0, 1)).to.not.be["false"];
+  tile = ends.pop();
+  tile.rotate(2);
+  expect(board.add_tile(tile, 0, -1)).to.not.be["false"];
+  tile = ends.pop();
+  tile.rotate(3);
+  return expect(board.add_tile(tile, -1, 0)).to.not.be["false"];
+};
+
 create_box = function(board) {
-  var straight, tile, turns, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
+  var straight, tile, turns;
   board.add_start_tile();
   turns = [];
   straight = [];
@@ -32016,37 +32024,29 @@ create_box = function(board) {
     return straight.push(new Tile('first', '2-straight', 60, board));
   });
   tile = turns.pop();
-  _ref = [0, -1], tile.x = _ref[0], tile.y = _ref[1];
   tile.rotate(3);
-  board.add_tile(tile);
+  board.add_tile(tile, 0, -1);
   tile = straight.pop();
-  _ref1 = [-1, -1], tile.x = _ref1[0], tile.y = _ref1[1];
   tile.rotate(1);
-  board.add_tile(tile);
+  board.add_tile(tile, -1, -1);
   tile = turns.pop();
-  _ref2 = [-2, -1], tile.x = _ref2[0], tile.y = _ref2[1];
   tile.rotate(4);
-  board.add_tile(tile);
+  board.add_tile(tile, -2, -1);
   tile = straight.pop();
-  _ref3 = [-2, 0], tile.x = _ref3[0], tile.y = _ref3[1];
   tile.rotate(2);
-  board.add_tile(tile);
+  board.add_tile(tile, -2, 0);
   tile = turns.pop();
-  _ref4 = [-2, 1], tile.x = _ref4[0], tile.y = _ref4[1];
   tile.rotate(1);
-  board.add_tile(tile);
+  board.add_tile(tile, -2, 1);
   tile = straight.pop();
-  _ref5 = [-1, 1], tile.x = _ref5[0], tile.y = _ref5[1];
   tile.rotate(1);
-  board.add_tile(tile);
+  board.add_tile(tile, -1, 1);
   tile = turns.pop();
-  _ref6 = [0, 1], tile.x = _ref6[0], tile.y = _ref6[1];
   tile.rotate(2);
-  board.add_tile(tile);
+  board.add_tile(tile, 0, 1);
   tile = new Tile('first', '1', 60, board);
-  _ref7 = [1, 0], tile.x = _ref7[0], tile.y = _ref7[1];
   tile.rotate(1);
-  return board.add_tile(tile);
+  return board.add_tile(tile, 1, 0);
 };
 
 describe('Board', function() {
@@ -32112,7 +32112,7 @@ describe('Board', function() {
       return expect(this.board.tiles[0][0].y).to.eq(0);
     });
   });
-  describe('laying tiless', function() {
+  describe('laying tiles', function() {
     it('should place all the tiles', function(done) {
       var board, tiles, wait;
       tiles = {
@@ -32163,7 +32163,6 @@ describe('Board', function() {
       create_box(board);
       board.lay_tiles();
       return wait = setInterval((function() {
-        console.log('waiti8ng');
         if (!board.running) {
           clearInterval(wait);
           expect(_.size(board.unplaceable)).to.eq(0);
@@ -32193,6 +32192,40 @@ describe('Board', function() {
         }
       }), 1);
     });
+    it('places tiles in zone order', function(done) {
+      var board, tiles, wait;
+      tiles = {
+        'first': {
+          '2-straight': 1
+        },
+        'second': {
+          '2-straight': 1
+        },
+        'third': {
+          '2-straight': 1
+        },
+        'fourth': {
+          '2-straight': 1
+        },
+        'fifth': {
+          '2-straight': 1
+        }
+      };
+      board = new Board(this.context, 60, tiles, ['first', 'second', 'third', 'fourth', 'fifth'], this.interval);
+      close_all_but_east(board);
+      board.lay_tiles();
+      return wait = setInterval((function() {
+        if (!board.running) {
+          clearInterval(wait);
+          expect(board.tile_at(1, 0).zone).to.eq('first');
+          expect(board.tile_at(2, 0).zone).to.eq('second');
+          expect(board.tile_at(3, 0).zone).to.eq('third');
+          expect(board.tile_at(4, 0).zone).to.eq('fourth');
+          expect(board.tile_at(5, 0).zone).to.eq('fifth');
+          return done();
+        }
+      }), 1);
+    });
     it('should clear the placed count');
     return it('should list unplaceable tiles');
   });
@@ -32217,12 +32250,82 @@ describe('Board', function() {
     });
   });
   return describe('add_tile', function() {
-    return it('checks if the connections are valid');
+    it('checks if the connections are valid', function() {
+      var board, tile, tiles;
+      tiles = {
+        'first': {
+          '1': 2
+        }
+      };
+      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      tile = new Tile('first', '1', 60, board);
+      tile.rotate(3);
+      return expect(board.add_tile(tile, 0, 1)).to.be["false"];
+    });
+    it('must be next to at least one tile', function() {
+      var board, tile, tiles;
+      tiles = {
+        'first': {
+          '1': 2
+        }
+      };
+      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      tile = new Tile('first', '1', 60, board);
+      return expect(board.add_tile(tile, 2, 2)).to.be["false"];
+    });
+    it('allows the start tile to have no neighbors', function() {
+      var board, tiles;
+      tiles = {
+        'first': {
+          '1': 2
+        }
+      };
+      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      return expect(board.add_start_tile()).to.not.be["false"];
+    });
+    it('may not be where a tile exists', function() {
+      var board, tile, tiles;
+      tiles = {
+        'first': {
+          '1': 2
+        }
+      };
+      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      tile = new Tile('first', '1', 60, board);
+      return expect(board.add_tile(tile, 0, 0)).to.be["false"];
+    });
+    it('must have an x', function() {
+      var board, tile, tiles;
+      tiles = {
+        'first': {
+          '1': 2
+        }
+      };
+      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      tile = new Tile('first', '1', 60, board);
+      return expect(board.add_tile(tile, void 0, 1)).to.be["false"];
+    });
+    return it('must have a y', function() {
+      var board, tile, tiles;
+      tiles = {
+        'first': {
+          '1': 2
+        }
+      };
+      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      tile = new Tile('first', '1', 60, board);
+      return expect(board.add_tile(tile, 1)).to.be["false"];
+    });
   });
 });
 
 
-},{"board":"vrNTnI","chai":1,"jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}],71:[function(require,module,exports){
+},{"board":"vrNTnI","chai":1,"jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}],69:[function(require,module,exports){
 var $, Board, Character, Tile, chai, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -32268,19 +32371,16 @@ describe('Character', function() {
   });
   return describe('movement', function() {
     beforeEach(function() {
-      var tile, _ref, _ref1, _ref2;
+      var tile;
       this.character = new Character(this.board, 'black');
       tile = new Tile('first', '1', this.board.size, this.board);
       tile.rotate(4);
-      _ref = [0, 1], tile.x = _ref[0], tile.y = _ref[1];
-      this.board.add_tile(tile);
+      this.board.add_tile(tile, 0, 1);
       tile = new Tile('first', '4', this.board.size, this.board);
-      _ref1 = [-1, 0], tile.x = _ref1[0], tile.y = _ref1[1];
-      this.board.add_tile(tile);
+      this.board.add_tile(tile, -1, 0);
       tile = new Tile('first', '2-straight', this.board.size, this.board);
       tile.rotate(2);
-      _ref2 = [0, 1], tile.x = _ref2[0], tile.y = _ref2[1];
-      return this.board.add_tile(tile);
+      return this.board.add_tile(tile, 0, 1);
     });
     it('fails when there is no tile there', function() {
       return expect(this.character.move('south')).to.be["false"];
@@ -32296,7 +32396,7 @@ describe('Character', function() {
 });
 
 
-},{"board":"vrNTnI","chai":1,"character":"BakdVC","fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}],72:[function(require,module,exports){
+},{"board":"vrNTnI","chai":1,"character":"BakdVC","fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}],70:[function(require,module,exports){
 var $, Board, Tile, chai, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -32562,8 +32662,7 @@ describe('Tile', function() {
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         coords = _ref[_i];
         tile = new Tile('first', '4', this.board.size, this.board);
-        tile.x = coords[0], tile.y = coords[1];
-        _results.push(this.board.add_tile(tile));
+        _results.push(this.board.add_tile(tile, coords[0], coords[1]));
       }
       return _results;
     });
@@ -32612,4 +32711,4 @@ describe('Tile', function() {
 });
 
 
-},{"board":"vrNTnI","chai":1,"fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}]},{},[70,71,72])
+},{"board":"vrNTnI","chai":1,"fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}]},{},[68,69,70])

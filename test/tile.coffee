@@ -181,8 +181,7 @@ describe 'Tile', ->
       @start = @board.tiles[0][0]
       for coords in [[1,0], [0,1], [-1,0], [0,-1]]
         tile = new Tile 'first', '4', @board.size, @board
-        [tile.x, tile.y] = coords
-        @board.add_tile(tile)
+        @board.add_tile(tile, coords[0], coords[1])
 
     it 'start should have neighbors in all directions', ->
       expect(@start.neighbor_to_the('north')).to.be.ok

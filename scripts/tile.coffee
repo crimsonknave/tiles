@@ -1,4 +1,3 @@
-fisherYates = require 'fisher'
 $ = require 'jquery'
 _ = require 'underscore'
 fabric = require('fabric').fabric
@@ -19,8 +18,7 @@ module.exports = class Tile
       @offset = 16
 
   set_orientations: ->
-    @orientations = @rotations()
-    fisherYates(@orientations)
+    @orientations = _.shuffle(@rotations())
     @rotate @orientations.pop()
 
   character_list: ->
