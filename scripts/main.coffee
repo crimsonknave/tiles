@@ -29,8 +29,9 @@ $(document).ready ->
         e.preventDefault()
 
   $('.character').click ->
-    $('.character').removeClass('active')
-    $(this).addClass('active')
+    char = character_object(this.classList[1])
+    set_active_character(char)
+
   $('.toggle').click ->
     $('.toggle').toggleClass('hidden')
     $('.config').toggleClass('collapsed')
@@ -73,19 +74,34 @@ $(document).ready ->
     }
     build_map(tiles, size, interval)
 
+character_object = (num) ->
+  switch num
+    when 'first'
+      return {label: '.first', color: 'rgba(0,128,0,0.25'}
+    when 'second'
+      return {label: '.second', color: 'rgba(0,0,0,0.25'}
+    when 'third'
+      return {label: '.third', color: 'rgba(255,0,0,0.25'}
+    when 'fourth'
+      return {label: '.fourth', color: 'rgba(128,0,128,0.25'}
+
 next_character = ->
   char = $('.character.active')[0]
   char = $('.character.fourth')[0] unless char
-  $('.character').removeClass('active')
   next = {
-    0: {label: '.second', color: 'rgba(0,0,0,0.25)'},
-    1: {label: '.third', color: 'rgba(255,0,0,0.25)'},
-    2: {label: '.fourth', color: 'rgba(128,0,128,0.25)'},
-    3: {label: '.first', color: 'rgba(0,128,0,0.25'}
+    0: character_object('second')
+    1: character_object('third')
+    2: character_object('fourth')
+    3: character_object('first')
   }
   next_char = next[char.value]
-  $(".character#{next_char.label}").addClass('active')
-  $('.character_info')[0].style.backgroundColor = next_char.color
+  set_active_character(next_char)
+
+set_active_character = (char) ->
+  console.log char
+  $('.character').removeClass('active')
+  $(".character#{char.label}").addClass('active')
+  $('.character_info')[0].style.backgroundColor = char.color
 
 get_zone_numbers = ->
   json = null

@@ -31549,7 +31549,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 })(typeof exports !== 'undefined' ? exports : this);
 
 },{}],"zE4Rgs":[function(require,module,exports){
-var $, Board, board, build_map, fabric, get_zone_numbers, next_character, _;
+var $, Board, board, build_map, character_object, fabric, get_zone_numbers, next_character, set_active_character, _;
 
 $ = require('jquery');
 
@@ -31596,8 +31596,9 @@ $(document).ready(function() {
     }
   });
   $('.character').click(function() {
-    $('.character').removeClass('active');
-    return $(this).addClass('active');
+    var char;
+    char = character_object(this.classList[1]);
+    return set_active_character(char);
   });
   $('.toggle').click(function() {
     $('.toggle').toggleClass('hidden');
@@ -31649,34 +31650,52 @@ $(document).ready(function() {
   });
 });
 
+character_object = function(num) {
+  switch (num) {
+    case 'first':
+      return {
+        label: '.first',
+        color: 'rgba(0,128,0,0.25'
+      };
+    case 'second':
+      return {
+        label: '.second',
+        color: 'rgba(0,0,0,0.25'
+      };
+    case 'third':
+      return {
+        label: '.third',
+        color: 'rgba(255,0,0,0.25'
+      };
+    case 'fourth':
+      return {
+        label: '.fourth',
+        color: 'rgba(128,0,128,0.25'
+      };
+  }
+};
+
 next_character = function() {
   var char, next, next_char;
   char = $('.character.active')[0];
   if (!char) {
     char = $('.character.fourth')[0];
   }
-  $('.character').removeClass('active');
   next = {
-    0: {
-      label: '.second',
-      color: 'rgba(0,0,0,0.25)'
-    },
-    1: {
-      label: '.third',
-      color: 'rgba(255,0,0,0.25)'
-    },
-    2: {
-      label: '.fourth',
-      color: 'rgba(128,0,128,0.25)'
-    },
-    3: {
-      label: '.first',
-      color: 'rgba(0,128,0,0.25'
-    }
+    0: character_object('second'),
+    1: character_object('third'),
+    2: character_object('fourth'),
+    3: character_object('first')
   };
   next_char = next[char.value];
-  $(".character" + next_char.label).addClass('active');
-  return $('.character_info')[0].style.backgroundColor = next_char.color;
+  return set_active_character(next_char);
+};
+
+set_active_character = function(char) {
+  console.log(char);
+  $('.character').removeClass('active');
+  $(".character" + char.label).addClass('active');
+  return $('.character_info')[0].style.backgroundColor = char.color;
 };
 
 get_zone_numbers = function() {
