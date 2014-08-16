@@ -1,17 +1,123 @@
 #my_canvas {
   border: 1px solid black;
-  margin-top: 60px;
+  margin: 0px;
 }
 
-.config {
+.options {
   position: fixed;
-  border: 1px solid black;
-  padding: 5px;
-  background: white;
-
-  li{
-    display: inline;
-    list-style-type: none;
+  top: -8px;
+  left: 8px;
+  .toggle {
+    text-decoration: underline;
+    color: steelblue;
+    cursor: pointer;
     padding: 5px;
+    width: 55px;
   }
+  .characters {
+    padding:0px;
+    li {
+      padding: 0px;
+      .character {
+        margin-right: 1px;
+        opacity: 0.5;
+        border: none;
+      }
+      .first {
+        background: green;
+      }
+      .second {
+        background: black;
+      }
+      .third {
+        background: red;
+      }
+      .fourth {
+        background: purple;
+      }
+      .active {
+        opacity: 1;
+      }
+    }
+  }
+  .config.collapsed {
+    li {
+      display:none;
+    }
+    li:first-child {
+      display:inline-flex;
+    }
+    li:nth-last-child(-n+2) {
+      display:inline-flex;
+    }
+  }
+  .config {
+    border: 1px solid black;
+    padding: 5px;
+    background: white;
+    margin-bottom: 5px;
+    width: 140px;
+
+    li{
+      display: block;
+      list-style-type: none;
+      padding: 5px;
+      border-bottom: 1px dotted grey;
+
+      input {
+        width: 40px;
+        padding-left: 2px;
+        margin-left: -5px;
+      }
+      input.submit {
+        width: 70px;
+      }
+    }
+    li:last-child {
+      border: none;
+    }
+    li:first-child {
+      display:inline-flex;
+    }
+  }
+  span.green{
+    color: green;
+    font-weight: bold;
+  }
+  span.red{
+    color: red;
+    font-weight: bold;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+  .info {
+    border: 1px solid green;
+    position: fixed;
+    padding: 5px;
+    height: 140px;
+    width: 140px;
+    ul {
+      margin: 0px;
+      padding: 0px;
+      li {
+        display: block;
+        padding-left: 2px;
+      }
+    }
+  }
+}
+.character_info {
+  .hidden {
+    display: none !important
+  }
+  border: 1px solid grey;
+  position: fixed;
+  left: 162px;
+}
+
+body {
+  width: 4000px;
+  height: 4000px;
 }
