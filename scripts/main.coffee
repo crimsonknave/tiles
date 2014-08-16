@@ -37,7 +37,7 @@ $(document).ready ->
     $('.config').toggleClass('collapsed')
 
   $('.bag').click (e)->
-    $('.non-bag').toggleClass('hidden')
+    $('.bag-toggle').toggleClass('hidden')
     box = $('.bag input')[0]
     unless e.target.type == 'checkbox'
       box.checked = !box.checked
@@ -124,6 +124,7 @@ build_map = (tiles, size, interval)->
     if board && board.running
     else
       number_of_zones = $('select.zones').val()
+      players = $('select.players').val()
       zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']
       selected_zones = zones.slice(0,number_of_zones)
       if $('.bag input')[0].checked
@@ -137,7 +138,7 @@ build_map = (tiles, size, interval)->
             _(number).times ->
               bag.push(tile)
           bag = _.shuffle(bag)
-          _(6).times ->
+          _(players*3).times ->
             tile = bag.pop()
             tile_list[zone][tile] += 1
       else

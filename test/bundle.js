@@ -31590,6 +31590,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
+},{}],"main":[function(require,module,exports){
+module.exports=require('zE4Rgs');
 },{}],"zE4Rgs":[function(require,module,exports){
 var $, Board, board, build_map, character_object, fabric, get_zone_numbers, next_character, set_active_character, _;
 
@@ -31648,7 +31650,7 @@ $(document).ready(function() {
   });
   $('.bag').click(function(e) {
     var box;
-    $('.non-bag').toggleClass('hidden');
+    $('.bag-toggle').toggleClass('hidden');
     box = $('.bag input')[0];
     if (e.target.type !== 'checkbox') {
       return box.checked = !box.checked;
@@ -31762,11 +31764,12 @@ build_map = function(tiles, size, interval) {
     board.stop_placing = true;
   }
   return stopping = setInterval((function() {
-    var bag, number, number_of_zones, selected_zones, tile, tile_list, zone, zone_numbers, zones, _i, _j, _len, _len1, _ref;
+    var bag, number, number_of_zones, players, selected_zones, tile, tile_list, zone, zone_numbers, zones, _i, _j, _len, _len1, _ref;
     if (board && board.running) {
 
     } else {
       number_of_zones = $('select.zones').val();
+      players = $('select.players').val();
       zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
       selected_zones = zones.slice(0, number_of_zones);
       if ($('.bag input')[0].checked) {
@@ -31790,7 +31793,7 @@ build_map = function(tiles, size, interval) {
             });
           }
           bag = _.shuffle(bag);
-          _(6).times(function() {
+          _(players * 3).times(function() {
             tile = bag.pop();
             return tile_list[zone][tile] += 1;
           });
@@ -31815,11 +31818,7 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"main":[function(require,module,exports){
-module.exports=require('zE4Rgs');
-},{}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],"MtwR2O":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, _;
 
 $ = require('jquery');
@@ -32053,7 +32052,9 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":39,"underscore":56}],67:[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":39,"underscore":56}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
+},{}],67:[function(require,module,exports){
 var $, Board, Tile, chai, close_all_but_east, create_box, expect, sinon, sinon_chai, _;
 
 chai = require('chai');
