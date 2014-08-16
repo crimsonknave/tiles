@@ -42,8 +42,8 @@ module.exports = class Character
       when 4
         x_offset = offset
         y_offset = ( offset / 2 ) + player_offset
-    @icon.left = @tile.fimg.left + x_offset
-    @icon.top = @tile.fimg.top + y_offset
+    @icon.left = @tile.left + x_offset
+    @icon.top = @tile.top + y_offset
 
   draw: ->
     @create_icon() unless @icon

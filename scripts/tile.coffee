@@ -3,12 +3,14 @@ _ = require 'underscore'
 fabric = require('fabric').fabric
 module.exports = class Tile
   constructor: (@zone, @type, @size, @board, @id = false) ->
+    @file = "images/#{@zone}#{@type}-1.png"
     @characters = []
     if @zone == 'start'
       @file = 'images/start.png'
       @x = 0
       @y = 0
       @set_exits()
+      @orientation=1
     else
       @set_orientations()
 
@@ -77,18 +79,32 @@ module.exports = class Tile
       info.removeClass('hidden')
     , 'html')
 
+  rotation_mods: ->
+    switch @orientation
+      when 1
+        return [0, 0]
+      when 2
+        return [1, 0]
+      when 3
+        return [1, 1]
+      when 4
+        return [0, 1]
+
   create_image: ->
     @img = new Image
-    @img.setAtX=@x+@offset
-    @img.setAtY=-1*@y+@offset
+    [x_mod, y_mod] = @rotation_mods()
+
+    shifted_x=@x+@offset+x_mod
+    shifted_y=-1*@y+@offset+y_mod
+    @left = (@x+@offset)*@size
+    @top = (-1*@y+@offset)*@size
     @fimg = new fabric.Image(@img, {
-      left: @img.setAtX*@size,
-      top: @img.setAtY*@size,
+      left: shifted_x*@size,
+      top: shifted_y*@size,
       width: @size,
       height: @size
+      angle: 90*(@orientation-1)
     })
-    #@fimg.mousedown ->
-      #@toggle()
 
   redraw: ->
     @board.canvas.remove(@fimg)
@@ -99,6 +115,7 @@ module.exports = class Tile
 
   draw: ->
     @create_image() unless (@img && @fimg)
+    console.log "drawing #{@zone}, type #{@type}, #{@orientation}, x #{@x}/#{(@fimg.left / @size)-@offset} y #{@y}/#{(@fimg.top / @size)-@offset} rotation: #{90*(@orientation-1)}"
     @img.onload = =>
       @board.canvas.add(@fimg)
     @img.src = @file
@@ -147,5 +164,6 @@ module.exports = class Tile
 
   rotate: (orientation) ->
     @orientation = orientation
-    @file = "images/#{@zone}#{@type}-#{@orientation}.png"
+    #@file = "images/#{@zone}#{@type}-#{@orientation}.png"
+    #@fimg.rotate(180)
     @set_exits()

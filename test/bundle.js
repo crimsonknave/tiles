@@ -15,7 +15,7 @@ var used = []
  * Chai version
  */
 
-exports.version = '1.9.1';
+exports.version = '1.8.1';
 
 /*!
  * Assertion Error
@@ -47,13 +47,6 @@ exports.use = function (fn) {
 
   return this;
 };
-
-/*!
- * Configuration
- */
-
-var config = require('./chai/config');
-exports.config = config;
 
 /*!
  * Primary `Assertion` prototype
@@ -90,15 +83,13 @@ exports.use(should);
 var assert = require('./chai/interface/assert');
 exports.use(assert);
 
-},{"./chai/assertion":3,"./chai/config":4,"./chai/core/assertions":5,"./chai/interface/assert":6,"./chai/interface/expect":7,"./chai/interface/should":8,"./chai/utils":19,"assertion-error":28}],3:[function(require,module,exports){
+},{"./chai/assertion":3,"./chai/core/assertions":4,"./chai/interface/assert":5,"./chai/interface/expect":6,"./chai/interface/should":7,"./chai/utils":18,"assertion-error":27}],3:[function(require,module,exports){
 /*!
  * chai
  * http://chaijs.com
  * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
  * MIT Licensed
  */
-
-var config = require('./config');
 
 module.exports = function (_chai, util) {
   /*!
@@ -128,27 +119,33 @@ module.exports = function (_chai, util) {
     flag(this, 'message', msg);
   }
 
-  Object.defineProperty(Assertion, 'includeStack', {
-    get: function() {
-      console.warn('Assertion.includeStack is deprecated, use chai.config.includeStack instead.');
-      return config.includeStack;
-    },
-    set: function(value) {
-      console.warn('Assertion.includeStack is deprecated, use chai.config.includeStack instead.');
-      config.includeStack = value;
-    }
-  });
+  /*!
+    * ### Assertion.includeStack
+    *
+    * User configurable property, influences whether stack trace
+    * is included in Assertion error message. Default of false
+    * suppresses stack trace in the error message
+    *
+    *     Assertion.includeStack = true;  // enable stack on error
+    *
+    * @api public
+    */
 
-  Object.defineProperty(Assertion, 'showDiff', {
-    get: function() {
-      console.warn('Assertion.showDiff is deprecated, use chai.config.showDiff instead.');
-      return config.showDiff;
-    },
-    set: function(value) {
-      console.warn('Assertion.showDiff is deprecated, use chai.config.showDiff instead.');
-      config.showDiff = value;
-    }
-  });
+  Assertion.includeStack = false;
+
+  /*!
+   * ### Assertion.showDiff
+   *
+   * User configurable property, influences whether or not
+   * the `showDiff` flag should be included in the thrown
+   * AssertionErrors. `false` will always be `false`; `true`
+   * will be true when the assertion has requested a diff
+   * be shown.
+   *
+   * @api public
+   */
+
+  Assertion.showDiff = true;
 
   Assertion.addProperty = function (name, fn) {
     util.addProperty(this.prototype, name, fn);
@@ -191,7 +188,7 @@ module.exports = function (_chai, util) {
   Assertion.prototype.assert = function (expr, msg, negateMsg, expected, _actual, showDiff) {
     var ok = util.test(this, arguments);
     if (true !== showDiff) showDiff = false;
-    if (true !== config.showDiff) showDiff = false;
+    if (true !== Assertion.showDiff) showDiff = false;
 
     if (!ok) {
       var msg = util.getMessage(this, arguments)
@@ -200,7 +197,7 @@ module.exports = function (_chai, util) {
           actual: actual
         , expected: expected
         , showDiff: showDiff
-      }, (config.includeStack) ? this.assert : flag(this, 'ssfi'));
+      }, (Assertion.includeStack) ? this.assert : flag(this, 'ssfi'));
     }
   };
 
@@ -222,59 +219,7 @@ module.exports = function (_chai, util) {
   });
 };
 
-},{"./config":4}],4:[function(require,module,exports){
-module.exports = {
-
-  /**
-   * ### config.includeStack
-   *
-   * User configurable property, influences whether stack trace
-   * is included in Assertion error message. Default of false
-   * suppresses stack trace in the error message.
-   *
-   *     chai.config.includeStack = true;  // enable stack on error
-   *
-   * @param {Boolean}
-   * @api public
-   */
-
-   includeStack: false,
-
-  /**
-   * ### config.showDiff
-   *
-   * User configurable property, influences whether or not
-   * the `showDiff` flag should be included in the thrown
-   * AssertionErrors. `false` will always be `false`; `true`
-   * will be true when the assertion has requested a diff
-   * be shown.
-   *
-   * @param {Boolean}
-   * @api public
-   */
-
-  showDiff: true,
-
-  /**
-   * ### config.truncateThreshold
-   *
-   * User configurable property, sets length threshold for actual and
-   * expected values in assertion errors. If this threshold is exceeded,
-   * the value is truncated.
-   *
-   * Set it to zero if you want to disable truncating altogether.
-   *
-   *     chai.config.truncateThreshold = 0;  // disable truncating
-   *
-   * @param {Number}
-   * @api public
-   */
-
-  truncateThreshold: 40
-
-};
-
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*!
  * chai
  * http://chaijs.com
@@ -292,7 +237,7 @@ module.exports = function (chai, _) {
    *
    * The following are provided as chainable getters to
    * improve the readability of your assertions. They
-   * do not provide testing capabilities unless they
+   * do not provide an testing capability unless they
    * have been overwritten by a plugin.
    *
    * **Chains**
@@ -424,24 +369,17 @@ module.exports = function (chai, _) {
   function include (val, msg) {
     if (msg) flag(this, 'message', msg);
     var obj = flag(this, 'object');
-    var expected = false;
-    if (_.type(obj) === 'array' && _.type(val) === 'object') {
-      for (var i in obj) {
-        if (_.eql(obj[i], val)) {
-          expected = true;
-          break;
-        }
-      }
-    } else if (_.type(val) === 'object') {
+
+    if (_.type(val) === 'object') {
       if (!flag(this, 'negate')) {
         for (var k in val) new Assertion(obj).property(k, val[k]);
         return;
       }
       var subset = {}
       for (var k in val) subset[k] = obj[k]
-      expected = _.eql(subset, val);
+      var expected = _.eql(subset, val);
     } else {
-      expected = obj && ~obj.indexOf(val)
+      var expected = obj && ~obj.indexOf(val)
     }
     this.assert(
         expected
@@ -1529,13 +1467,9 @@ module.exports = function (chai, _) {
     );
   });
 
-  function isSubsetOf(subset, superset, cmp) {
+  function isSubsetOf(subset, superset) {
     return subset.every(function(elem) {
-      if (!cmp) return superset.indexOf(elem) !== -1;
-
-      return superset.some(function(elem2) {
-        return cmp(elem, elem2);
-      });
+      return superset.indexOf(elem) !== -1;
     })
   }
 
@@ -1543,17 +1477,13 @@ module.exports = function (chai, _) {
    * ### .members(set)
    *
    * Asserts that the target is a superset of `set`,
-   * or that the target and `set` have the same strictly-equal (===) members.
-   * Alternately, if the `deep` flag is set, set members are compared for deep
-   * equality.
+   * or that the target and `set` have the same members.
    *
    *     expect([1, 2, 3]).to.include.members([3, 2]);
    *     expect([1, 2, 3]).to.not.include.members([3, 2, 8]);
    *
    *     expect([4, 2]).to.have.members([2, 4]);
    *     expect([5, 2]).to.not.have.members([5, 2, 1]);
-   *
-   *     expect([{ id: 1 }]).to.deep.include.members([{ id: 1 }]);
    *
    * @name members
    * @param {Array} set
@@ -1568,11 +1498,9 @@ module.exports = function (chai, _) {
     new Assertion(obj).to.be.an('array');
     new Assertion(subset).to.be.an('array');
 
-    var cmp = flag(this, 'deep') ? _.eql : undefined;
-
     if (flag(this, 'contains')) {
       return this.assert(
-          isSubsetOf(subset, obj, cmp)
+          isSubsetOf(subset, obj)
         , 'expected #{this} to be a superset of #{act}'
         , 'expected #{this} to not be a superset of #{act}'
         , obj
@@ -1581,7 +1509,7 @@ module.exports = function (chai, _) {
     }
 
     this.assert(
-        isSubsetOf(obj, subset, cmp) && isSubsetOf(subset, obj, cmp)
+        isSubsetOf(obj, subset) && isSubsetOf(subset, obj)
         , 'expected #{this} to have the same members as #{act}'
         , 'expected #{this} to not have the same members as #{act}'
         , obj
@@ -1590,7 +1518,7 @@ module.exports = function (chai, _) {
   });
 };
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
@@ -1626,7 +1554,7 @@ module.exports = function (chai, util) {
    */
 
   var assert = chai.assert = function (express, errmsg) {
-    var test = new Assertion(null, null, chai.assert);
+    var test = new Assertion(null);
     test.assert(
         express
       , errmsg
@@ -1707,7 +1635,7 @@ module.exports = function (chai, util) {
    */
 
   assert.equal = function (act, exp, msg) {
-    var test = new Assertion(act, msg, assert.equal);
+    var test = new Assertion(act, msg);
 
     test.assert(
         exp == flag(test, 'object')
@@ -1733,7 +1661,7 @@ module.exports = function (chai, util) {
    */
 
   assert.notEqual = function (act, exp, msg) {
-    var test = new Assertion(act, msg, assert.notEqual);
+    var test = new Assertion(act, msg);
 
     test.assert(
         exp != flag(test, 'object')
@@ -1984,8 +1912,8 @@ module.exports = function (chai, util) {
    * Asserts that `value` is _not_ an object.
    *
    *     var selection = 'chai'
-   *     assert.isNotObject(selection, 'tea selection is not an object');
-   *     assert.isNotObject(null, 'null is not an object');
+   *     assert.isObject(selection, 'tea selection is not an object');
+   *     assert.isObject(null, 'null is not an object');
    *
    * @name isNotObject
    * @param {Mixed} value
@@ -2249,7 +2177,7 @@ module.exports = function (chai, util) {
    */
 
   assert.include = function (exp, inc, msg) {
-    new Assertion(exp, msg, assert.include).include(inc);
+    new Assertion(exp, msg).include(inc);
   };
 
   /**
@@ -2269,7 +2197,7 @@ module.exports = function (chai, util) {
    */
 
   assert.notInclude = function (exp, inc, msg) {
-    new Assertion(exp, msg, assert.notInclude).not.include(inc);
+    new Assertion(exp, msg).not.include(inc);
   };
 
   /**
@@ -2648,7 +2576,7 @@ module.exports = function (chai, util) {
   ('Throw', 'throws');
 };
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
@@ -2662,7 +2590,7 @@ module.exports = function (chai, util) {
 };
 
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
@@ -2673,33 +2601,31 @@ module.exports = function (chai, util) {
   var Assertion = chai.Assertion;
 
   function loadShould () {
-    // explicitly define this method as function as to have it's name to include as `ssfi`
-    function shouldGetter() {
-      if (this instanceof String || this instanceof Number) {
-        return new Assertion(this.constructor(this), null, shouldGetter);
-      } else if (this instanceof Boolean) {
-        return new Assertion(this == true, null, shouldGetter);
-      }
-      return new Assertion(this, null, shouldGetter);
-    }
-    function shouldSetter(value) {
-      // See https://github.com/chaijs/chai/issues/86: this makes
-      // `whatever.should = someValue` actually set `someValue`, which is
-      // especially useful for `global.should = require('chai').should()`.
-      //
-      // Note that we have to use [[DefineProperty]] instead of [[Put]]
-      // since otherwise we would trigger this very setter!
-      Object.defineProperty(this, 'should', {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    }
     // modify Object.prototype to have `should`
-    Object.defineProperty(Object.prototype, 'should', {
-      set: shouldSetter
-      , get: shouldGetter
+    Object.defineProperty(Object.prototype, 'should',
+      {
+        set: function (value) {
+          // See https://github.com/chaijs/chai/issues/86: this makes
+          // `whatever.should = someValue` actually set `someValue`, which is
+          // especially useful for `global.should = require('chai').should()`.
+          //
+          // Note that we have to use [[DefineProperty]] instead of [[Put]]
+          // since otherwise we would trigger this very setter!
+          Object.defineProperty(this, 'should', {
+            value: value,
+            enumerable: true,
+            configurable: true,
+            writable: true
+          });
+        }
+      , get: function(){
+          if (this instanceof String || this instanceof Number) {
+            return new Assertion(this.constructor(this));
+          } else if (this instanceof Boolean) {
+            return new Assertion(this == true);
+          }
+          return new Assertion(this);
+        }
       , configurable: true
     });
 
@@ -2742,7 +2668,7 @@ module.exports = function (chai, util) {
   chai.Should = loadShould;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /*!
  * Chai - addChainingMethod utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -2754,8 +2680,6 @@ module.exports = function (chai, util) {
  */
 
 var transferFlags = require('./transferFlags');
-var flag = require('./flag');
-var config = require('../config');
 
 /*!
  * Module variables
@@ -2821,10 +2745,7 @@ module.exports = function (ctx, name, method, chainingBehavior) {
     { get: function () {
         chainableBehavior.chainingBehavior.call(this);
 
-        var assert = function assert() {
-          var old_ssfi = flag(this, 'ssfi');
-          if (old_ssfi && config.includeStack === false)
-            flag(this, 'ssfi', assert);
+        var assert = function () {
           var result = chainableBehavior.method.apply(this, arguments);
           return result === undefined ? this : result;
         };
@@ -2855,14 +2776,12 @@ module.exports = function (ctx, name, method, chainingBehavior) {
   });
 };
 
-},{"../config":4,"./flag":12,"./transferFlags":26}],10:[function(require,module,exports){
+},{"./transferFlags":25}],9:[function(require,module,exports){
 /*!
  * Chai - addMethod utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
  * MIT Licensed
  */
-
-var config = require('../config');
 
 /**
  * ### .addMethod (ctx, name, method)
@@ -2888,19 +2807,15 @@ var config = require('../config');
  * @name addMethod
  * @api public
  */
-var flag = require('./flag');
 
 module.exports = function (ctx, name, method) {
   ctx[name] = function () {
-    var old_ssfi = flag(this, 'ssfi');
-    if (old_ssfi && config.includeStack === false)
-      flag(this, 'ssfi', ctx[name]);
     var result = method.apply(this, arguments);
     return result === undefined ? this : result;
   };
 };
 
-},{"../config":4,"./flag":12}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /*!
  * Chai - addProperty utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -2942,7 +2857,7 @@ module.exports = function (ctx, name, getter) {
   });
 };
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*!
  * Chai - flag utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -2976,7 +2891,7 @@ module.exports = function (obj, key, value) {
   }
 };
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*!
  * Chai - getActual utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -2993,10 +2908,11 @@ module.exports = function (obj, key, value) {
  */
 
 module.exports = function (obj, args) {
-  return args.length > 4 ? args[4] : obj._obj;
+  var actual = args[4];
+  return 'undefined' !== typeof actual ? actual : obj._obj;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /*!
  * Chai - getEnumerableProperties utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3023,7 +2939,7 @@ module.exports = function getEnumerableProperties(object) {
   return result;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*!
  * Chai - message composition utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3074,7 +2990,7 @@ module.exports = function (obj, args) {
   return flagMsg ? flagMsg + ': ' + msg : msg;
 };
 
-},{"./flag":12,"./getActual":13,"./inspect":20,"./objDisplay":21}],16:[function(require,module,exports){
+},{"./flag":11,"./getActual":12,"./inspect":19,"./objDisplay":20}],15:[function(require,module,exports){
 /*!
  * Chai - getName utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3096,7 +3012,7 @@ module.exports = function (func) {
   return match && match[1] ? match[1] : "";
 };
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /*!
  * Chai - getPathValue utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3200,7 +3116,7 @@ function _getPathValue (parsed, obj) {
   return res;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /*!
  * Chai - getProperties utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3237,7 +3153,7 @@ module.exports = function getProperties(object) {
   return result;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011 Jake Luer <jake@alogicalparadox.com>
@@ -3353,7 +3269,7 @@ exports.addChainableMethod = require('./addChainableMethod');
 exports.overwriteChainableMethod = require('./overwriteChainableMethod');
 
 
-},{"./addChainableMethod":9,"./addMethod":10,"./addProperty":11,"./flag":12,"./getActual":13,"./getMessage":15,"./getName":16,"./getPathValue":17,"./inspect":20,"./objDisplay":21,"./overwriteChainableMethod":22,"./overwriteMethod":23,"./overwriteProperty":24,"./test":25,"./transferFlags":26,"./type":27,"deep-eql":29}],20:[function(require,module,exports){
+},{"./addChainableMethod":8,"./addMethod":9,"./addProperty":10,"./flag":11,"./getActual":12,"./getMessage":14,"./getName":15,"./getPathValue":16,"./inspect":19,"./objDisplay":20,"./overwriteChainableMethod":21,"./overwriteMethod":22,"./overwriteProperty":23,"./test":24,"./transferFlags":25,"./type":26,"deep-eql":28}],19:[function(require,module,exports){
 // This is (almost) directly from Node.js utils
 // https://github.com/joyent/node/blob/f8c335d0caf47f16d31413f89aa28eda3878e3aa/lib/util.js
 
@@ -3675,7 +3591,7 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-},{"./getEnumerableProperties":14,"./getName":16,"./getProperties":18}],21:[function(require,module,exports){
+},{"./getEnumerableProperties":13,"./getName":15,"./getProperties":17}],20:[function(require,module,exports){
 /*!
  * Chai - flag utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3687,7 +3603,6 @@ function objectToString(o) {
  */
 
 var inspect = require('./inspect');
-var config = require('../config');
 
 /**
  * ### .objDisplay (object)
@@ -3705,7 +3620,7 @@ module.exports = function (obj) {
   var str = inspect(obj)
     , type = Object.prototype.toString.call(obj);
 
-  if (config.truncateThreshold && str.length >= config.truncateThreshold) {
+  if (str.length >= 40) {
     if (type === '[object Function]') {
       return !obj.name || obj.name === ''
         ? '[Function]'
@@ -3726,7 +3641,7 @@ module.exports = function (obj) {
   }
 };
 
-},{"../config":4,"./inspect":20}],22:[function(require,module,exports){
+},{"./inspect":19}],21:[function(require,module,exports){
 /*!
  * Chai - overwriteChainableMethod utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3781,7 +3696,7 @@ module.exports = function (ctx, name, method, chainingBehavior) {
   };
 };
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /*!
  * Chai - overwriteMethod utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3834,7 +3749,7 @@ module.exports = function (ctx, name, method) {
   }
 };
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /*!
  * Chai - overwriteProperty utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3890,7 +3805,7 @@ module.exports = function (ctx, name, getter) {
   });
 };
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 /*!
  * Chai - test utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3918,7 +3833,7 @@ module.exports = function (obj, args) {
   return negate ? !expr : expr;
 };
 
-},{"./flag":12}],26:[function(require,module,exports){
+},{"./flag":11}],25:[function(require,module,exports){
 /*!
  * Chai - transferFlags utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -3964,7 +3879,7 @@ module.exports = function (assertion, object, includeAll) {
   }
 };
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /*!
  * Chai - type utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -4011,7 +3926,7 @@ module.exports = function (obj) {
   return typeof obj;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /*!
  * assertion-error
  * Copyright(c) 2013 Jake Luer <jake@qualiancy.com>
@@ -4123,10 +4038,10 @@ AssertionError.prototype.toJSON = function (stack) {
   return props;
 };
 
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = require('./lib/eql');
 
-},{"./lib/eql":30}],30:[function(require,module,exports){
+},{"./lib/eql":29}],29:[function(require,module,exports){
 /*!
  * deep-eql
  * Copyright(c) 2013 Jake Luer <jake@alogicalparadox.com>
@@ -4385,10 +4300,10 @@ function objectEqual(a, b, m) {
   return true;
 }
 
-},{"buffer":33,"type-detect":31}],31:[function(require,module,exports){
+},{"buffer":32,"type-detect":30}],30:[function(require,module,exports){
 module.exports = require('./lib/type');
 
-},{"./lib/type":32}],32:[function(require,module,exports){
+},{"./lib/type":31}],31:[function(require,module,exports){
 /*!
  * type-detect
  * Copyright(c) 2013 jake luer <jake@alogicalparadox.com>
@@ -4532,7 +4447,7 @@ Library.prototype.test = function (obj, type) {
   }
 };
 
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 /**
  * The buffer module from node.js, for the browser.
  *
@@ -5644,7 +5559,7 @@ function assert (test, message) {
   if (!test) throw new Error(message || 'Failed assertion')
 }
 
-},{"base64-js":34,"ieee754":35}],34:[function(require,module,exports){
+},{"base64-js":33,"ieee754":34}],33:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -5767,7 +5682,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	module.exports.fromByteArray = uint8ToBase64
 }())
 
-},{}],35:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -5853,7 +5768,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],36:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -5878,7 +5793,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],37:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5933,14 +5848,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],38:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],39:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -6529,10 +6444,10 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-}).call(this,require("/home/jhenrich/code/tiles/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":38,"/home/jhenrich/code/tiles/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":37,"inherits":36}],40:[function(require,module,exports){
+}).call(this,require("/home/elim/code/tiles/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":37,"/home/elim/code/tiles/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":36,"inherits":35}],39:[function(require,module,exports){
 /*!
- * jQuery JavaScript Library v2.1.0
+ * jQuery JavaScript Library v2.1.1
  * http://jquery.com/
  *
  * Includes Sizzle.js
@@ -6542,7 +6457,7 @@ function hasOwnProperty(obj, prop) {
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2014-01-23T21:10Z
+ * Date: 2014-05-01T17:11Z
  */
 
 (function( global, factory ) {
@@ -6592,8 +6507,6 @@ var toString = class2type.toString;
 
 var hasOwn = class2type.hasOwnProperty;
 
-var trim = "".trim;
-
 var support = {};
 
 
@@ -6602,7 +6515,7 @@ var
 	// Use the correct document accordingly with window argument (sandbox)
 	document = window.document,
 
-	version = "2.1.0",
+	version = "2.1.1",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -6610,6 +6523,10 @@ var
 		// Need init if jQuery is called (just allow error to be thrown if not included)
 		return new jQuery.fn.init( selector, context );
 	},
+
+	// Support: Android<4.1
+	// Make sure we trim BOM and NBSP
+	rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,
 
 	// Matches dashed string for camelizing
 	rmsPrefix = /^-ms-/,
@@ -6641,10 +6558,10 @@ jQuery.fn = jQuery.prototype = {
 	get: function( num ) {
 		return num != null ?
 
-			// Return a 'clean' array
+			// Return just the one element from the set
 			( num < 0 ? this[ num + this.length ] : this[ num ] ) :
 
-			// Return just the object
+			// Return all the elements in a clean array
 			slice.call( this );
 	},
 
@@ -6800,7 +6717,7 @@ jQuery.extend({
 		// parseFloat NaNs numeric-cast false positives (null|true|false|"")
 		// ...but misinterprets leading-number strings, particularly hex literals ("0x...")
 		// subtraction forces infinities to NaN
-		return obj - parseFloat( obj ) >= 0;
+		return !jQuery.isArray( obj ) && obj - parseFloat( obj ) >= 0;
 	},
 
 	isPlainObject: function( obj ) {
@@ -6812,16 +6729,8 @@ jQuery.extend({
 			return false;
 		}
 
-		// Support: Firefox <20
-		// The try/catch suppresses exceptions thrown when attempting to access
-		// the "constructor" property of certain host objects, ie. |window.location|
-		// https://bugzilla.mozilla.org/show_bug.cgi?id=814622
-		try {
-			if ( obj.constructor &&
-					!hasOwn.call( obj.constructor.prototype, "isPrototypeOf" ) ) {
-				return false;
-			}
-		} catch ( e ) {
+		if ( obj.constructor &&
+				!hasOwn.call( obj.constructor.prototype, "isPrototypeOf" ) ) {
 			return false;
 		}
 
@@ -6931,8 +6840,11 @@ jQuery.extend({
 		return obj;
 	},
 
+	// Support: Android<4.1
 	trim: function( text ) {
-		return text == null ? "" : trim.call( text );
+		return text == null ?
+			"" :
+			( text + "" ).replace( rtrim, "" );
 	},
 
 	// results is for internal usage only
@@ -7084,14 +6996,14 @@ function isArraylike( obj ) {
 }
 var Sizzle =
 /*!
- * Sizzle CSS Selector Engine v1.10.16
+ * Sizzle CSS Selector Engine v1.10.19
  * http://sizzlejs.com/
  *
  * Copyright 2013 jQuery Foundation, Inc. and other contributors
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2014-01-13
+ * Date: 2014-04-18
  */
 (function( window ) {
 
@@ -7100,7 +7012,9 @@ var i,
 	Expr,
 	getText,
 	isXML,
+	tokenize,
 	compile,
+	select,
 	outermostContext,
 	sortInput,
 	hasDuplicate,
@@ -7167,17 +7081,23 @@ var i,
 	// Proper syntax: http://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
 	identifier = characterEncoding.replace( "w", "w#" ),
 
-	// Acceptable operators http://www.w3.org/TR/selectors/#attribute-selectors
-	attributes = "\\[" + whitespace + "*(" + characterEncoding + ")" + whitespace +
-		"*(?:([*^$|!~]?=)" + whitespace + "*(?:(['\"])((?:\\\\.|[^\\\\])*?)\\3|(" + identifier + ")|)|)" + whitespace + "*\\]",
+	// Attribute selectors: http://www.w3.org/TR/selectors/#attribute-selectors
+	attributes = "\\[" + whitespace + "*(" + characterEncoding + ")(?:" + whitespace +
+		// Operator (capture 2)
+		"*([*^$|!~]?=)" + whitespace +
+		// "Attribute values must be CSS identifiers [capture 5] or strings [capture 3 or capture 4]"
+		"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|(" + identifier + "))|)" + whitespace +
+		"*\\]",
 
-	// Prefer arguments quoted,
-	//   then not containing pseudos/brackets,
-	//   then attribute selectors/non-parenthetical expressions,
-	//   then anything else
-	// These preferences are here to reduce the number of selectors
-	//   needing tokenize in the PSEUDO preFilter
-	pseudos = ":(" + characterEncoding + ")(?:\\(((['\"])((?:\\\\.|[^\\\\])*?)\\3|((?:\\\\.|[^\\\\()[\\]]|" + attributes.replace( 3, 8 ) + ")*)|.*)\\)|)",
+	pseudos = ":(" + characterEncoding + ")(?:\\((" +
+		// To reduce the number of selectors needing tokenize in the preFilter, prefer arguments:
+		// 1. quoted (capture 3; capture 4 or capture 5)
+		"('((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\")|" +
+		// 2. simple (capture 6)
+		"((?:\\\\.|[^\\\\()[\\]]|" + attributes + ")*)|" +
+		// 3. anything else (capture 2)
+		".*" +
+		")\\)|)",
 
 	// Leading and non-escaped trailing whitespace, capturing some non-whitespace characters preceding the latter
 	rtrim = new RegExp( "^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" + whitespace + "+$", "g" ),
@@ -7222,7 +7142,7 @@ var i,
 	funescape = function( _, escaped, escapedWhitespace ) {
 		var high = "0x" + escaped - 0x10000;
 		// NaN means non-codepoint
-		// Support: Firefox
+		// Support: Firefox<24
 		// Workaround erroneous numeric interpretation of +"0x"
 		return high !== high || escapedWhitespace ?
 			escaped :
@@ -7618,7 +7538,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 				var m = context.getElementById( id );
 				// Check parentNode to catch when Blackberry 4.6 returns
 				// nodes that are no longer in the document #6963
-				return m && m.parentNode ? [m] : [];
+				return m && m.parentNode ? [ m ] : [];
 			}
 		};
 		Expr.filter["ID"] = function( id ) {
@@ -7698,11 +7618,13 @@ setDocument = Sizzle.setDocument = function( node ) {
 			// setting a boolean content attribute,
 			// since its presence should be enough
 			// http://bugs.jquery.com/ticket/12359
-			div.innerHTML = "<select t=''><option selected=''></option></select>";
+			div.innerHTML = "<select msallowclip=''><option selected=''></option></select>";
 
-			// Support: IE8, Opera 10-12
+			// Support: IE8, Opera 11-12.16
 			// Nothing should be selected when empty strings follow ^= or $= or *=
-			if ( div.querySelectorAll("[t^='']").length ) {
+			// The test attribute must be unknown in Opera but "safe" for WinRT
+			// http://msdn.microsoft.com/en-us/library/ie/hh465388.aspx#attribute_section
+			if ( div.querySelectorAll("[msallowclip^='']").length ) {
 				rbuggyQSA.push( "[*^$]=" + whitespace + "*(?:''|\"\")" );
 			}
 
@@ -7745,7 +7667,8 @@ setDocument = Sizzle.setDocument = function( node ) {
 		});
 	}
 
-	if ( (support.matchesSelector = rnative.test( (matches = docElem.webkitMatchesSelector ||
+	if ( (support.matchesSelector = rnative.test( (matches = docElem.matches ||
+		docElem.webkitMatchesSelector ||
 		docElem.mozMatchesSelector ||
 		docElem.oMatchesSelector ||
 		docElem.msMatchesSelector) )) ) {
@@ -7926,7 +7849,7 @@ Sizzle.matchesSelector = function( elem, expr ) {
 		} catch(e) {}
 	}
 
-	return Sizzle( expr, document, null, [elem] ).length > 0;
+	return Sizzle( expr, document, null, [ elem ] ).length > 0;
 };
 
 Sizzle.contains = function( context, elem ) {
@@ -8055,7 +7978,7 @@ Expr = Sizzle.selectors = {
 			match[1] = match[1].replace( runescape, funescape );
 
 			// Move the given value to match[3] whether quoted or unquoted
-			match[3] = ( match[4] || match[5] || "" ).replace( runescape, funescape );
+			match[3] = ( match[3] || match[4] || match[5] || "" ).replace( runescape, funescape );
 
 			if ( match[2] === "~=" ) {
 				match[3] = " " + match[3] + " ";
@@ -8098,15 +8021,15 @@ Expr = Sizzle.selectors = {
 
 		"PSEUDO": function( match ) {
 			var excess,
-				unquoted = !match[5] && match[2];
+				unquoted = !match[6] && match[2];
 
 			if ( matchExpr["CHILD"].test( match[0] ) ) {
 				return null;
 			}
 
 			// Accept quoted arguments as-is
-			if ( match[3] && match[4] !== undefined ) {
-				match[2] = match[4];
+			if ( match[3] ) {
+				match[2] = match[4] || match[5] || "";
 
 			// Strip excess characters from unquoted arguments
 			} else if ( unquoted && rpseudo.test( unquoted ) &&
@@ -8511,7 +8434,7 @@ function setFilters() {}
 setFilters.prototype = Expr.filters = Expr.pseudos;
 Expr.setFilters = new setFilters();
 
-function tokenize( selector, parseOnly ) {
+tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 	var matched, match, tokens, type,
 		soFar, groups, preFilters,
 		cached = tokenCache[ selector + " " ];
@@ -8576,7 +8499,7 @@ function tokenize( selector, parseOnly ) {
 			Sizzle.error( selector ) :
 			// Cache the tokens
 			tokenCache( selector, groups ).slice( 0 );
-}
+};
 
 function toSelector( tokens ) {
 	var i = 0,
@@ -8653,6 +8576,15 @@ function elementMatcher( matchers ) {
 			return true;
 		} :
 		matchers[0];
+}
+
+function multipleContexts( selector, contexts, results ) {
+	var i = 0,
+		len = contexts.length;
+	for ( ; i < len; i++ ) {
+		Sizzle( selector, contexts[i], results );
+	}
+	return results;
 }
 
 function condense( unmatched, map, filter, context, xml ) {
@@ -8923,7 +8855,7 @@ function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
 		superMatcher;
 }
 
-compile = Sizzle.compile = function( selector, group /* Internal Use Only */ ) {
+compile = Sizzle.compile = function( selector, match /* Internal Use Only */ ) {
 	var i,
 		setMatchers = [],
 		elementMatchers = [],
@@ -8931,12 +8863,12 @@ compile = Sizzle.compile = function( selector, group /* Internal Use Only */ ) {
 
 	if ( !cached ) {
 		// Generate a function of recursive functions that can be used to check each element
-		if ( !group ) {
-			group = tokenize( selector );
+		if ( !match ) {
+			match = tokenize( selector );
 		}
-		i = group.length;
+		i = match.length;
 		while ( i-- ) {
-			cached = matcherFromTokens( group[i] );
+			cached = matcherFromTokens( match[i] );
 			if ( cached[ expando ] ) {
 				setMatchers.push( cached );
 			} else {
@@ -8946,74 +8878,83 @@ compile = Sizzle.compile = function( selector, group /* Internal Use Only */ ) {
 
 		// Cache the compiled function
 		cached = compilerCache( selector, matcherFromGroupMatchers( elementMatchers, setMatchers ) );
+
+		// Save selector and tokenization
+		cached.selector = selector;
 	}
 	return cached;
 };
 
-function multipleContexts( selector, contexts, results ) {
-	var i = 0,
-		len = contexts.length;
-	for ( ; i < len; i++ ) {
-		Sizzle( selector, contexts[i], results );
-	}
-	return results;
-}
-
-function select( selector, context, results, seed ) {
+/**
+ * A low-level selection function that works with Sizzle's compiled
+ *  selector functions
+ * @param {String|Function} selector A selector or a pre-compiled
+ *  selector function built with Sizzle.compile
+ * @param {Element} context
+ * @param {Array} [results]
+ * @param {Array} [seed] A set of elements to match against
+ */
+select = Sizzle.select = function( selector, context, results, seed ) {
 	var i, tokens, token, type, find,
-		match = tokenize( selector );
+		compiled = typeof selector === "function" && selector,
+		match = !seed && tokenize( (selector = compiled.selector || selector) );
 
-	if ( !seed ) {
-		// Try to minimize operations if there is only one group
-		if ( match.length === 1 ) {
+	results = results || [];
 
-			// Take a shortcut and set the context if the root selector is an ID
-			tokens = match[0] = match[0].slice( 0 );
-			if ( tokens.length > 2 && (token = tokens[0]).type === "ID" &&
-					support.getById && context.nodeType === 9 && documentIsHTML &&
-					Expr.relative[ tokens[1].type ] ) {
+	// Try to minimize operations if there is no seed and only one group
+	if ( match.length === 1 ) {
 
-				context = ( Expr.find["ID"]( token.matches[0].replace(runescape, funescape), context ) || [] )[0];
-				if ( !context ) {
-					return results;
-				}
-				selector = selector.slice( tokens.shift().value.length );
+		// Take a shortcut and set the context if the root selector is an ID
+		tokens = match[0] = match[0].slice( 0 );
+		if ( tokens.length > 2 && (token = tokens[0]).type === "ID" &&
+				support.getById && context.nodeType === 9 && documentIsHTML &&
+				Expr.relative[ tokens[1].type ] ) {
+
+			context = ( Expr.find["ID"]( token.matches[0].replace(runescape, funescape), context ) || [] )[0];
+			if ( !context ) {
+				return results;
+
+			// Precompiled matchers will still verify ancestry, so step up a level
+			} else if ( compiled ) {
+				context = context.parentNode;
 			}
 
-			// Fetch a seed set for right-to-left matching
-			i = matchExpr["needsContext"].test( selector ) ? 0 : tokens.length;
-			while ( i-- ) {
-				token = tokens[i];
+			selector = selector.slice( tokens.shift().value.length );
+		}
 
-				// Abort if we hit a combinator
-				if ( Expr.relative[ (type = token.type) ] ) {
-					break;
-				}
-				if ( (find = Expr.find[ type ]) ) {
-					// Search, expanding context for leading sibling combinators
-					if ( (seed = find(
-						token.matches[0].replace( runescape, funescape ),
-						rsibling.test( tokens[0].type ) && testContext( context.parentNode ) || context
-					)) ) {
+		// Fetch a seed set for right-to-left matching
+		i = matchExpr["needsContext"].test( selector ) ? 0 : tokens.length;
+		while ( i-- ) {
+			token = tokens[i];
 
-						// If seed is empty or no tokens remain, we can return early
-						tokens.splice( i, 1 );
-						selector = seed.length && toSelector( tokens );
-						if ( !selector ) {
-							push.apply( results, seed );
-							return results;
-						}
+			// Abort if we hit a combinator
+			if ( Expr.relative[ (type = token.type) ] ) {
+				break;
+			}
+			if ( (find = Expr.find[ type ]) ) {
+				// Search, expanding context for leading sibling combinators
+				if ( (seed = find(
+					token.matches[0].replace( runescape, funescape ),
+					rsibling.test( tokens[0].type ) && testContext( context.parentNode ) || context
+				)) ) {
 
-						break;
+					// If seed is empty or no tokens remain, we can return early
+					tokens.splice( i, 1 );
+					selector = seed.length && toSelector( tokens );
+					if ( !selector ) {
+						push.apply( results, seed );
+						return results;
 					}
+
+					break;
 				}
 			}
 		}
 	}
 
-	// Compile and execute a filtering function
+	// Compile and execute a filtering function if one is not provided
 	// Provide `match` to avoid retokenization if we modified the selector above
-	compile( selector, match )(
+	( compiled || compile( selector, match ) )(
 		seed,
 		context,
 		!documentIsHTML,
@@ -9021,7 +8962,7 @@ function select( selector, context, results, seed ) {
 		rsibling.test( selector ) && testContext( context.parentNode ) || context
 	);
 	return results;
-}
+};
 
 // One-time assignments
 
@@ -9898,8 +9839,9 @@ jQuery.extend({
 		readyList.resolveWith( document, [ jQuery ] );
 
 		// Trigger any bound ready events
-		if ( jQuery.fn.trigger ) {
-			jQuery( document ).trigger("ready").off("ready");
+		if ( jQuery.fn.triggerHandler ) {
+			jQuery( document ).triggerHandler( "ready" );
+			jQuery( document ).off( "ready" );
 		}
 	}
 });
@@ -10271,11 +10213,15 @@ jQuery.fn.extend({
 				if ( elem.nodeType === 1 && !data_priv.get( elem, "hasDataAttrs" ) ) {
 					i = attrs.length;
 					while ( i-- ) {
-						name = attrs[ i ].name;
 
-						if ( name.indexOf( "data-" ) === 0 ) {
-							name = jQuery.camelCase( name.slice(5) );
-							dataAttr( elem, name, data[ name ] );
+						// Support: IE11+
+						// The attrs elements can be null (#14894)
+						if ( attrs[ i ] ) {
+							name = attrs[ i ].name;
+							if ( name.indexOf( "data-" ) === 0 ) {
+								name = jQuery.camelCase( name.slice(5) );
+								dataAttr( elem, name, data[ name ] );
+							}
 						}
 					}
 					data_priv.set( elem, "hasDataAttrs", true );
@@ -10505,10 +10451,17 @@ var rcheckableType = (/^(?:checkbox|radio)$/i);
 
 (function() {
 	var fragment = document.createDocumentFragment(),
-		div = fragment.appendChild( document.createElement( "div" ) );
+		div = fragment.appendChild( document.createElement( "div" ) ),
+		input = document.createElement( "input" );
 
 	// #11217 - WebKit loses check when the name is after the checked attribute
-	div.innerHTML = "<input type='radio' checked='checked' name='t'/>";
+	// Support: Windows Web Apps (WWA)
+	// `name` and `type` need .setAttribute for WWA
+	input.setAttribute( "type", "radio" );
+	input.setAttribute( "checked", "checked" );
+	input.setAttribute( "name", "t" );
+
+	div.appendChild( input );
 
 	// Support: Safari 5.1, iOS 5.1, Android 4.x, Android 2.3
 	// old WebKit doesn't clone checked state correctly in fragments
@@ -10528,7 +10481,7 @@ support.focusinBubbles = "onfocusin" in window;
 
 var
 	rkeyEvent = /^key/,
-	rmouseEvent = /^(?:mouse|contextmenu)|click/,
+	rmouseEvent = /^(?:mouse|pointer|contextmenu)|click/,
 	rfocusMorph = /^(?:focusinfocus|focusoutblur)$/,
 	rtypenamespace = /^([^.]*)(?:\.(.+)|)$/;
 
@@ -11097,7 +11050,7 @@ jQuery.event = {
 
 				// Support: Firefox 20+
 				// Firefox doesn't alert if the returnValue field is not set.
-				if ( event.result !== undefined ) {
+				if ( event.result !== undefined && event.originalEvent ) {
 					event.originalEvent.returnValue = event.result;
 				}
 			}
@@ -11148,9 +11101,9 @@ jQuery.Event = function( src, props ) {
 		// Events bubbling up the document may have been marked as prevented
 		// by a handler lower down the tree; reflect the correct value.
 		this.isDefaultPrevented = src.defaultPrevented ||
-				// Support: Android < 4.0
 				src.defaultPrevented === undefined &&
-				src.getPreventDefault && src.getPreventDefault() ?
+				// Support: Android < 4.0
+				src.returnValue === false ?
 			returnTrue :
 			returnFalse;
 
@@ -11197,7 +11150,14 @@ jQuery.Event.prototype = {
 		}
 	},
 	stopImmediatePropagation: function() {
+		var e = this.originalEvent;
+
 		this.isImmediatePropagationStopped = returnTrue;
+
+		if ( e && e.stopImmediatePropagation ) {
+			e.stopImmediatePropagation();
+		}
+
 		this.stopPropagation();
 	}
 };
@@ -11206,7 +11166,9 @@ jQuery.Event.prototype = {
 // Support: Chrome 15+
 jQuery.each({
 	mouseenter: "mouseover",
-	mouseleave: "mouseout"
+	mouseleave: "mouseout",
+	pointerenter: "pointerover",
+	pointerleave: "pointerout"
 }, function( orig, fix ) {
 	jQuery.event.special[ orig ] = {
 		delegateType: fix,
@@ -11631,7 +11593,7 @@ jQuery.extend({
 	},
 
 	cleanData: function( elems ) {
-		var data, elem, events, type, key, j,
+		var data, elem, type, key,
 			special = jQuery.event.special,
 			i = 0;
 
@@ -11640,9 +11602,8 @@ jQuery.extend({
 				key = elem[ data_priv.expando ];
 
 				if ( key && (data = data_priv.cache[ key ]) ) {
-					events = Object.keys( data.events || {} );
-					if ( events.length ) {
-						for ( j = 0; (type = events[j]) !== undefined; j++ ) {
+					if ( data.events ) {
+						for ( type in data.events ) {
 							if ( special[ type ] ) {
 								jQuery.event.remove( elem, type );
 
@@ -11945,14 +11906,15 @@ var iframe,
  */
 // Called only from within defaultDisplay
 function actualDisplay( name, doc ) {
-	var elem = jQuery( doc.createElement( name ) ).appendTo( doc.body ),
+	var style,
+		elem = jQuery( doc.createElement( name ) ).appendTo( doc.body ),
 
 		// getDefaultComputedStyle might be reliably used only on attached element
-		display = window.getDefaultComputedStyle ?
+		display = window.getDefaultComputedStyle && ( style = window.getDefaultComputedStyle( elem[ 0 ] ) ) ?
 
 			// Use of this method is a temporary fix (more like optmization) until something better comes along,
 			// since it was removed from specification and supported only in FF
-			window.getDefaultComputedStyle( elem[ 0 ] ).display : jQuery.css( elem[ 0 ], "display" );
+			style.display : jQuery.css( elem[ 0 ], "display" );
 
 	// We don't have any data stored on the element,
 	// so use "detach" method as fast way to get rid of the element
@@ -12075,28 +12037,32 @@ function addGetHookIf( conditionFn, hookFn ) {
 
 (function() {
 	var pixelPositionVal, boxSizingReliableVal,
-		// Support: Firefox, Android 2.3 (Prefixed box-sizing versions).
-		divReset = "padding:0;margin:0;border:0;display:block;-webkit-box-sizing:content-box;" +
-			"-moz-box-sizing:content-box;box-sizing:content-box",
 		docElem = document.documentElement,
 		container = document.createElement( "div" ),
 		div = document.createElement( "div" );
+
+	if ( !div.style ) {
+		return;
+	}
 
 	div.style.backgroundClip = "content-box";
 	div.cloneNode( true ).style.backgroundClip = "";
 	support.clearCloneStyle = div.style.backgroundClip === "content-box";
 
-	container.style.cssText = "border:0;width:0;height:0;position:absolute;top:0;left:-9999px;" +
-		"margin-top:1px";
+	container.style.cssText = "border:0;width:0;height:0;top:0;left:-9999px;margin-top:1px;" +
+		"position:absolute";
 	container.appendChild( div );
 
 	// Executing both pixelPosition & boxSizingReliable tests require only one layout
 	// so they're executed at the same time to save the second computation.
 	function computePixelPositionAndBoxSizingReliable() {
-		// Support: Firefox, Android 2.3 (Prefixed box-sizing versions).
-		div.style.cssText = "-webkit-box-sizing:border-box;-moz-box-sizing:border-box;" +
-			"box-sizing:border-box;padding:1px;border:1px;display:block;width:4px;margin-top:1%;" +
-			"position:absolute;top:1%";
+		div.style.cssText =
+			// Support: Firefox<29, Android 2.3
+			// Vendor-prefix box-sizing
+			"-webkit-box-sizing:border-box;-moz-box-sizing:border-box;" +
+			"box-sizing:border-box;display:block;margin-top:1%;top:1%;" +
+			"border:1px;padding:1px;width:4px;position:absolute";
+		div.innerHTML = "";
 		docElem.appendChild( container );
 
 		var divStyle = window.getComputedStyle( div, null );
@@ -12106,9 +12072,10 @@ function addGetHookIf( conditionFn, hookFn ) {
 		docElem.removeChild( container );
 	}
 
-	// Use window.getComputedStyle because jsdom on node.js will break without it.
+	// Support: node.js jsdom
+	// Don't assume that getComputedStyle is a property of the global object
 	if ( window.getComputedStyle ) {
-		jQuery.extend(support, {
+		jQuery.extend( support, {
 			pixelPosition: function() {
 				// This test is executed only once but we still do memoizing
 				// since we can use the boxSizingReliable pre-computing.
@@ -12130,7 +12097,13 @@ function addGetHookIf( conditionFn, hookFn ) {
 				// This support function is only executed once so no memoizing is needed.
 				var ret,
 					marginDiv = div.appendChild( document.createElement( "div" ) );
-				marginDiv.style.cssText = div.style.cssText = divReset;
+
+				// Reset CSS: box-sizing; display; margin; border; padding
+				marginDiv.style.cssText = div.style.cssText =
+					// Support: Firefox<29, Android 2.3
+					// Vendor-prefix box-sizing
+					"-webkit-box-sizing:content-box;-moz-box-sizing:content-box;" +
+					"box-sizing:content-box;display:block;margin:0;border:0;padding:0";
 				marginDiv.style.marginRight = marginDiv.style.width = "0";
 				div.style.width = "1px";
 				docElem.appendChild( container );
@@ -12138,9 +12111,6 @@ function addGetHookIf( conditionFn, hookFn ) {
 				ret = !parseFloat( window.getComputedStyle( marginDiv, null ).marginRight );
 
 				docElem.removeChild( container );
-
-				// Clean up the div for other support tests.
-				div.innerHTML = "";
 
 				return ret;
 			}
@@ -12180,8 +12150,8 @@ var
 
 	cssShow = { position: "absolute", visibility: "hidden", display: "block" },
 	cssNormalTransform = {
-		letterSpacing: 0,
-		fontWeight: 400
+		letterSpacing: "0",
+		fontWeight: "400"
 	},
 
 	cssPrefixes = [ "Webkit", "O", "Moz", "ms" ];
@@ -12328,13 +12298,10 @@ function showHide( elements, show ) {
 				values[ index ] = data_priv.access( elem, "olddisplay", defaultDisplay(elem.nodeName) );
 			}
 		} else {
+			hidden = isHidden( elem );
 
-			if ( !values[ index ] ) {
-				hidden = isHidden( elem );
-
-				if ( display && display !== "none" || !hidden ) {
-					data_priv.set( elem, "olddisplay", hidden ? display : jQuery.css(elem, "display") );
-				}
+			if ( display !== "none" || !hidden ) {
+				data_priv.set( elem, "olddisplay", hidden ? display : jQuery.css( elem, "display" ) );
 			}
 		}
 	}
@@ -12373,6 +12340,8 @@ jQuery.extend({
 	cssNumber: {
 		"columnCount": true,
 		"fillOpacity": true,
+		"flexGrow": true,
+		"flexShrink": true,
 		"fontWeight": true,
 		"lineHeight": true,
 		"opacity": true,
@@ -12437,9 +12406,6 @@ jQuery.extend({
 
 			// If a hook was provided, use that value, otherwise just set the specified value
 			if ( !hooks || !("set" in hooks) || (value = hooks.set( elem, value, extra )) !== undefined ) {
-				// Support: Chrome, Safari
-				// Setting style to blank string required to delete "style: x !important;"
-				style[ name ] = "";
 				style[ name ] = value;
 			}
 
@@ -12495,7 +12461,7 @@ jQuery.each([ "height", "width" ], function( i, name ) {
 			if ( computed ) {
 				// certain elements can have dimension info if we invisibly show them
 				// however, it must have a current display style that would benefit from this
-				return elem.offsetWidth === 0 && rdisplayswap.test( jQuery.css( elem, "display" ) ) ?
+				return rdisplayswap.test( jQuery.css( elem, "display" ) ) && elem.offsetWidth === 0 ?
 					jQuery.swap( elem, cssShow, function() {
 						return getWidthOrHeight( elem, name, extra );
 					}) :
@@ -12816,7 +12782,7 @@ function createTween( value, prop, animation ) {
 
 function defaultPrefilter( elem, props, opts ) {
 	/* jshint validthis: true */
-	var prop, value, toggle, tween, hooks, oldfire, display,
+	var prop, value, toggle, tween, hooks, oldfire, display, checkDisplay,
 		anim = this,
 		orig = {},
 		style = elem.style,
@@ -12860,13 +12826,12 @@ function defaultPrefilter( elem, props, opts ) {
 		// Set display property to inline-block for height/width
 		// animations on inline elements that are having width/height animated
 		display = jQuery.css( elem, "display" );
-		// Get default display if display is currently "none"
-		if ( display === "none" ) {
-			display = defaultDisplay( elem.nodeName );
-		}
-		if ( display === "inline" &&
-				jQuery.css( elem, "float" ) === "none" ) {
 
+		// Test default display if display is currently "none"
+		checkDisplay = display === "none" ?
+			data_priv.get( elem, "olddisplay" ) || defaultDisplay( elem.nodeName ) : display;
+
+		if ( checkDisplay === "inline" && jQuery.css( elem, "float" ) === "none" ) {
 			style.display = "inline-block";
 		}
 	}
@@ -12896,6 +12861,10 @@ function defaultPrefilter( elem, props, opts ) {
 				}
 			}
 			orig[ prop ] = dataShow && dataShow[ prop ] || jQuery.style( elem, prop );
+
+		// Any non-fx value stops us from restoring the original display value
+		} else {
+			display = undefined;
 		}
 	}
 
@@ -12938,6 +12907,10 @@ function defaultPrefilter( elem, props, opts ) {
 				}
 			}
 		}
+
+	// If this is a noop like .hide().hide(), restore an overwritten display value
+	} else if ( (display === "none" ? defaultDisplay( elem.nodeName ) : display) === "inline" ) {
+		style.display = display;
 	}
 }
 
@@ -13830,6 +13803,16 @@ jQuery.fn.extend({
 
 jQuery.extend({
 	valHooks: {
+		option: {
+			get: function( elem ) {
+				var val = jQuery.find.attr( elem, "value" );
+				return val != null ?
+					val :
+					// Support: IE10-11+
+					// option.text throws exceptions (#14686, #14858)
+					jQuery.trim( jQuery.text( elem ) );
+			}
+		},
 		select: {
 			get: function( elem ) {
 				var value, option,
@@ -13876,7 +13859,7 @@ jQuery.extend({
 
 				while ( i-- ) {
 					option = options[ i ];
-					if ( (option.selected = jQuery.inArray( jQuery(option).val(), values ) >= 0) ) {
+					if ( (option.selected = jQuery.inArray( option.value, values ) >= 0) ) {
 						optionSet = true;
 					}
 				}
@@ -15083,10 +15066,15 @@ jQuery.ajaxTransport(function( options ) {
 				// Create the abort callback
 				callback = xhrCallbacks[ id ] = callback("abort");
 
-				// Do send the request
-				// This may raise an exception which is actually
-				// handled in jQuery.ajax (so no try/catch here)
-				xhr.send( options.hasContent && options.data || null );
+				try {
+					// Do send the request (this may raise an exception)
+					xhr.send( options.hasContent && options.data || null );
+				} catch ( e ) {
+					// #14683: Only rethrow if this hasn't been notified as an error yet
+					if ( callback ) {
+						throw e;
+					}
+				}
 			},
 
 			abort: function() {
@@ -15293,7 +15281,7 @@ jQuery.fn.load = function( url, params, callback ) {
 		off = url.indexOf(" ");
 
 	if ( off >= 0 ) {
-		selector = url.slice( off );
+		selector = jQuery.trim( url.slice( off ) );
 		url = url.slice( 0, off );
 	}
 
@@ -15601,6 +15589,12 @@ jQuery.fn.andSelf = jQuery.fn.addBack;
 // derived from file names, and jQuery is normally delivered in a lowercase
 // file name. Do this after creating the global so that if an AMD module wants
 // to call noConflict to hide this version of jQuery, it will work.
+
+// Note that for maximum portability, libraries that are not jQuery should
+// declare themselves as anonymous modules, and avoid setting a global if an
+// AMD loader is present. jQuery is a special case. For more information, see
+// https://github.com/jrburke/requirejs/wiki/Updating-existing-libraries#wiki-anon
+
 if ( typeof define === "function" && define.amd ) {
 	define( "jquery", [], function() {
 		return jQuery;
@@ -15643,7 +15637,7 @@ return jQuery;
 
 }));
 
-},{}],41:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function (sinonChai) {
     "use strict";
 
@@ -15771,7 +15765,7 @@ return jQuery;
     exceptionalSinonMethod("thrown", "threw", "thrown %1");
 }));
 
-},{}],42:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /*jslint eqeqeq: false, onevar: false, forin: true, nomen: false, regexp: false, plusplus: false*/
 /*global module, require, __dirname, document*/
 /**
@@ -15847,19 +15841,15 @@ var sinon = (function (formatio) {
             if (!isFunction(wrappedMethod)) {
                 error = new TypeError("Attempted to wrap " + (typeof wrappedMethod) + " property " +
                                     property + " as function");
-            }
-
-            if (wrappedMethod.restore && wrappedMethod.restore.sinon) {
+            } else if (wrappedMethod.restore && wrappedMethod.restore.sinon) {
                 error = new TypeError("Attempted to wrap " + property + " which is already wrapped");
-            }
-
-            if (wrappedMethod.calledBefore) {
+            } else if (wrappedMethod.calledBefore) {
                 var verb = !!wrappedMethod.returns ? "stubbed" : "spied on";
                 error = new TypeError("Attempted to wrap " + property + " which is already " + verb);
             }
 
             if (error) {
-                if (wrappedMethod._stack) {
+                if (wrappedMethod && wrappedMethod._stack) {
                     error.stack += '\n--------------\n' + wrappedMethod._stack;
                 }
                 throw error;
@@ -15963,6 +15953,10 @@ var sinon = (function (formatio) {
 
             for (prop in a) {
                 aLength += 1;
+
+                if (!(prop in b)) {
+                    return false;
+                }
 
                 if (!deepEqual(a[prop], b[prop])) {
                     return false;
@@ -16109,30 +16103,31 @@ var sinon = (function (formatio) {
         }
     };
 
-    var isNode = typeof module !== "undefined" && module.exports;
+    var isNode = typeof module !== "undefined" && module.exports && typeof require == "function";
     var isAMD = typeof define === 'function' && typeof define.amd === 'object' && define.amd;
 
+    function makePublicAPI(require, exports, module) {
+        module.exports = sinon;
+        sinon.spy = require("./sinon/spy");
+        sinon.spyCall = require("./sinon/call");
+        sinon.behavior = require("./sinon/behavior");
+        sinon.stub = require("./sinon/stub");
+        sinon.mock = require("./sinon/mock");
+        sinon.collection = require("./sinon/collection");
+        sinon.assert = require("./sinon/assert");
+        sinon.sandbox = require("./sinon/sandbox");
+        sinon.test = require("./sinon/test");
+        sinon.testCase = require("./sinon/test_case");
+        sinon.match = require("./sinon/match");
+    }
+
     if (isAMD) {
-        define(function(){
-            return sinon;
-        });
+        define(makePublicAPI);
     } else if (isNode) {
         try {
             formatio = require("formatio");
         } catch (e) {}
-        module.exports = sinon;
-        module.exports.spy = require("./sinon/spy");
-        module.exports.spyCall = require("./sinon/call");
-        module.exports.behavior = require("./sinon/behavior");
-        module.exports.stub = require("./sinon/stub");
-        module.exports.mock = require("./sinon/mock");
-        module.exports.collection = require("./sinon/collection");
-        module.exports.assert = require("./sinon/assert");
-        module.exports.sandbox = require("./sinon/sandbox");
-        module.exports.test = require("./sinon/test");
-        module.exports.testCase = require("./sinon/test_case");
-        module.exports.assert = require("./sinon/assert");
-        module.exports.match = require("./sinon/match");
+        makePublicAPI(require, exports, module);
     }
 
     if (formatio) {
@@ -16155,7 +16150,7 @@ var sinon = (function (formatio) {
     return sinon;
 }(typeof formatio == "object" && formatio));
 
-},{"./sinon/assert":43,"./sinon/behavior":44,"./sinon/call":45,"./sinon/collection":46,"./sinon/match":47,"./sinon/mock":48,"./sinon/sandbox":49,"./sinon/spy":50,"./sinon/stub":51,"./sinon/test":52,"./sinon/test_case":53,"formatio":55,"util":39}],43:[function(require,module,exports){
+},{"./sinon/assert":42,"./sinon/behavior":43,"./sinon/call":44,"./sinon/collection":45,"./sinon/match":46,"./sinon/mock":47,"./sinon/sandbox":48,"./sinon/spy":49,"./sinon/stub":50,"./sinon/test":51,"./sinon/test_case":52,"formatio":54,"util":38}],42:[function(require,module,exports){
 (function (global){
 /**
  * @depend ../sinon.js
@@ -16174,7 +16169,7 @@ var sinon = (function (formatio) {
 "use strict";
 
 (function (sinon, global) {
-    var commonJSModule = typeof module !== "undefined" && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
     var slice = Array.prototype.slice;
     var assert;
 
@@ -16348,15 +16343,17 @@ var sinon = (function (formatio) {
     mirrorPropAsAssertion("threw", "%n did not throw exception%C");
     mirrorPropAsAssertion("alwaysThrew", "%n did not always throw exception%C");
 
-    if (commonJSModule) {
+    sinon.assert = assert;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = assert; });
+    } else if (commonJSModule) {
         module.exports = assert;
-    } else {
-        sinon.assert = assert;
     }
 }(typeof sinon == "object" && sinon || null, typeof window != "undefined" ? window : (typeof self != "undefined") ? self : global));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../sinon":42}],44:[function(require,module,exports){
+},{"../sinon":41}],43:[function(require,module,exports){
 (function (process){
 /**
  * @depend ../sinon.js
@@ -16375,7 +16372,7 @@ var sinon = (function (formatio) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -16684,14 +16681,17 @@ var sinon = (function (formatio) {
         }
     }
 
-    if (commonJSModule) {
+    sinon.behavior = proto;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = proto; });
+    } else if (commonJSModule) {
         module.exports = proto;
-    } else {
-        sinon.behavior = proto;
     }
 }(typeof sinon == "object" && sinon || null));
-}).call(this,require("/home/jhenrich/code/tiles/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"../sinon":42,"/home/jhenrich/code/tiles/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":37}],45:[function(require,module,exports){
+
+}).call(this,require("/home/elim/code/tiles/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"../sinon":41,"/home/elim/code/tiles/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":36}],44:[function(require,module,exports){
 /**
   * @depend ../sinon.js
   * @depend match.js
@@ -16711,7 +16711,7 @@ var sinon = (function (formatio) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
     }
@@ -16888,15 +16888,17 @@ var sinon = (function (formatio) {
     }
     createSpyCall.toString = callProto.toString; // used by mocks
 
-    if (commonJSModule) {
+    sinon.spyCall = createSpyCall;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = createSpyCall; });
+    } else if (commonJSModule) {
         module.exports = createSpyCall;
-    } else {
-        sinon.spyCall = createSpyCall;
     }
 }(typeof sinon == "object" && sinon || null));
 
 
-},{"../sinon":42}],46:[function(require,module,exports){
+},{"../sinon":41}],45:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -16915,7 +16917,7 @@ var sinon = (function (formatio) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
     var push = [].push;
     var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -17044,14 +17046,16 @@ var sinon = (function (formatio) {
         }
     };
 
-    if (commonJSModule) {
+    sinon.collection = collection;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = collection; });
+    } else if (commonJSModule) {
         module.exports = collection;
-    } else {
-        sinon.collection = collection;
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":42}],47:[function(require,module,exports){
+},{"../sinon":41}],46:[function(require,module,exports){
 /* @depend ../sinon.js */
 /*jslint eqeqeq: false, onevar: false, plusplus: false*/
 /*global module, require, sinon*/
@@ -17066,7 +17070,7 @@ var sinon = (function (formatio) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -17289,14 +17293,16 @@ var sinon = (function (formatio) {
     match.regexp = match.typeOf("regexp");
     match.date = match.typeOf("date");
 
-    if (commonJSModule) {
+    sinon.match = match;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = match; });
+    } else if (commonJSModule) {
         module.exports = match;
-    } else {
-        sinon.match = match;
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":42}],48:[function(require,module,exports){
+},{"../sinon":41}],47:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -17314,7 +17320,7 @@ var sinon = (function (formatio) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
     var push = [].push;
     var match;
 
@@ -17740,14 +17746,16 @@ var sinon = (function (formatio) {
         };
     }());
 
-    if (commonJSModule) {
+    sinon.mock = mock;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = mock; });
+    } else if (commonJSModule) {
         module.exports = mock;
-    } else {
-        sinon.mock = mock;
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":42,"./match":47}],49:[function(require,module,exports){
+},{"../sinon":41,"./match":46}],48:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend collection.js
@@ -17767,7 +17775,7 @@ var sinon = (function (formatio) {
  */
 "use strict";
 
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports && typeof require == "function") {
     var sinon = require("../sinon");
     sinon.extend(sinon, require("./util/fake_timers"));
 }
@@ -17886,12 +17894,14 @@ if (typeof module !== 'undefined' && module.exports) {
 
     sinon.sandbox.useFakeXMLHttpRequest = sinon.sandbox.useFakeServer;
 
-    if (typeof module !== 'undefined' && module.exports) {
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = sinon.sandbox; });
+    } else if (typeof module !== 'undefined' && module.exports) {
         module.exports = sinon.sandbox;
     }
 }());
 
-},{"../sinon":42,"./util/fake_timers":54}],50:[function(require,module,exports){
+},{"../sinon":41,"./util/fake_timers":53}],49:[function(require,module,exports){
 /**
   * @depend ../sinon.js
   * @depend call.js
@@ -17909,7 +17919,7 @@ if (typeof module !== 'undefined' && module.exports) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
     var push = Array.prototype.push;
     var slice = Array.prototype.slice;
     var callId = 0;
@@ -18040,6 +18050,9 @@ if (typeof module !== 'undefined' && module.exports) {
             push.call(this.args, args);
             push.call(this.callIds, callId++);
 
+            // Make call properties available from within the spied function:
+            createCallProperties.call(this);
+
             try {
                 if (matching) {
                     returnValue = matching.invoke(func, thisValue, args);
@@ -18058,6 +18071,7 @@ if (typeof module !== 'undefined' && module.exports) {
             push.call(this.exceptions, exception);
             push.call(this.returnValues, returnValue);
 
+            // Make return value and exception available in the calls:
             createCallProperties.call(this);
 
             if (exception !== undefined) {
@@ -18065,6 +18079,11 @@ if (typeof module !== 'undefined' && module.exports) {
             }
 
             return returnValue;
+        },
+
+        named: function named(name) {
+            this.displayName = name;
+            return this;
         },
 
         getCall: function getCall(i) {
@@ -18292,15 +18311,16 @@ if (typeof module !== 'undefined' && module.exports) {
     sinon.extend(spy, spyApi);
 
     spy.spyCall = sinon.spyCall;
+    sinon.spy = spy;
 
-    if (commonJSModule) {
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = spy; });
+    } else if (commonJSModule) {
         module.exports = spy;
-    } else {
-        sinon.spy = spy;
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":42}],51:[function(require,module,exports){
+},{"../sinon":41}],50:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend spy.js
@@ -18319,7 +18339,7 @@ if (typeof module !== 'undefined' && module.exports) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -18454,14 +18474,16 @@ if (typeof module !== 'undefined' && module.exports) {
         return proto;
     }()));
 
-    if (commonJSModule) {
+    sinon.stub = stub;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = stub; });
+    } else if (commonJSModule) {
         module.exports = stub;
-    } else {
-        sinon.stub = stub;
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":42}],52:[function(require,module,exports){
+},{"../sinon":41}],51:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -18481,7 +18503,7 @@ if (typeof module !== 'undefined' && module.exports) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -18498,7 +18520,7 @@ if (typeof module !== 'undefined' && module.exports) {
             throw new TypeError("sinon.test needs to wrap a test function, got " + type);
         }
 
-        return function () {
+        function sinonSandboxedTest() {
             var config = sinon.getConfig(sinon.config);
             config.injectInto = config.injectIntoThis && this || config.injectInto;
             var sandbox = sinon.sandbox.create(config);
@@ -18521,6 +18543,14 @@ if (typeof module !== 'undefined' && module.exports) {
 
             return result;
         };
+
+        if (callback.length) {
+            return function sinonAsyncSandboxedTest(callback) {
+                return sinonSandboxedTest.apply(this, arguments);
+            };
+        }
+
+        return sinonSandboxedTest;
     }
 
     test.config = {
@@ -18531,14 +18561,16 @@ if (typeof module !== 'undefined' && module.exports) {
         useFakeServer: true
     };
 
-    if (commonJSModule) {
+    sinon.test = test;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = test; });
+    } else if (commonJSModule) {
         module.exports = test;
-    } else {
-        sinon.test = test;
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":42}],53:[function(require,module,exports){
+},{"../sinon":41}],52:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend test.js
@@ -18556,7 +18588,7 @@ if (typeof module !== 'undefined' && module.exports) {
 "use strict";
 
 (function (sinon) {
-    var commonJSModule = typeof module !== 'undefined' && module.exports;
+    var commonJSModule = typeof module !== "undefined" && module.exports && typeof require == "function";
 
     if (!sinon && commonJSModule) {
         sinon = require("../sinon");
@@ -18630,14 +18662,16 @@ if (typeof module !== 'undefined' && module.exports) {
         return methods;
     }
 
-    if (commonJSModule) {
+    sinon.testCase = testCase;
+
+    if (typeof define === "function" && define.amd) {
+        define(["module"], function(module) { module.exports = testCase; });
+    } else if (commonJSModule) {
         module.exports = testCase;
-    } else {
-        sinon.testCase = testCase;
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":42}],54:[function(require,module,exports){
+},{"../sinon":41}],53:[function(require,module,exports){
 (function (global){
 /*jslint eqeqeq: false, plusplus: false, evil: true, onevar: false, browser: true, forin: false*/
 /*global module, require, window*/
@@ -18776,10 +18810,18 @@ if (typeof sinon == "undefined") {
         },
 
         clearTimeout: function clearTimeout(timerId) {
+            if (!timerId) {
+                // null appears to be allowed in most browsers, and appears to be relied upon by some libraries, like Bootstrap carousel
+                return;
+            }
             if (!this.timeouts) {
                 this.timeouts = [];
             }
-
+            // in Node, timerId is an object with .ref()/.unref(), and
+            // its .id field is the actual timer id.
+            if (typeof timerId === 'object') {
+              timerId = timerId.id
+            }
             if (timerId in this.timeouts) {
                 delete this.timeouts[timerId];
             }
@@ -19042,7 +19084,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],55:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 (function (global){
 ((typeof define === "function" && define.amd && function (m) {
     define("formatio", ["samsam"], m);
@@ -19245,7 +19287,7 @@ if (typeof module !== 'undefined' && module.exports) {
 });
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"samsam":56}],56:[function(require,module,exports){
+},{"samsam":55}],55:[function(require,module,exports){
 ((typeof define === "function" && define.amd && function (m) { define("samsam", m); }) ||
  (typeof module === "object" &&
       function (m) { module.exports = m(); }) || // Node
@@ -19631,7 +19673,7 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 });
 
-},{}],57:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -21275,7 +21317,7 @@ module.exports = Board = (function() {
 })();
 
 
-},{"character":"BakdVC","jquery":40,"tile":"MtwR2O","underscore":57}],"board":[function(require,module,exports){
+},{"character":"BakdVC","jquery":39,"tile":"MtwR2O","underscore":56}],"board":[function(require,module,exports){
 module.exports=require('vrNTnI');
 },{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
@@ -21343,8 +21385,8 @@ module.exports = Character = (function() {
         x_offset = offset;
         y_offset = (offset / 2) + player_offset;
     }
-    this.icon.left = this.tile.fimg.left + x_offset;
-    return this.icon.top = this.tile.fimg.top + y_offset;
+    this.icon.left = this.tile.left + x_offset;
+    return this.icon.top = this.tile.top + y_offset;
   };
 
   Character.prototype.draw = function() {
@@ -21364,7 +21406,7 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"character":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":39,"underscore":56}],"character":[function(require,module,exports){
 module.exports=require('BakdVC');
 },{}],"fabric":[function(require,module,exports){
 module.exports=require('NlWBxo');
@@ -31773,7 +31815,7 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","jquery":40,"underscore":57}],"main":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"main":[function(require,module,exports){
 module.exports=require('zE4Rgs');
 },{}],"tile":[function(require,module,exports){
 module.exports=require('MtwR2O');
@@ -31793,12 +31835,14 @@ module.exports = Tile = (function() {
     this.size = size;
     this.board = board;
     this.id = id != null ? id : false;
+    this.file = "images/" + this.zone + this.type + "-1.png";
     this.characters = [];
     if (this.zone === 'start') {
       this.file = 'images/start.png';
       this.x = 0;
       this.y = 0;
       this.set_exits();
+      this.orientation = 1;
     } else {
       this.set_orientations();
     }
@@ -31903,15 +31947,33 @@ module.exports = Tile = (function() {
     })(this), 'html');
   };
 
+  Tile.prototype.rotation_mods = function() {
+    switch (this.orientation) {
+      case 1:
+        return [0, 0];
+      case 2:
+        return [1, 0];
+      case 3:
+        return [1, 1];
+      case 4:
+        return [0, 1];
+    }
+  };
+
   Tile.prototype.create_image = function() {
+    var shifted_x, shifted_y, x_mod, y_mod, _ref;
     this.img = new Image;
-    this.img.setAtX = this.x + this.offset;
-    this.img.setAtY = -1 * this.y + this.offset;
+    _ref = this.rotation_mods(), x_mod = _ref[0], y_mod = _ref[1];
+    shifted_x = this.x + this.offset + x_mod;
+    shifted_y = -1 * this.y + this.offset + y_mod;
+    this.left = (this.x + this.offset) * this.size;
+    this.top = (-1 * this.y + this.offset) * this.size;
     return this.fimg = new fabric.Image(this.img, {
-      left: this.img.setAtX * this.size,
-      top: this.img.setAtY * this.size,
+      left: shifted_x * this.size,
+      top: shifted_y * this.size,
       width: this.size,
-      height: this.size
+      height: this.size,
+      angle: 90 * (this.orientation - 1)
     });
   };
 
@@ -31927,6 +31989,7 @@ module.exports = Tile = (function() {
     if (!(this.img && this.fimg)) {
       this.create_image();
     }
+    console.log("drawing " + this.zone + ", type " + this.type + ", " + this.orientation + ", x " + this.x + "/" + ((this.fimg.left / this.size) - this.offset) + " y " + this.y + "/" + ((this.fimg.top / this.size) - this.offset) + " rotation: " + (90 * (this.orientation - 1)));
     this.img.onload = (function(_this) {
       return function() {
         return _this.board.canvas.add(_this.fimg);
@@ -31983,7 +32046,6 @@ module.exports = Tile = (function() {
 
   Tile.prototype.rotate = function(orientation) {
     this.orientation = orientation;
-    this.file = "images/" + this.zone + this.type + "-" + this.orientation + ".png";
     return this.set_exits();
   };
 
@@ -31992,7 +32054,7 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":40,"underscore":57}],68:[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":39,"underscore":56}],67:[function(require,module,exports){
 var $, Board, Tile, chai, close_all_but_east, create_box, expect, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -32344,7 +32406,7 @@ describe('Board', function() {
 });
 
 
-},{"board":"vrNTnI","chai":1,"jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}],69:[function(require,module,exports){
+},{"board":"vrNTnI","chai":1,"jquery":39,"sinon":41,"sinon-chai":40,"tile":"MtwR2O","underscore":56}],68:[function(require,module,exports){
 var $, Board, Character, Tile, chai, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -32415,7 +32477,7 @@ describe('Character', function() {
 });
 
 
-},{"board":"vrNTnI","chai":1,"character":"BakdVC","fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}],70:[function(require,module,exports){
+},{"board":"vrNTnI","chai":1,"character":"BakdVC","fabric":"NlWBxo","jquery":39,"sinon":41,"sinon-chai":40,"tile":"MtwR2O","underscore":56}],69:[function(require,module,exports){
 var $, Board, Tile, chai, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -32730,4 +32792,4 @@ describe('Tile', function() {
 });
 
 
-},{"board":"vrNTnI","chai":1,"fabric":"NlWBxo","jquery":40,"sinon":42,"sinon-chai":41,"tile":"MtwR2O","underscore":57}]},{},[68,69,70])
+},{"board":"vrNTnI","chai":1,"fabric":"NlWBxo","jquery":39,"sinon":41,"sinon-chai":40,"tile":"MtwR2O","underscore":56}]},{},[67,68,69])
