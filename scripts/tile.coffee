@@ -3,7 +3,7 @@ _ = require 'underscore'
 fabric = require('fabric').fabric
 module.exports = class Tile
   constructor: (@zone, @type, @size, @board, @id = false) ->
-    @file = "images/#{@zone}#{@type}-1.png"
+    @file = "images/#{@zone}#{@type}.png"
     @characters = []
     if @zone == 'start'
       @file = 'images/start.png'
@@ -115,7 +115,6 @@ module.exports = class Tile
 
   draw: ->
     @create_image() unless (@img && @fimg)
-    console.log "drawing #{@zone}, type #{@type}, #{@orientation}, x #{@x}/#{(@fimg.left / @size)-@offset} y #{@y}/#{(@fimg.top / @size)-@offset} rotation: #{90*(@orientation-1)}"
     @img.onload = =>
       @board.canvas.add(@fimg)
     @img.src = @file

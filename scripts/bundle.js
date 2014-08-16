@@ -21350,7 +21350,7 @@ module.exports = Tile = (function() {
     this.size = size;
     this.board = board;
     this.id = id != null ? id : false;
-    this.file = "images/" + this.zone + this.type + "-1.png";
+    this.file = "images/" + this.zone + this.type + ".png";
     this.characters = [];
     if (this.zone === 'start') {
       this.file = 'images/start.png';
@@ -21504,7 +21504,6 @@ module.exports = Tile = (function() {
     if (!(this.img && this.fimg)) {
       this.create_image();
     }
-    console.log("drawing " + this.zone + ", type " + this.type + ", " + this.orientation + ", x " + this.x + "/" + ((this.fimg.left / this.size) - this.offset) + " y " + this.y + "/" + ((this.fimg.top / this.size) - this.offset) + " rotation: " + (90 * (this.orientation - 1)));
     this.img.onload = (function(_this) {
       return function() {
         return _this.board.canvas.add(_this.fimg);
