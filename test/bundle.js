@@ -31765,7 +31765,7 @@ build_map = function(tiles, size, interval) {
     board.stop_placing = true;
   }
   return stopping = setInterval((function() {
-    var bag, number, number_of_zones, players, selected_zones, tile, tile_list, zone, zone_numbers, zones, _i, _j, _len, _len1, _ref;
+    var bag, colors, number, number_of_zones, players, selected_zones, tile, tile_list, zone, zone_numbers, zones, _i, _j, _len, _len1, _ref;
     if (board && board.running) {
 
     } else {
@@ -31809,10 +31809,12 @@ build_map = function(tiles, size, interval) {
       window.board = board = new Board(canvas, size, tile_list, selected_zones, interval);
       board.add_start_tile();
       board.lay_tiles();
-      board.call_when_ready(board.add_character, ['green']);
-      board.call_when_ready(board.add_character, ['black']);
-      board.call_when_ready(board.add_character, ['red']);
-      board.call_when_ready(board.add_character, ['purple']);
+      colors = ['green', 'black', 'red', 'purple'];
+      _(players).times(function(n) {
+        if (!(n > 3)) {
+          return board.call_when_ready(board.add_character, [colors[n]]);
+        }
+      });
       return clearInterval(stopping);
     }
   }), 10);
@@ -31821,6 +31823,8 @@ build_map = function(tiles, size, interval) {
 
 },{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"main":[function(require,module,exports){
 module.exports=require('zE4Rgs');
+},{}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
 },{}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, _;
 
@@ -32056,9 +32060,7 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":39,"underscore":56}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],67:[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":39,"underscore":56}],67:[function(require,module,exports){
 var $, Board, Tile, chai, close_all_but_east, create_box, expect, sinon, sinon_chai, _;
 
 chai = require('chai');

@@ -148,9 +148,8 @@ build_map = (tiles, size, interval)->
       window.board = board = new Board canvas, size, tile_list, selected_zones, interval
       board.add_start_tile()
       board.lay_tiles()
-      board.call_when_ready(board.add_character, ['green'])
-      board.call_when_ready(board.add_character, ['black'])
-      board.call_when_ready(board.add_character, ['red'])
-      board.call_when_ready(board.add_character, ['purple'])
+      colors = ['green', 'black', 'red', 'purple']
+      _(players).times (n)->
+        board.call_when_ready(board.add_character, [colors[n]]) unless n > 3
       clearInterval(stopping)
   ), 10
