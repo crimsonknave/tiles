@@ -4,6 +4,7 @@ fabric = require('fabric').fabric
 module.exports = class Character
   constructor: (@board, @color)->
     @tile = @board.start_tile
+    @moves = []
     @tile.characters.push this
     @size = @board.size/6
     @board.characters.push this
@@ -16,9 +17,12 @@ module.exports = class Character
     return false unless @tile[dir]
     new_tile = @tile.neighbor_to_the(dir)
     return false unless new_tile
+
+    @moves.push dir
     @tile.characters.splice($.inArray(this, @tile.characters), 1)
     @tile = new_tile
     @tile.characters.push(this)
+    @tile.explored = true
     @set_icon_coords()
     @redraw()
 

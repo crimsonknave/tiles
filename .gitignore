@@ -2,3 +2,4 @@
 .sass-cache
 data/tiles.json
 node_modules
+raw

@@ -3,6 +3,7 @@ _ = require 'underscore'
 fabric = require('fabric').fabric
 module.exports = class Tile
   constructor: (@zone, @type, @size, @board, @id = false) ->
+    @explored = false
     @file = "images/#{@zone}#{@type}.png"
     @characters = []
     if @zone == 'start'

@@ -10836,8 +10836,6 @@ module.exports = Board = (function() {
 
 },{"character":"BakdVC","jquery":1,"tile":"MtwR2O","underscore":2}],"board":[function(require,module,exports){
 module.exports=require('vrNTnI');
-},{}],"character":[function(require,module,exports){
-module.exports=require('BakdVC');
 },{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
@@ -10852,6 +10850,7 @@ module.exports = Character = (function() {
     this.board = board;
     this.color = color;
     this.tile = this.board.start_tile;
+    this.moves = [];
     this.tile.characters.push(this);
     this.size = this.board.size / 6;
     this.board.characters.push(this);
@@ -10868,9 +10867,11 @@ module.exports = Character = (function() {
     if (!new_tile) {
       return false;
     }
+    this.moves.push(dir);
     this.tile.characters.splice($.inArray(this, this.tile.characters), 1);
     this.tile = new_tile;
     this.tile.characters.push(this);
+    this.tile.explored = true;
     this.set_icon_coords();
     return this.redraw();
   };
@@ -10925,7 +10926,9 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":1,"underscore":2}],"fabric":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":1,"underscore":2}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
+},{}],"fabric":[function(require,module,exports){
 module.exports=require('NlWBxo');
 },{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
@@ -21351,6 +21354,7 @@ module.exports = Tile = (function() {
     this.size = size;
     this.board = board;
     this.id = id != null ? id : false;
+    this.explored = false;
     this.file = "images/" + this.zone + this.type + ".png";
     this.characters = [];
     if (this.zone === 'start') {

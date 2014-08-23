@@ -21333,6 +21333,7 @@ module.exports = Character = (function() {
     this.board = board;
     this.color = color;
     this.tile = this.board.start_tile;
+    this.moves = [];
     this.tile.characters.push(this);
     this.size = this.board.size / 6;
     this.board.characters.push(this);
@@ -21349,9 +21350,11 @@ module.exports = Character = (function() {
     if (!new_tile) {
       return false;
     }
+    this.moves.push(dir);
     this.tile.characters.splice($.inArray(this, this.tile.characters), 1);
     this.tile = new_tile;
     this.tile.characters.push(this);
+    this.tile.explored = true;
     this.set_icon_coords();
     return this.redraw();
   };
@@ -31590,8 +31593,6 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-},{}],"main":[function(require,module,exports){
-module.exports=require('zE4Rgs');
 },{}],"zE4Rgs":[function(require,module,exports){
 var $, Board, board, build_map, character_object, fabric, get_zone_numbers, next_character, set_active_character, _;
 
@@ -31818,7 +31819,9 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"MtwR2O":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"main":[function(require,module,exports){
+module.exports=require('zE4Rgs');
+},{}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, _;
 
 $ = require('jquery');
@@ -31834,6 +31837,7 @@ module.exports = Tile = (function() {
     this.size = size;
     this.board = board;
     this.id = id != null ? id : false;
+    this.explored = false;
     this.file = "images/" + this.zone + this.type + ".png";
     this.characters = [];
     if (this.zone === 'start') {
@@ -32470,8 +32474,20 @@ describe('Character', function() {
       expect(this.character.move('north')).to.not.be["false"];
       return expect(this.character.move('west')).to.be["false"];
     });
-    return it('succeedes', function() {
+    it('succeedes', function() {
       return expect(this.character.move('north')).to.not.be["false"];
+    });
+    it('marks the tile as explored', function() {
+      var tile;
+      tile = this.board.tile_at(0, 1);
+      expect(tile.explored).to.be["false"];
+      this.character.move('north');
+      return expect(this.character.tile.explored).to.be["true"];
+    });
+    return it('stores moves', function() {
+      expect(this.character.moves.length).to.eq(0);
+      this.character.move('north');
+      return expect(this.character.moves.length).to.eq(1);
     });
   });
 });
