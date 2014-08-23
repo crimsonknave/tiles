@@ -61,3 +61,10 @@ describe 'Character', ->
       expect(@character.moves.length).to.eq(0)
       @character.move('north')
       expect(@character.moves.length).to.eq(1)
+    
+    it 'updates the selected info', ->
+      tile = @board.tile_at(0,0)
+      tile.toggle()
+      sinon.spy(tile, 'set_selected_info')
+      @character.move('north')
+      expect(tile.set_selected_info).to.have.been.calledOnce

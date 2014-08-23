@@ -10873,7 +10873,10 @@ module.exports = Character = (function() {
     this.tile.characters.push(this);
     this.tile.explored = true;
     this.set_icon_coords();
-    return this.redraw();
+    this.redraw();
+    if (this.board.toggled_tile) {
+      return this.board.toggled_tile.set_selected_info();
+    }
   };
 
   Character.prototype.create_icon = function() {
@@ -21450,14 +21453,7 @@ module.exports = Tile = (function() {
     return this.redraw();
   };
 
-  Tile.prototype.toggle = function() {
-    this.toggled = !this.toggled;
-    if (this.board.toggled_tile && this.board.toggled_tile !== this) {
-      this.board.toggled_tile.untoggle();
-    }
-    this.board.toggled_tile = this;
-    this.fimg.opacity = this.toggled ? 0.5 : 1;
-    this.redraw();
+  Tile.prototype.set_selected_info = function() {
     return $.get('templates/info.html', (function(_this) {
       return function(data) {
         var html, info;
@@ -21467,6 +21463,17 @@ module.exports = Tile = (function() {
         return info.removeClass('hidden');
       };
     })(this), 'html');
+  };
+
+  Tile.prototype.toggle = function() {
+    this.toggled = !this.toggled;
+    if (this.board.toggled_tile && this.board.toggled_tile !== this) {
+      this.board.toggled_tile.untoggle();
+    }
+    this.board.toggled_tile = this;
+    this.fimg.opacity = this.toggled ? 0.5 : 1;
+    this.redraw();
+    return this.set_selected_info();
   };
 
   Tile.prototype.rotation_mods = function() {

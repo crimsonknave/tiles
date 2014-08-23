@@ -66,6 +66,14 @@ module.exports = class Tile
     @fimg.opacity = 1
     @redraw()
 
+  set_selected_info: ->
+    $.get('templates/info.html', (data)=>
+      html = _.template(data, this)
+      info = $('.info')
+      info.html(html)
+      info.removeClass('hidden')
+    , 'html')
+
   toggle: ->
     @toggled = !@toggled
     if @board.toggled_tile && @board.toggled_tile != this
@@ -73,12 +81,7 @@ module.exports = class Tile
     @board.toggled_tile = this
     @fimg.opacity = if @toggled then 0.5 else 1
     @redraw()
-    $.get('templates/info.html', (data)=>
-      html = _.template(data, this)
-      info = $('.info')
-      info.html(html)
-      info.removeClass('hidden')
-    , 'html')
+    @set_selected_info()
 
   rotation_mods: ->
     switch @orientation

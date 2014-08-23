@@ -21356,7 +21356,10 @@ module.exports = Character = (function() {
     this.tile.characters.push(this);
     this.tile.explored = true;
     this.set_icon_coords();
-    return this.redraw();
+    this.redraw();
+    if (this.board.toggled_tile) {
+      return this.board.toggled_tile.set_selected_info();
+    }
   };
 
   Character.prototype.create_icon = function() {
@@ -31593,6 +31596,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
+},{}],"main":[function(require,module,exports){
+module.exports=require('zE4Rgs');
 },{}],"zE4Rgs":[function(require,module,exports){
 var $, Board, board, build_map, character_object, fabric, get_zone_numbers, next_character, set_active_character, _;
 
@@ -31821,11 +31826,7 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"main":[function(require,module,exports){
-module.exports=require('zE4Rgs');
-},{}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],"MtwR2O":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, _;
 
 $ = require('jquery');
@@ -31935,14 +31936,7 @@ module.exports = Tile = (function() {
     return this.redraw();
   };
 
-  Tile.prototype.toggle = function() {
-    this.toggled = !this.toggled;
-    if (this.board.toggled_tile && this.board.toggled_tile !== this) {
-      this.board.toggled_tile.untoggle();
-    }
-    this.board.toggled_tile = this;
-    this.fimg.opacity = this.toggled ? 0.5 : 1;
-    this.redraw();
+  Tile.prototype.set_selected_info = function() {
     return $.get('templates/info.html', (function(_this) {
       return function(data) {
         var html, info;
@@ -31952,6 +31946,17 @@ module.exports = Tile = (function() {
         return info.removeClass('hidden');
       };
     })(this), 'html');
+  };
+
+  Tile.prototype.toggle = function() {
+    this.toggled = !this.toggled;
+    if (this.board.toggled_tile && this.board.toggled_tile !== this) {
+      this.board.toggled_tile.untoggle();
+    }
+    this.board.toggled_tile = this;
+    this.fimg.opacity = this.toggled ? 0.5 : 1;
+    this.redraw();
+    return this.set_selected_info();
   };
 
   Tile.prototype.rotation_mods = function() {
@@ -32060,7 +32065,9 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":39,"underscore":56}],67:[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":39,"underscore":56}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
+},{}],67:[function(require,module,exports){
 var $, Board, Tile, chai, close_all_but_east, create_box, expect, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -32486,10 +32493,18 @@ describe('Character', function() {
       this.character.move('north');
       return expect(this.character.tile.explored).to.be["true"];
     });
-    return it('stores moves', function() {
+    it('stores moves', function() {
       expect(this.character.moves.length).to.eq(0);
       this.character.move('north');
       return expect(this.character.moves.length).to.eq(1);
+    });
+    return it('updates the selected info', function() {
+      var tile;
+      tile = this.board.tile_at(0, 0);
+      tile.toggle();
+      sinon.spy(tile, 'set_selected_info');
+      this.character.move('north');
+      return expect(tile.set_selected_info).to.have.been.calledOnce;
     });
   });
 });
