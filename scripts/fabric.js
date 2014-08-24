@@ -6,9 +6,13 @@ if (typeof exports !== 'undefined') {
   exports.fabric = fabric;
 }
 
+// BROWSERIFY_CHANGE
+fabric.document = document;
+fabric.window = window;
+
 //if (typeof document !== 'undefined' && typeof window !== 'undefined') {
-  fabric.document = document;
-  fabric.window = window;
+  //fabric.document = document;
+  //fabric.window = window;
 //}
 //else {
   //// assume we're running under node.js when document/window are not present
@@ -17,6 +21,7 @@ if (typeof exports !== 'undefined') {
 
   //fabric.window = fabric.document.createWindow();
 //}
+
 
 /**
  * True when in environment that supports touch events
@@ -28,9 +33,10 @@ fabric.isTouchSupported = "ontouchstart" in fabric.document.documentElement;
  * True when in environment that's probably Node.js
  * @type boolean
  */
-fabric.isLikelyNode = false;
 //fabric.isLikelyNode = typeof Buffer !== 'undefined' &&
                       //typeof window === 'undefined';
+// BROWSERIFY_CHANGE
+fabric.isLikelyNode = false;
 
 
 /**
@@ -45,6 +51,8 @@ fabric.SHARED_ATTRIBUTES = [
   "stroke-linejoin", "stroke-miterlimit",
   "stroke-opacity", "stroke-width"
 ];
+
+
 (function(){
 
   /**
@@ -159,6 +167,8 @@ fabric.SHARED_ATTRIBUTES = [
     trigger: fire
   };
 })();
+
+
 /**
  * @namespace fabric.Collection
  */
@@ -300,6 +310,8 @@ fabric.Collection = {
     }, 0);
   }
 };
+
+
 (function(global) {
 
   var sqrt = Math.sqrt,
@@ -634,6 +646,7 @@ fabric.Collection = {
      * @return {HTMLImageElement} HTML image element
      */
     createImage: function() {
+      // BROWSERIFY_CHANGE
       //return fabric.isLikelyNode
         //? new (require('canvas').Image)()
         //: fabric.document.createElement('img');
@@ -802,6 +815,8 @@ fabric.Collection = {
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function() {
 
   var arcToSegmentsCache = { },
@@ -939,6 +954,8 @@ fabric.Collection = {
     }
   };
 })();
+
+
 (function() {
 
   var slice = Array.prototype.slice;
@@ -1187,6 +1204,8 @@ fabric.Collection = {
   };
 
 })();
+
+
 (function(){
 
   /**
@@ -1221,6 +1240,8 @@ fabric.Collection = {
   };
 
 })();
+
+
 (function() {
 
 /* _ES5_COMPAT_START_ */
@@ -1287,6 +1308,8 @@ fabric.util.string = {
   escapeXml: escapeXml
 };
 }());
+
+
 /* _ES5_COMPAT_START_ */
 (function() {
 
@@ -1324,6 +1347,8 @@ fabric.util.string = {
 
 })();
 /* _ES5_COMPAT_END_ */
+
+
 (function() {
 
   var slice = Array.prototype.slice, emptyFunction = function() { };
@@ -1420,6 +1445,8 @@ fabric.util.string = {
 
   fabric.util.createClass = createClass;
 })();
+
+
 (function () {
 
   var unknown = 'unknown';
@@ -1643,6 +1670,8 @@ fabric.util.string = {
   fabric.util.object.extend(fabric.util, fabric.Observable);
 
 })();
+
+
 (function () {
 
   /**
@@ -1713,6 +1742,8 @@ fabric.util.string = {
   fabric.util.setStyle = setStyle;
 
 })();
+
+
 (function() {
 
   var _slice = Array.prototype.slice;
@@ -2009,6 +2040,8 @@ fabric.util.string = {
   fabric.util.getElementStyle = getElementStyle;
 
 })();
+
+
 (function(){
 
   function addParamToUrl(url, param) {
@@ -2080,6 +2113,8 @@ fabric.util.string = {
 
   fabric.util.request = request;
 })();
+
+
 /**
  * Wrapper around `console.log` (when available)
  * @param {Any} values Values to log
@@ -2101,6 +2136,8 @@ if (typeof console !== 'undefined') {
     }
   });
 }
+
+
 (function(global) {
 
   "use strict";
@@ -2390,6 +2427,8 @@ if (typeof console !== 'undefined') {
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -2551,6 +2590,8 @@ if (typeof console !== 'undefined') {
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -3018,6 +3059,8 @@ if (typeof console !== 'undefined') {
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function () {
 
   "use strict";
@@ -4351,6 +4394,8 @@ if (typeof console !== 'undefined') {
   fabric.StaticCanvas.prototype.toJSON = fabric.StaticCanvas.prototype.toObject;
 
 })();
+
+
 fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.StaticCanvas.prototype */ {
 
   /**
@@ -4569,6 +4614,8 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
     });
   }
 });
+
+
 (function(global) {
 
   "use strict";
@@ -5952,6 +5999,8 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
   fabric.Object.__uid = 0;
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function() {
 
   var degreesToRadians = fabric.util.degreesToRadians;
@@ -6161,6 +6210,8 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
   });
 
 })();
+
+
 (function() {
 
   var degreesToRadians = fabric.util.degreesToRadians;
@@ -6559,6 +6610,8 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
     }
   });
 })();
+
+
 fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prototype */ {
 
   /**
@@ -6639,6 +6692,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
     return this;
   }
 });
+
+
 /* _TO_SVG_START_ */
 fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prototype */ {
 
@@ -6734,6 +6789,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   }
 });
 /* _TO_SVG_END_ */
+
+
 /*
   Depends on `stateProperties`
 */
@@ -6779,6 +6836,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
     return this;
   }
 });
+
+
 (function(global) {
 
   "use strict";
@@ -7002,6 +7061,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -7198,6 +7259,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -7322,6 +7385,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global){
 
   "use strict";
@@ -7507,6 +7572,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -7786,6 +7853,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -7969,6 +8038,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -8168,6 +8239,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   };
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   var commandLengths = {
@@ -8899,6 +8972,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   fabric.Path.async = true;
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -9137,6 +9212,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   fabric.PathGroup.async = true;
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global){
 
   "use strict";
@@ -9681,6 +9758,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   fabric.Group.async = true;
 
 })(typeof exports !== 'undefined' ? exports : this);
+
+
 (function(global) {
 
   "use strict";
@@ -10176,3 +10255,4 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   fabric.Image.pngCompression = 1;
 
 })(typeof exports !== 'undefined' ? exports : this);
+
