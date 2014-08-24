@@ -26,6 +26,7 @@ module.exports = class Character
     @set_icon_coords()
     @redraw()
     @board.toggled_tile.set_selected_info() if @board.toggled_tile
+    return true
 
   create_icon: ->
     @icon = new fabric.Circle { radius: @size, fill: @color}

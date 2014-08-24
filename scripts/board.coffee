@@ -2,6 +2,7 @@ Tile = require 'tile'
 Character = require 'character'
 $ = require 'jquery'
 _ = require 'underscore'
+fabric = require('fabric').fabric
 module.exports = class Board
   constructor: (@canvas, @tile_size, @tile_list, @zones, @interval)->
     @left=2
@@ -131,24 +132,64 @@ module.exports = class Board
       for y, tile of tiles
         if tile.north
           coords = [tile.x,tile.y+1]
-          #openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
           openings[tile.zone].push coords unless @tile_at.apply(@, coords)
         if tile.east
           coords = [tile.x+1,tile.y]
-          #openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
           openings[tile.zone].push coords unless @tile_at.apply(@, coords)
         if tile.south
           coords = [tile.x,tile.y-1]
-          #openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
           openings[tile.zone].push coords unless @tile_at.apply(@, coords)
         if tile.west
           coords = [tile.x-1,tile.y]
-          #openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
           openings[tile.zone].push coords unless @tile_at.apply(@, coords)
     return openings
 
+  wall_warning: (char, dir)->
+    console.log 'failed to move!'
+    switch dir
+      when 'north'
+        console.log 'north'
+        #x1 = char.tile.left - (@tile_size/2) - 3
+        x1 = char.tile.left - 3
+        y1 = char.tile.top
+        x2 = x1 + @tile_size
+        y2 = y1
+      when 'east'
+        console.log 'east'
+        x1 = char.tile.left + @tile_size - 7
+        y1 = char.tile.top - 3
+        x2 = x1
+        y2 = y1 + @tile_size
+      when 'south'
+        console.log 'south'
+        x1 = char.tile.left - 3
+        y1 = char.tile.top - 7 + @tile_size
+        x2 = x1 + @tile_size
+        y2 = y1
+      when 'west'
+        console.log 'west'
+        x1 = char.tile.left
+        y1 = char.tile.top - 3
+        x2 = x1
+        y2 = y1 + @tile_size
+
+    line = new fabric.Line([x1, y1, x2, y2], {
+      strokeWidth: @tile_size/10,
+      stroke: 'red',
+      opacity: 0.75
+    })
+    console.log char.tile
+    console.log line
+    @canvas.add(line)
+    line.animate('opacity', 0,
+      onChange: @canvas.renderAll.bind(@canvas),
+      duration: 1000)
+
   move_character: (number, dir)->
-    @characters[number].move dir
+    char = @characters[number]
+    success = char.move dir
+    unless success
+      @wall_warning char, dir
 
   call_when_ready: (func, params)->
     running = setInterval (=>
