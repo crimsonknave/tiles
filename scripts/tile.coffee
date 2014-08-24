@@ -15,11 +15,6 @@ module.exports = class Tile
     else
       @set_orientations()
 
-    if @size == 121
-      @offset = 8
-    else
-      @offset = 16
-
   set_orientations: ->
     @orientations = _.shuffle(@rotations())
     @rotate @orientations.pop()
@@ -94,25 +89,34 @@ module.exports = class Tile
       when 4
         return [0, 1]
 
-  create_image: ->
-    @img = new Image
+  set_coords: ->
     [x_mod, y_mod] = @rotation_mods()
 
-    shifted_x=@x+@offset+x_mod
-    shifted_y=-1*@y+@offset+y_mod
-    @left = (@x+@offset)*@size
-    @top = (-1*@y+@offset)*@size
+    @image_left = (@x+@board.left+x_mod) * @size
+    @image_top = (-1*@y+@board.top+y_mod) * @size
+    @left = (@x+@board.left)*@size
+    @top = (-1*@y+@board.top)*@size
+    
+  create_image: ->
+    @img = new Image
+
+    @set_coords()
+
     @fimg = new fabric.Image(@img, {
-      left: shifted_x*@size,
-      top: shifted_y*@size,
+      left: @image_left,
+      top: @image_top,
       width: @size,
       height: @size
       angle: 90*(@orientation-1)
     })
 
   redraw: ->
-    @board.canvas.remove(@fimg)
-    @board.canvas.add(@fimg)
+    @set_coords()
+    @fimg.left = @image_left
+    @fimg.top = @image_top
+    if @img.complete
+      @board.canvas.remove(@fimg)
+      @board.canvas.add(@fimg)
     _.map(@characters, (char)->
       char.redraw()
     )

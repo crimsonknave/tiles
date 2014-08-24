@@ -6,7 +6,7 @@ module.exports = class Character
     @tile = @board.start_tile
     @moves = []
     @tile.characters.push this
-    @size = @board.size/6
+    @size = @board.tile_size/6
     @board.characters.push this
     @player_number =_.size @board.characters
 

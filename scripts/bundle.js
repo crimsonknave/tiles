@@ -10548,19 +10548,23 @@ $ = require('jquery');
 _ = require('underscore');
 
 module.exports = Board = (function() {
-  function Board(canvas, size, tile_list, zones, interval) {
+  function Board(canvas, tile_size, tile_list, zones, interval) {
     this.canvas = canvas;
-    this.size = size;
+    this.tile_size = tile_size;
     this.tile_list = tile_list;
     this.zones = zones;
     this.interval = interval;
     this.add_character = __bind(this.add_character, this);
+    this.left = 2;
+    this.right = 2;
+    this.top = 2;
+    this.bottom = 2;
     this.tiles = {};
     this.count = 0;
     this.last_was_placeable = true;
     this.unplaceable = [];
     this.characters = [];
-    if (this.size === 60) {
+    if (this.tile_size === 60) {
       this.x = 16;
       this.y = 16;
     } else {
@@ -10575,8 +10579,33 @@ module.exports = Board = (function() {
   };
 
   Board.prototype.add_start_tile = function() {
-    this.start_tile = new Tile('start', '4', this.size, this);
+    this.start_tile = new Tile('start', '4', this.tile_size, this);
     return this.add_tile(this.start_tile, 0, 0);
+  };
+
+  Board.prototype.redraw = function() {
+    var tile, tiles, x, y, _ref, _results;
+    _ref = this.tiles;
+    _results = [];
+    for (x in _ref) {
+      tiles = _ref[x];
+      _results.push((function() {
+        var _results1;
+        _results1 = [];
+        for (y in tiles) {
+          tile = tiles[y];
+          _results1.push(tile.redraw());
+        }
+        return _results1;
+      })());
+    }
+    return _results;
+  };
+
+  Board.prototype.resize = function() {
+    this.canvas.setWidth((this.left + this.right + 1) * this.tile_size);
+    this.canvas.setHeight((this.top + this.bottom + 1) * this.tile_size);
+    return this.redraw();
   };
 
   Board.prototype.add_tile = function(tile, x, y) {
@@ -10602,6 +10631,7 @@ module.exports = Board = (function() {
     } else {
       return false;
     }
+    this.ensure_fits(x, y);
     if (this.tiles[tile.x]) {
       obj = this.tiles[tile.x];
       obj[tile.y] = tile;
@@ -10613,6 +10643,28 @@ module.exports = Board = (function() {
     this.count += 1;
     tile.draw();
     return tile.placement_id = this.count - 1;
+  };
+
+  Board.prototype.ensure_fits = function(x, y) {
+    var changed;
+    changed = false;
+    if (x < -this.left) {
+      changed = true;
+      this.left = -x;
+    } else if (x > this.right) {
+      changed = true;
+      this.right = x;
+    }
+    if (y > this.top) {
+      changed = true;
+      this.top = y;
+    } else if (y < -this.bottom) {
+      changed = true;
+      this.bottom = -y;
+    }
+    if (changed) {
+      return this.resize();
+    }
   };
 
   Board.prototype.tile_fits = function(tile, x, y) {
@@ -10641,13 +10693,13 @@ module.exports = Board = (function() {
   };
 
   Board.prototype.wall_at = function(x, y) {
-    return Math.abs(x) > this.x || Math.abs(y) > this.y;
+    return x < -this.left || x > this.right || y > this.top || y < -this.bottom;
   };
 
   Board.prototype.tile_at_canvas_coords = function(x, y) {
     var board_x, board_y;
-    board_x = Math.floor(x / this.size) - this.x;
-    board_y = -1 * (Math.floor(y / this.size) - this.y);
+    board_x = Math.floor(x / this.tile_size) - this.left;
+    board_y = -1 * (Math.floor(y / this.tile_size) - this.top);
     return this.tile_at(board_x, board_y);
   };
 
@@ -10682,25 +10734,25 @@ module.exports = Board = (function() {
         tile = tiles[y];
         if (tile.north) {
           coords = [tile.x, tile.y + 1];
-          if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
+          if (!this.tile_at.apply(this, coords)) {
             openings[tile.zone].push(coords);
           }
         }
         if (tile.east) {
           coords = [tile.x + 1, tile.y];
-          if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
+          if (!this.tile_at.apply(this, coords)) {
             openings[tile.zone].push(coords);
           }
         }
         if (tile.south) {
           coords = [tile.x, tile.y - 1];
-          if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
+          if (!this.tile_at.apply(this, coords)) {
             openings[tile.zone].push(coords);
           }
         }
         if (tile.west) {
           coords = [tile.x - 1, tile.y];
-          if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
+          if (!this.tile_at.apply(this, coords)) {
             openings[tile.zone].push(coords);
           }
         }
@@ -10740,7 +10792,7 @@ module.exports = Board = (function() {
       for (type in _ref1) {
         num = _ref1[type];
         for (i = _j = 1; _j <= num; i = _j += 1) {
-          tile = new Tile(zone, type, this.size, this);
+          tile = new Tile(zone, type, this.tile_size, this);
           stack.push(tile);
         }
       }
@@ -10792,6 +10844,9 @@ module.exports = Board = (function() {
 
   Board.prototype.lay_tiles = function() {
     var tile_stack, timer;
+    $('#my_canvas').removeClass('hidden');
+    this.canvas.setWidth((this.left + this.right + 1) * this.tile_size);
+    this.canvas.setHeight((this.top + this.bottom + 1) * this.tile_size);
     tile_stack = this.process_tiles_for_laying();
     return timer = setInterval(((function(_this) {
       return function() {
@@ -10852,7 +10907,7 @@ module.exports = Character = (function() {
     this.tile = this.board.start_tile;
     this.moves = [];
     this.tile.characters.push(this);
-    this.size = this.board.size / 6;
+    this.size = this.board.tile_size / 6;
     this.board.characters.push(this);
     this.player_number = _.size(this.board.characters);
     this.draw();
@@ -21371,11 +21426,6 @@ module.exports = Tile = (function() {
     } else {
       this.set_orientations();
     }
-    if (this.size === 121) {
-      this.offset = 8;
-    } else {
-      this.offset = 16;
-    }
   }
 
   Tile.prototype.set_orientations = function() {
@@ -21489,17 +21539,21 @@ module.exports = Tile = (function() {
     }
   };
 
-  Tile.prototype.create_image = function() {
-    var shifted_x, shifted_y, x_mod, y_mod, _ref;
-    this.img = new Image;
+  Tile.prototype.set_coords = function() {
+    var x_mod, y_mod, _ref;
     _ref = this.rotation_mods(), x_mod = _ref[0], y_mod = _ref[1];
-    shifted_x = this.x + this.offset + x_mod;
-    shifted_y = -1 * this.y + this.offset + y_mod;
-    this.left = (this.x + this.offset) * this.size;
-    this.top = (-1 * this.y + this.offset) * this.size;
+    this.image_left = (this.x + this.board.left + x_mod) * this.size;
+    this.image_top = (-1 * this.y + this.board.top + y_mod) * this.size;
+    this.left = (this.x + this.board.left) * this.size;
+    return this.top = (-1 * this.y + this.board.top) * this.size;
+  };
+
+  Tile.prototype.create_image = function() {
+    this.img = new Image;
+    this.set_coords();
     return this.fimg = new fabric.Image(this.img, {
-      left: shifted_x * this.size,
-      top: shifted_y * this.size,
+      left: this.image_left,
+      top: this.image_top,
       width: this.size,
       height: this.size,
       angle: 90 * (this.orientation - 1)
@@ -21507,8 +21561,13 @@ module.exports = Tile = (function() {
   };
 
   Tile.prototype.redraw = function() {
-    this.board.canvas.remove(this.fimg);
-    this.board.canvas.add(this.fimg);
+    this.set_coords();
+    this.fimg.left = this.image_left;
+    this.fimg.top = this.image_top;
+    if (this.img.complete) {
+      this.board.canvas.remove(this.fimg);
+      this.board.canvas.add(this.fimg);
+    }
     return _.map(this.characters, function(char) {
       return char.redraw();
     });

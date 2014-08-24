@@ -150,7 +150,7 @@ describe 'Tile', ->
   describe 'toggling', ->
     beforeEach ->
       @board.add_start_tile()
-      @tile = @board.tiles[0][0]
+      @tile = @board.tile_at(0,0)
 
     it 'should set toggled', ->
       expect(@tile.toggled).to.be.undefined

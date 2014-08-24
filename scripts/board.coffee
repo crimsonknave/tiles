@@ -3,13 +3,17 @@ Character = require 'character'
 $ = require 'jquery'
 _ = require 'underscore'
 module.exports = class Board
-  constructor: (@canvas, @size, @tile_list, @zones, @interval)->
+  constructor: (@canvas, @tile_size, @tile_list, @zones, @interval)->
+    @left=2
+    @right=2
+    @top=2
+    @bottom=2
     @tiles = {}
     @count = 0
     @last_was_placeable = true
     @unplaceable = []
     @characters = []
-    if @size == 60
+    if @tile_size == 60
       @x = 16
       @y = 16
     else
@@ -20,8 +24,18 @@ module.exports = class Board
     character = new Character(this, color)
 
   add_start_tile: ->
-    @start_tile = new Tile 'start', '4', @size, this
+    @start_tile = new Tile 'start', '4', @tile_size, this
     @add_tile(@start_tile, 0, 0)
+
+  redraw: ->
+    for x, tiles of @tiles
+      for y, tile of tiles
+        tile.redraw()
+
+  resize: ->
+    @canvas.setWidth (@left + @right + 1 ) *@tile_size
+    @canvas.setHeight (@top + @bottom + 1 ) *@tile_size
+    @redraw()
 
   add_tile: (tile, x=false, y=false)->
     return false if x == false
@@ -32,6 +46,8 @@ module.exports = class Board
       tile.y = y
     else
       return false
+
+    @ensure_fits(x,y)
 
     if @tiles[tile.x]
       obj = @tiles[tile.x]
@@ -45,6 +61,25 @@ module.exports = class Board
 
     tile.draw()
     tile.placement_id = @count - 1
+
+  ensure_fits: (x,y)->
+    changed = false
+    if x < -@left
+      changed = true
+      @left = -x
+    else if x > @right
+      changed = true
+      @right = x
+    if y > @top
+      changed = true
+      @top = y
+    else if y < -@bottom
+      changed = true
+      @bottom = -y
+
+    @resize() if changed
+
+
   tile_fits: (tile, x, y)->
     north_tile = @tile_at(x, y+1)
     east_tile = @tile_at(x+1, y)
@@ -64,11 +99,12 @@ module.exports = class Board
     return fits
 
   wall_at: (x,y)->
-    Math.abs(x) > @x || Math.abs(y) > @y
+    x < -@left || x > @right || y > @top || y < -@bottom
+
 
   tile_at_canvas_coords: (x,y)->
-    board_x = Math.floor(x/@size) - @x
-    board_y = -1 * (Math.floor(y/@size) - @y)
+    board_x = Math.floor(x/@tile_size) - @left
+    board_y = -1 * (Math.floor(y/@tile_size) - @top)
     @tile_at(board_x, board_y)
 
   tile_at: (x,y)->
@@ -95,16 +131,20 @@ module.exports = class Board
       for y, tile of tiles
         if tile.north
           coords = [tile.x,tile.y+1]
-          openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          #openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.zone].push coords unless @tile_at.apply(@, coords)
         if tile.east
           coords = [tile.x+1,tile.y]
-          openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          #openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.zone].push coords unless @tile_at.apply(@, coords)
         if tile.south
           coords = [tile.x,tile.y-1]
-          openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          #openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.zone].push coords unless @tile_at.apply(@, coords)
         if tile.west
           coords = [tile.x-1,tile.y]
-          openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          #openings[tile.zone].push coords unless(@tile_at.apply(@, coords)|| @wall_at.apply(@, coords))
+          openings[tile.zone].push coords unless @tile_at.apply(@, coords)
     return openings
 
   move_character: (number, dir)->
@@ -127,7 +167,7 @@ module.exports = class Board
       stack = []
       for type, num of @tile_list[zone]
         for i in [1..num] by 1
-          tile = new Tile zone, type, @size, this
+          tile = new Tile zone, type, @tile_size, this
           stack.push tile
       stack = _.shuffle(stack)
       tile_stack = tile_stack.concat stack
@@ -166,6 +206,10 @@ module.exports = class Board
 
 
   lay_tiles: ->
+    $('#my_canvas').removeClass('hidden')
+    @canvas.setWidth (@left + @right + 1 ) *@tile_size
+    @canvas.setHeight (@top + @bottom + 1 ) *@tile_size
+
     tile_stack = @process_tiles_for_laying()
     timer = setInterval (=>
       if @stop_placing

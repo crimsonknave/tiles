@@ -21031,19 +21031,23 @@ $ = require('jquery');
 _ = require('underscore');
 
 module.exports = Board = (function() {
-  function Board(canvas, size, tile_list, zones, interval) {
+  function Board(canvas, tile_size, tile_list, zones, interval) {
     this.canvas = canvas;
-    this.size = size;
+    this.tile_size = tile_size;
     this.tile_list = tile_list;
     this.zones = zones;
     this.interval = interval;
     this.add_character = __bind(this.add_character, this);
+    this.left = 2;
+    this.right = 2;
+    this.top = 2;
+    this.bottom = 2;
     this.tiles = {};
     this.count = 0;
     this.last_was_placeable = true;
     this.unplaceable = [];
     this.characters = [];
-    if (this.size === 60) {
+    if (this.tile_size === 60) {
       this.x = 16;
       this.y = 16;
     } else {
@@ -21058,8 +21062,33 @@ module.exports = Board = (function() {
   };
 
   Board.prototype.add_start_tile = function() {
-    this.start_tile = new Tile('start', '4', this.size, this);
+    this.start_tile = new Tile('start', '4', this.tile_size, this);
     return this.add_tile(this.start_tile, 0, 0);
+  };
+
+  Board.prototype.redraw = function() {
+    var tile, tiles, x, y, _ref, _results;
+    _ref = this.tiles;
+    _results = [];
+    for (x in _ref) {
+      tiles = _ref[x];
+      _results.push((function() {
+        var _results1;
+        _results1 = [];
+        for (y in tiles) {
+          tile = tiles[y];
+          _results1.push(tile.redraw());
+        }
+        return _results1;
+      })());
+    }
+    return _results;
+  };
+
+  Board.prototype.resize = function() {
+    this.canvas.setWidth((this.left + this.right + 1) * this.tile_size);
+    this.canvas.setHeight((this.top + this.bottom + 1) * this.tile_size);
+    return this.redraw();
   };
 
   Board.prototype.add_tile = function(tile, x, y) {
@@ -21085,6 +21114,7 @@ module.exports = Board = (function() {
     } else {
       return false;
     }
+    this.ensure_fits(x, y);
     if (this.tiles[tile.x]) {
       obj = this.tiles[tile.x];
       obj[tile.y] = tile;
@@ -21096,6 +21126,28 @@ module.exports = Board = (function() {
     this.count += 1;
     tile.draw();
     return tile.placement_id = this.count - 1;
+  };
+
+  Board.prototype.ensure_fits = function(x, y) {
+    var changed;
+    changed = false;
+    if (x < -this.left) {
+      changed = true;
+      this.left = -x;
+    } else if (x > this.right) {
+      changed = true;
+      this.right = x;
+    }
+    if (y > this.top) {
+      changed = true;
+      this.top = y;
+    } else if (y < -this.bottom) {
+      changed = true;
+      this.bottom = -y;
+    }
+    if (changed) {
+      return this.resize();
+    }
   };
 
   Board.prototype.tile_fits = function(tile, x, y) {
@@ -21124,13 +21176,13 @@ module.exports = Board = (function() {
   };
 
   Board.prototype.wall_at = function(x, y) {
-    return Math.abs(x) > this.x || Math.abs(y) > this.y;
+    return x < -this.left || x > this.right || y > this.top || y < -this.bottom;
   };
 
   Board.prototype.tile_at_canvas_coords = function(x, y) {
     var board_x, board_y;
-    board_x = Math.floor(x / this.size) - this.x;
-    board_y = -1 * (Math.floor(y / this.size) - this.y);
+    board_x = Math.floor(x / this.tile_size) - this.left;
+    board_y = -1 * (Math.floor(y / this.tile_size) - this.top);
     return this.tile_at(board_x, board_y);
   };
 
@@ -21165,25 +21217,25 @@ module.exports = Board = (function() {
         tile = tiles[y];
         if (tile.north) {
           coords = [tile.x, tile.y + 1];
-          if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
+          if (!this.tile_at.apply(this, coords)) {
             openings[tile.zone].push(coords);
           }
         }
         if (tile.east) {
           coords = [tile.x + 1, tile.y];
-          if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
+          if (!this.tile_at.apply(this, coords)) {
             openings[tile.zone].push(coords);
           }
         }
         if (tile.south) {
           coords = [tile.x, tile.y - 1];
-          if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
+          if (!this.tile_at.apply(this, coords)) {
             openings[tile.zone].push(coords);
           }
         }
         if (tile.west) {
           coords = [tile.x - 1, tile.y];
-          if (!(this.tile_at.apply(this, coords) || this.wall_at.apply(this, coords))) {
+          if (!this.tile_at.apply(this, coords)) {
             openings[tile.zone].push(coords);
           }
         }
@@ -21223,7 +21275,7 @@ module.exports = Board = (function() {
       for (type in _ref1) {
         num = _ref1[type];
         for (i = _j = 1; _j <= num; i = _j += 1) {
-          tile = new Tile(zone, type, this.size, this);
+          tile = new Tile(zone, type, this.tile_size, this);
           stack.push(tile);
         }
       }
@@ -21275,6 +21327,9 @@ module.exports = Board = (function() {
 
   Board.prototype.lay_tiles = function() {
     var tile_stack, timer;
+    $('#my_canvas').removeClass('hidden');
+    this.canvas.setWidth((this.left + this.right + 1) * this.tile_size);
+    this.canvas.setHeight((this.top + this.bottom + 1) * this.tile_size);
     tile_stack = this.process_tiles_for_laying();
     return timer = setInterval(((function(_this) {
       return function() {
@@ -21319,6 +21374,8 @@ module.exports = Board = (function() {
 
 },{"character":"BakdVC","jquery":39,"tile":"MtwR2O","underscore":56}],"board":[function(require,module,exports){
 module.exports=require('vrNTnI');
+},{}],"character":[function(require,module,exports){
+module.exports=require('BakdVC');
 },{}],"BakdVC":[function(require,module,exports){
 var $, Character, fabric, _;
 
@@ -21335,7 +21392,7 @@ module.exports = Character = (function() {
     this.tile = this.board.start_tile;
     this.moves = [];
     this.tile.characters.push(this);
-    this.size = this.board.size / 6;
+    this.size = this.board.tile_size / 6;
     this.board.characters.push(this);
     this.player_number = _.size(this.board.characters);
     this.draw();
@@ -21412,9 +21469,7 @@ module.exports = Character = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":39,"underscore":56}],"character":[function(require,module,exports){
-module.exports=require('BakdVC');
-},{}],"fabric":[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":39,"underscore":56}],"fabric":[function(require,module,exports){
 module.exports=require('NlWBxo');
 },{}],"NlWBxo":[function(require,module,exports){
 /* build: `node build.js modules= minifier=uglifyjs` */
@@ -31596,8 +31651,6 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-},{}],"main":[function(require,module,exports){
-module.exports=require('zE4Rgs');
 },{}],"zE4Rgs":[function(require,module,exports){
 var $, Board, board, build_map, character_object, fabric, get_zone_numbers, next_character, set_active_character, _;
 
@@ -31826,7 +31879,11 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"MtwR2O":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","jquery":39,"underscore":56}],"main":[function(require,module,exports){
+module.exports=require('zE4Rgs');
+},{}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
+},{}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, _;
 
 $ = require('jquery');
@@ -31853,11 +31910,6 @@ module.exports = Tile = (function() {
       this.orientation = 1;
     } else {
       this.set_orientations();
-    }
-    if (this.size === 121) {
-      this.offset = 8;
-    } else {
-      this.offset = 16;
     }
   }
 
@@ -31972,17 +32024,21 @@ module.exports = Tile = (function() {
     }
   };
 
-  Tile.prototype.create_image = function() {
-    var shifted_x, shifted_y, x_mod, y_mod, _ref;
-    this.img = new Image;
+  Tile.prototype.set_coords = function() {
+    var x_mod, y_mod, _ref;
     _ref = this.rotation_mods(), x_mod = _ref[0], y_mod = _ref[1];
-    shifted_x = this.x + this.offset + x_mod;
-    shifted_y = -1 * this.y + this.offset + y_mod;
-    this.left = (this.x + this.offset) * this.size;
-    this.top = (-1 * this.y + this.offset) * this.size;
+    this.image_left = (this.x + this.board.left + x_mod) * this.size;
+    this.image_top = (-1 * this.y + this.board.top + y_mod) * this.size;
+    this.left = (this.x + this.board.left) * this.size;
+    return this.top = (-1 * this.y + this.board.top) * this.size;
+  };
+
+  Tile.prototype.create_image = function() {
+    this.img = new Image;
+    this.set_coords();
     return this.fimg = new fabric.Image(this.img, {
-      left: shifted_x * this.size,
-      top: shifted_y * this.size,
+      left: this.image_left,
+      top: this.image_top,
       width: this.size,
       height: this.size,
       angle: 90 * (this.orientation - 1)
@@ -31990,8 +32046,13 @@ module.exports = Tile = (function() {
   };
 
   Tile.prototype.redraw = function() {
-    this.board.canvas.remove(this.fimg);
-    this.board.canvas.add(this.fimg);
+    this.set_coords();
+    this.fimg.left = this.image_left;
+    this.fimg.top = this.image_top;
+    if (this.img.complete) {
+      this.board.canvas.remove(this.fimg);
+      this.board.canvas.add(this.fimg);
+    }
     return _.map(this.characters, function(char) {
       return char.redraw();
     });
@@ -32065,10 +32126,8 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":39,"underscore":56}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
-},{}],67:[function(require,module,exports){
-var $, Board, Tile, chai, close_all_but_east, create_box, expect, sinon, sinon_chai, _;
+},{"fabric":"NlWBxo","jquery":39,"underscore":56}],67:[function(require,module,exports){
+var $, Board, Tile, chai, close_all_but_east, create_box, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');
 
@@ -32087,6 +32146,8 @@ Tile = require('tile');
 _ = require('underscore');
 
 $ = require('jquery');
+
+fabric = require('fabric').fabric;
 
 close_all_but_east = function(board) {
   var ends, tile;
@@ -32145,18 +32206,17 @@ create_box = function(board) {
 
 describe('Board', function() {
   before(function() {
-    var canvas;
     document.body.innerHTML = __html__['index.html'];
-    canvas = document.getElementById('my_canvas');
-    this.context = canvas.getContext('2d');
+    this.canvas = new fabric.StaticCanvas('my_canvas');
+    sinon.stub(this.canvas, 'add').returns(true);
     this.selected_zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
     this.interval = 0;
-    return this.board = new Board(this.context, 60, [], this.selected_zones, this.interval);
+    return this.board = new Board(this.canvas, 60, [], this.selected_zones, this.interval);
   });
   describe('basics', function() {
     describe('size 121', function() {
       beforeEach(function() {
-        return this.board = new Board(this.context, 121, [], this.selected_zones, this.interval);
+        return this.board = new Board(this.canvas, 121, [], this.selected_zones, this.interval);
       });
       return it('should have walls past 16', function() {
         expect(this.board.wall_at(9, 0)).to.be["true"];
@@ -32214,7 +32274,7 @@ describe('Board', function() {
           '4': 20
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
       board.lay_tiles();
       return wait = setInterval((function() {
@@ -32233,7 +32293,7 @@ describe('Board', function() {
           '1': 5
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
       board.lay_tiles();
       return wait = setInterval((function() {
@@ -32253,7 +32313,7 @@ describe('Board', function() {
           1: 1
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       create_box(board);
       board.lay_tiles();
       return wait = setInterval((function() {
@@ -32273,7 +32333,7 @@ describe('Board', function() {
           '3': 1
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       create_box(board);
       board.lay_tiles();
       return wait = setInterval((function() {
@@ -32305,7 +32365,7 @@ describe('Board', function() {
           '2-straight': 1
         }
       };
-      board = new Board(this.context, 60, tiles, ['first', 'second', 'third', 'fourth', 'fifth'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first', 'second', 'third', 'fourth', 'fifth'], this.interval);
       close_all_but_east(board);
       board.lay_tiles();
       return wait = setInterval((function() {
@@ -32334,7 +32394,7 @@ describe('Board', function() {
           '4': 2
         }
       };
-      board = new Board(this.context, 60, tiles, ['first', 'second'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first', 'second'], this.interval);
       tile_list = board.process_tiles_for_laying();
       expect(_.size(tile_list)).to.eq(4);
       expect(tile_list.pop().zone).to.eq('first');
@@ -32343,7 +32403,7 @@ describe('Board', function() {
       return expect(tile_list.pop().zone).to.eq('second');
     });
   });
-  return describe('add_tile', function() {
+  describe('add_tile', function() {
     it('checks if the connections are valid', function() {
       var board, tile, tiles;
       tiles = {
@@ -32351,7 +32411,7 @@ describe('Board', function() {
           '1': 2
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
       tile = new Tile('first', '1', 60, board);
       tile.rotate(3);
@@ -32364,7 +32424,7 @@ describe('Board', function() {
           '1': 2
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
       tile = new Tile('first', '1', 60, board);
       return expect(board.add_tile(tile, 2, 2)).to.be["false"];
@@ -32376,7 +32436,7 @@ describe('Board', function() {
           '1': 2
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       return expect(board.add_start_tile()).to.not.be["false"];
     });
     it('may not be where a tile exists', function() {
@@ -32386,7 +32446,7 @@ describe('Board', function() {
           '1': 2
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
       tile = new Tile('first', '1', 60, board);
       return expect(board.add_tile(tile, 0, 0)).to.be["false"];
@@ -32398,7 +32458,7 @@ describe('Board', function() {
           '1': 2
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
       tile = new Tile('first', '1', 60, board);
       return expect(board.add_tile(tile, void 0, 1)).to.be["false"];
@@ -32410,16 +32470,55 @@ describe('Board', function() {
           '1': 2
         }
       };
-      board = new Board(this.context, 60, tiles, ['first'], this.interval);
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
       board.add_start_tile();
       tile = new Tile('first', '1', 60, board);
       return expect(board.add_tile(tile, 1)).to.be["false"];
     });
   });
+  describe('redraw', function() {
+    return it('should redraw all the tiles', function(done) {
+      var board, tiles, wait;
+      tiles = {
+        'first': {
+          '4': 20
+        }
+      };
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      board.lay_tiles();
+      return wait = setInterval((function() {
+        var start;
+        if (!board.running) {
+          clearInterval(wait);
+          start = board.tile_at(0, 0);
+          sinon.spy(start, 'redraw');
+          board.redraw();
+          expect(start.redraw).to.have.been.calledOnce;
+          return done();
+        }
+      }), 1);
+    });
+  });
+  return describe('resizing', function() {
+    return it('should be able to add in any direction', function() {
+      var board, tiles;
+      tiles = {
+        'first': {
+          '1': 2
+        }
+      };
+      board = new Board(this.canvas, 60, tiles, ['first'], this.interval);
+      board.add_start_tile();
+      sinon.spy(board, 'redraw');
+      board.resize();
+      return expect(board.redraw).to.have.been.calledOnce;
+    });
+  });
 });
 
 
-},{"board":"vrNTnI","chai":1,"jquery":39,"sinon":41,"sinon-chai":40,"tile":"MtwR2O","underscore":56}],68:[function(require,module,exports){
+},{"board":"vrNTnI","chai":1,"fabric":"NlWBxo","jquery":39,"sinon":41,"sinon-chai":40,"tile":"MtwR2O","underscore":56}],68:[function(require,module,exports){
 var $, Board, Character, Tile, chai, expect, fabric, sinon, sinon_chai, _;
 
 chai = require('chai');
@@ -32739,7 +32838,7 @@ describe('Tile', function() {
   describe('toggling', function() {
     beforeEach(function() {
       this.board.add_start_tile();
-      return this.tile = this.board.tiles[0][0];
+      return this.tile = this.board.tile_at(0, 0);
     });
     it('should set toggled', function() {
       expect(this.tile.toggled).to.be.undefined;
