@@ -8,6 +8,7 @@ Board = require 'board'
 Tile = require 'tile'
 _ = require 'underscore'
 $ = require 'jquery'
+fabric = require('fabric').fabric
 
 close_all_but_east = (board) ->
   board.add_start_tile()
@@ -73,16 +74,17 @@ create_box = (board)->
 describe 'Board', ->
   before ->
     document.body.innerHTML = __html__['index.html']
-    canvas = document.getElementById('my_canvas')
-    @context = canvas.getContext('2d')
+    @canvas = new fabric.StaticCanvas('my_canvas')
+    # Add didn't seem so happy for some reason
+    sinon.stub(@canvas, 'add').returns(true)
     @selected_zones = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']
     @interval = 0
-    @board = new Board @context, 60, [], @selected_zones, @interval
+    @board = new Board @canvas, 60, [], @selected_zones, @interval
 
   describe 'basics', ->
     describe 'size 121', ->
       beforeEach ->
-        @board = new Board @context, 121, [], @selected_zones, @interval
+        @board = new Board @canvas, 121, [], @selected_zones, @interval
 
       it 'should have walls past 16', ->
         expect(@board.wall_at(9, 0)).to.be.true
@@ -130,7 +132,7 @@ describe 'Board', ->
   describe 'laying tiles', ->
     it 'should place all the tiles', (done) ->
       tiles = { 'first': { '4': 20 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       board.add_start_tile()
       board.lay_tiles()
       wait = setInterval (->
@@ -142,7 +144,7 @@ describe 'Board', ->
       ), 1
     it 'should fail to place 5 dead ends', (done)->
       tiles = { 'first': { '1': 5 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       board.add_start_tile()
       board.lay_tiles()
       wait = setInterval (->
@@ -154,7 +156,7 @@ describe 'Board', ->
       ), 1
     it 'should place a 1 when it is surrounded, but fits', (done) ->
       tiles = { 'first': {'1', 1} }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       create_box(board)
 
       board.lay_tiles()
@@ -169,7 +171,7 @@ describe 'Board', ->
 
     it 'replaces the orientations when unplaceable', (done) ->
       tiles = { 'first': { '3': 1 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       create_box(board)
       board.lay_tiles()
       wait = setInterval (->
@@ -183,7 +185,7 @@ describe 'Board', ->
 
     it 'places tiles in zone order', (done) ->
       tiles = { 'first': { '2-straight': 1 } , 'second': { '2-straight': 1 }, 'third': { '2-straight': 1 }, 'fourth': { '2-straight': 1 }, 'fifth': { '2-straight': 1 } }
-      board = new Board @context, 60, tiles, ['first', 'second', 'third', 'fourth', 'fifth'], @interval
+      board = new Board @canvas, 60, tiles, ['first', 'second', 'third', 'fourth', 'fifth'], @interval
       close_all_but_east(board)
       board.lay_tiles()
       wait = setInterval (->
@@ -201,7 +203,7 @@ describe 'Board', ->
   describe 'processing tiles for layout', ->
     it 'should sort tiles in (reverse) order', ->
       tiles = { 'first': { '4': 2 }, 'second': { '4': 2 } }
-      board = new Board @context, 60, tiles, ['first', 'second'], @interval
+      board = new Board @canvas, 60, tiles, ['first', 'second'], @interval
       tile_list = board.process_tiles_for_laying()
       expect(_.size tile_list).to.eq 4
       expect(tile_list.pop().zone).to.eq 'first'
@@ -212,17 +214,17 @@ describe 'Board', ->
   describe 'add_tile', ->
     it 'checks if the connections are valid', ->
       tiles = { 'first': { '1': 2 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       board.add_start_tile()
 
       tile = new Tile 'first', '1', 60, board
-      # east
+       #east
       tile.rotate 3
       expect(board.add_tile(tile, 0, 1)).to.be.false
 
     it 'must be next to at least one tile', ->
       tiles = { 'first': { '1': 2 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       board.add_start_tile()
 
       tile = new Tile 'first', '1', 60, board
@@ -230,19 +232,19 @@ describe 'Board', ->
 
     it 'allows the start tile to have no neighbors', ->
       tiles = { 'first': { '1': 2 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       expect(board.add_start_tile()).to.not.be.false
 
     it 'may not be where a tile exists', ->
       tiles = { 'first': { '1': 2 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       board.add_start_tile()
       tile = new Tile 'first', '1', 60, board
       expect(board.add_tile(tile, 0, 0)).to.be.false
 
     it 'must have an x', ->
       tiles = { 'first': { '1': 2 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       board.add_start_tile()
 
       tile = new Tile 'first', '1', 60, board
@@ -250,8 +252,38 @@ describe 'Board', ->
 
     it 'must have a y', ->
       tiles = { 'first': { '1': 2 } }
-      board = new Board @context, 60, tiles, ['first'], @interval
+      board = new Board @canvas, 60, tiles, ['first'], @interval
       board.add_start_tile()
 
       tile = new Tile 'first', '1', 60, board
       expect(board.add_tile(tile, 1)).to.be.false
+
+  describe 'redraw', ->
+    it 'should redraw all the tiles', (done) ->
+      tiles = { 'first': { '4': 20 } }
+      board = new Board @canvas, 60, tiles, ['first'], @interval
+      board.add_start_tile()
+      board.lay_tiles()
+      wait = setInterval (->
+        if !board.running
+          clearInterval(wait)
+
+          start = board.tile_at(0,0)
+          sinon.spy(start, 'redraw')
+
+          board.redraw()
+
+          expect(start.redraw).to.have.been.calledOnce
+
+          done()
+      ), 1
+
+  describe 'resizing', ->
+    it 'should be able to add in any direction', ->
+      tiles = { 'first': { '1': 2 } }
+      board = new Board @canvas, 60, tiles, ['first'], @interval
+      board.add_start_tile()
+      sinon.spy(board, 'redraw')
+      board.resize()
+      expect(board.redraw).to.have.been.calledOnce
+

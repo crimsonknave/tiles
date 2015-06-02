@@ -4,8 +4,9 @@ fabric = require('fabric').fabric
 module.exports = class Character
   constructor: (@board, @color)->
     @tile = @board.start_tile
+    @moves = []
     @tile.characters.push this
-    @size = @board.size/6
+    @size = @board.tile_size/6
     @board.characters.push this
     @player_number =_.size @board.characters
 
@@ -16,11 +17,16 @@ module.exports = class Character
     return false unless @tile[dir]
     new_tile = @tile.neighbor_to_the(dir)
     return false unless new_tile
+
+    @moves.push dir
     @tile.characters.splice($.inArray(this, @tile.characters), 1)
     @tile = new_tile
     @tile.characters.push(this)
+    @tile.explored = true
     @set_icon_coords()
     @redraw()
+    @board.toggled_tile.set_selected_info() if @board.toggled_tile
+    return true
 
   create_icon: ->
     @icon = new fabric.Circle { radius: @size, fill: @color}
@@ -42,8 +48,8 @@ module.exports = class Character
       when 4
         x_offset = offset
         y_offset = ( offset / 2 ) + player_offset
-    @icon.left = @tile.fimg.left + x_offset
-    @icon.top = @tile.fimg.top + y_offset
+    @icon.left = @tile.left + x_offset
+    @icon.top = @tile.top + y_offset
 
   draw: ->
     @create_icon() unless @icon

@@ -51,3 +51,20 @@ describe 'Character', ->
     it 'succeedes', ->
       expect(@character.move('north')).to.not.be.false
 
+    it 'marks the tile as explored', ->
+      tile = @board.tile_at(0,1)
+      expect(tile.explored).to.be.false
+      @character.move('north')
+      expect(@character.tile.explored).to.be.true
+
+    it 'stores moves', ->
+      expect(@character.moves.length).to.eq(0)
+      @character.move('north')
+      expect(@character.moves.length).to.eq(1)
+    
+    it 'updates the selected info', ->
+      tile = @board.tile_at(0,0)
+      tile.toggle()
+      sinon.spy(tile, 'set_selected_info')
+      @character.move('north')
+      expect(tile.set_selected_info).to.have.been.calledOnce

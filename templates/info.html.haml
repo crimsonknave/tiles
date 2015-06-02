@@ -11,6 +11,8 @@
     \# placed: <%= placement_id %>
   %li
     Name: <%= name %>
+  %li 
+    Explored: <%= explored %>
   %li
-    Characters: <%= character_list() %>
+    Characters: <%= character_list().join(', ') %>
   

@@ -18,6 +18,9 @@ Openings: <%= empty_exits() %>
 Name: <%= name %>
 </li>
 <li>
-Characters: <%= character_list() %>
+Explored: <%= explored %>
+</li>
+<li>
+Characters: <%= character_list().join(', ') %>
 </li>
 </ul>

@@ -3,19 +3,17 @@ _ = require 'underscore'
 fabric = require('fabric').fabric
 module.exports = class Tile
   constructor: (@zone, @type, @size, @board, @id = false) ->
+    @explored = false
+    @file = "images/#{@zone}#{@type}.png"
     @characters = []
     if @zone == 'start'
       @file = 'images/start.png'
       @x = 0
       @y = 0
       @set_exits()
+      @orientation=1
     else
       @set_orientations()
-
-    if @size == 121
-      @offset = 8
-    else
-      @offset = 16
 
   set_orientations: ->
     @orientations = _.shuffle(@rotations())
@@ -63,13 +61,7 @@ module.exports = class Tile
     @fimg.opacity = 1
     @redraw()
 
-  toggle: ->
-    @toggled = !@toggled
-    if @board.toggled_tile && @board.toggled_tile != this
-      @board.toggled_tile.untoggle()
-    @board.toggled_tile = this
-    @fimg.opacity = if @toggled then 0.5 else 1
-    @redraw()
+  set_selected_info: ->
     $.get('templates/info.html', (data)=>
       html = _.template(data, this)
       info = $('.info')
@@ -77,22 +69,54 @@ module.exports = class Tile
       info.removeClass('hidden')
     , 'html')
 
+  toggle: ->
+    @toggled = !@toggled
+    if @board.toggled_tile && @board.toggled_tile != this
+      @board.toggled_tile.untoggle()
+    @board.toggled_tile = this
+    @fimg.opacity = if @toggled then 0.5 else 1
+    @redraw()
+    @set_selected_info()
+
+  rotation_mods: ->
+    switch @orientation
+      when 1
+        return [0, 0]
+      when 2
+        return [1, 0]
+      when 3
+        return [1, 1]
+      when 4
+        return [0, 1]
+
+  set_coords: ->
+    [x_mod, y_mod] = @rotation_mods()
+
+    @image_left = (@x+@board.left+x_mod) * @size
+    @image_top = (-1*@y+@board.top+y_mod) * @size
+    @left = (@x+@board.left)*@size
+    @top = (-1*@y+@board.top)*@size
+    
   create_image: ->
     @img = new Image
-    @img.setAtX=@x+@offset
-    @img.setAtY=-1*@y+@offset
+
+    @set_coords()
+
     @fimg = new fabric.Image(@img, {
-      left: @img.setAtX*@size,
-      top: @img.setAtY*@size,
+      left: @image_left,
+      top: @image_top,
       width: @size,
       height: @size
+      angle: 90*(@orientation-1)
     })
-    #@fimg.mousedown ->
-      #@toggle()
 
   redraw: ->
-    @board.canvas.remove(@fimg)
-    @board.canvas.add(@fimg)
+    @set_coords()
+    @fimg.left = @image_left
+    @fimg.top = @image_top
+    if @img.complete
+      @board.canvas.remove(@fimg)
+      @board.canvas.add(@fimg)
     _.map(@characters, (char)->
       char.redraw()
     )
@@ -147,5 +171,6 @@ module.exports = class Tile
 
   rotate: (orientation) ->
     @orientation = orientation
-    @file = "images/#{@zone}#{@type}-#{@orientation}.png"
+    #@file = "images/#{@zone}#{@type}-#{@orientation}.png"
+    #@fimg.rotate(180)
     @set_exits()
