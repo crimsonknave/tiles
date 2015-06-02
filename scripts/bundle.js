@@ -10775,7 +10775,6 @@ module.exports = Character = (function() {
     this.size = this.board.size / 6;
     this.board.characters.push(this);
     this.player_number = _.size(this.board.characters);
-    this.moves = 0;
     this.draw();
   }
 
@@ -10792,8 +10791,7 @@ module.exports = Character = (function() {
     this.tile = new_tile;
     this.tile.characters.push(this);
     this.set_icon_coords();
-    this.redraw();
-    return this.moves++;
+    return this.redraw();
   };
 
   Character.prototype.create_icon = function() {
@@ -10840,8 +10838,6 @@ module.exports = Character = (function() {
     this.board.canvas.remove(this.icon);
     return this.board.canvas.add(this.icon);
   };
-
-  Character.prototype.info = function() {};
 
   return Character;
 
@@ -21032,8 +21028,6 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-},{}],"main":[function(require,module,exports){
-module.exports=require('zE4Rgs');
 },{}],"zE4Rgs":[function(require,module,exports){
 var $, Board, board, build_map, character_object, fabric, get_zone_numbers, next_character, set_active_character, _;
 
@@ -21259,7 +21253,9 @@ build_map = function(tiles, size, interval) {
 };
 
 
-},{"board":"vrNTnI","fabric":"NlWBxo","jquery":1,"underscore":2}],"MtwR2O":[function(require,module,exports){
+},{"board":"vrNTnI","fabric":"NlWBxo","jquery":1,"underscore":2}],"main":[function(require,module,exports){
+module.exports=require('zE4Rgs');
+},{}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, _;
 
 $ = require('jquery');
@@ -21380,11 +21376,7 @@ module.exports = Tile = (function() {
         html = _.template(data, _this);
         info = $('.info');
         info.html(html);
-        if (_this.toggled) {
-          return info.removeClass('hidden');
-        } else {
-          return info.addClass('hidden');
-        }
+        return info.removeClass('hidden');
       };
     })(this), 'html');
   };

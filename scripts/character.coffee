@@ -8,7 +8,6 @@ module.exports = class Character
     @size = @board.size/6
     @board.characters.push this
     @player_number =_.size @board.characters
-    @moves = 0
 
     @draw()
 
@@ -22,7 +21,6 @@ module.exports = class Character
     @tile.characters.push(this)
     @set_icon_coords()
     @redraw()
-    @moves++
 
   create_icon: ->
     @icon = new fabric.Circle { radius: @size, fill: @color}
@@ -54,5 +52,3 @@ module.exports = class Character
   redraw: ->
     @board.canvas.remove(@icon)
     @board.canvas.add(@icon)
-
-  info: ->
