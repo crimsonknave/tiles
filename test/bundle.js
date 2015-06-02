@@ -21295,6 +21295,7 @@ module.exports = Character = (function() {
     this.size = this.board.size / 6;
     this.board.characters.push(this);
     this.player_number = _.size(this.board.characters);
+    this.moves = 0;
     this.draw();
   }
 
@@ -21311,7 +21312,8 @@ module.exports = Character = (function() {
     this.tile = new_tile;
     this.tile.characters.push(this);
     this.set_icon_coords();
-    return this.redraw();
+    this.redraw();
+    return this.moves++;
   };
 
   Character.prototype.create_icon = function() {
@@ -21358,6 +21360,8 @@ module.exports = Character = (function() {
     this.board.canvas.remove(this.icon);
     return this.board.canvas.add(this.icon);
   };
+
+  Character.prototype.info = function() {};
 
   return Character;
 
@@ -31775,8 +31779,6 @@ build_map = function(tiles, size, interval) {
 
 },{"board":"vrNTnI","fabric":"NlWBxo","jquery":40,"underscore":57}],"main":[function(require,module,exports){
 module.exports=require('zE4Rgs');
-},{}],"tile":[function(require,module,exports){
-module.exports=require('MtwR2O');
 },{}],"MtwR2O":[function(require,module,exports){
 var $, Tile, fabric, _;
 
@@ -31898,7 +31900,11 @@ module.exports = Tile = (function() {
         html = _.template(data, _this);
         info = $('.info');
         info.html(html);
-        return info.removeClass('hidden');
+        if (_this.toggled) {
+          return info.removeClass('hidden');
+        } else {
+          return info.addClass('hidden');
+        }
       };
     })(this), 'html');
   };
@@ -31992,7 +31998,9 @@ module.exports = Tile = (function() {
 })();
 
 
-},{"fabric":"NlWBxo","jquery":40,"underscore":57}],68:[function(require,module,exports){
+},{"fabric":"NlWBxo","jquery":40,"underscore":57}],"tile":[function(require,module,exports){
+module.exports=require('MtwR2O');
+},{}],68:[function(require,module,exports){
 var $, Board, Tile, chai, close_all_but_east, create_box, expect, sinon, sinon_chai, _;
 
 chai = require('chai');

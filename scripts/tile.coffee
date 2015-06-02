@@ -74,7 +74,10 @@ module.exports = class Tile
       html = _.template(data, this)
       info = $('.info')
       info.html(html)
-      info.removeClass('hidden')
+      if @toggled
+        info.removeClass('hidden')
+      else
+        info.addClass('hidden')
     , 'html')
 
   create_image: ->
